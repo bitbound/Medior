@@ -1,0 +1,39 @@
+﻿<UserControl x:Class="Medior.Views.AboutView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:Medior.Views"
+             xmlns:vm="clr-namespace:Medior.ViewModels"
+             mc:Ignorable="d" 
+             DataContext="{x:Static vm:ViewModelLocator.AboutViewModel}"
+             d:DesignHeight="450" d:DesignWidth="800">
+    <StackPanel>
+        <TextBlock Style="{StaticResource LargeTitle}">
+            About
+        </TextBlock>
+
+        <TextBlock Style="{StaticResource Paragraph}">
+            <Run Text="Version: " />
+            <Run Text="{Binding Version, Mode=OneWay}" />
+        </TextBlock>
+
+        <Button Content="Show Logs"
+                HorizontalAlignment="Left"
+                Command="{Binding OpenLogsFolder}" />
+
+        <StackPanel Margin="0,20,0,0">
+            <TextBlock Style="{StaticResource MediumTitle}" Foreground="{StaticResource MahApps.Brushes.Accent2}">
+                Module Details
+            </TextBlock>
+            
+            <TextBlock Style="{StaticResource MediumTitle}">
+                Screenshot
+            </TextBlock>
+            <TextBlock Style="{StaticResource Paragraph}">
+                Capture and share screenshots.  Requires Snipping Tool to be installed.
+            </TextBlock>
+
+        </StackPanel>
+    </StackPanel>
+</UserControl>

@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.2.32602.215
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Medior", "Medior\Medior.csproj", "{0F92DFCE-243D-43E0-ACDB-883D9F8BC353}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{0F92DFCE-243D-43E0-ACDB-883D9F8BC353}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0F92DFCE-243D-43E0-ACDB-883D9F8BC353}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0F92DFCE-243D-43E0-ACDB-883D9F8BC353}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0F92DFCE-243D-43E0-ACDB-883D9F8BC353}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {D5FB1896-5045-4E89-B06D-110F37AA7488}
+	EndGlobalSection
+EndGlobal
