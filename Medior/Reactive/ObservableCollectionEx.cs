@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Medior.Utilities
+namespace Medior.Reactive
 {
     public class ObservableCollectionEx<T> : ObservableCollection<T>
     {
@@ -30,14 +30,8 @@ namespace Medior.Utilities
             OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
         }
 
-        /// <summary>
-        /// Remove all items from the collection that satisfy the supplied predicate.
-        /// </summary>
-        /// <param name="predicate">A predicate used to determine which items to remove.</param>
         public void RemoveAll(Predicate<T> predicate)
         {
-            // Make a copy so it doesn't throw due to collection
-            // changing during enumeration.
             var copy = Items.ToArray();
 
             foreach (var item in copy)
