@@ -18,7 +18,7 @@ namespace Medior.ViewModels
         string LoaderText { get; set; }
     }
 
-    internal class ShellViewModel : ObservableObject, IShellViewModel
+    internal class ShellViewModel : ObservableObjectEx, IShellViewModel
     {
         private readonly ILoaderService _loader;
         public ShellViewModel(ILoaderService loader)

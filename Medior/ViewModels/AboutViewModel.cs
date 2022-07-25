@@ -1,4 +1,5 @@
 ﻿using Medior.Reactive;
+using Microsoft.Toolkit.Mvvm.Input;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -16,7 +17,7 @@ namespace Medior.ViewModels
         ICommand OpenLogsFolder { get; }
     }
 
-    internal class AboutViewModel : ObservableObject, IAboutViewModel
+    internal class AboutViewModel : ObservableObjectEx, IAboutViewModel
     {
         public AboutViewModel()
         {

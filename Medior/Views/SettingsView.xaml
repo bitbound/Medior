@@ -18,7 +18,7 @@
         <Label>
             App Theme
         </Label>
-        <!--<StackPanel>
+        <StackPanel>
             <RadioButton
                 GroupName="AppTheme"
                 Content="System Default"
@@ -44,13 +44,13 @@
                 GroupName="AppTheme"
                 Content="Dark"
                 Margin="0,5,0,0"
-                IsChecked="{Binding Theme, Mode=OneWay, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static models:AppTheme.Dark}}">
+                IsChecked="{Binding Theme, Mode=OneWay, Converter={StaticResource ValueEqualsParameterConverter}, ConverterParameter={x:Static models:AppTheme.Dark}}">
                 <i:Interaction.Triggers>
                     <i:EventTrigger EventName="Checked">
-                        <i:InvokeCommandAction Command="{Binding SetThemeCommand}" CommandParameter="Dark" />
+                        <i:InvokeCommandAction Command="{Binding SetThemeCommand}" CommandParameter="{x:Static models:AppTheme.Dark}" />
                     </i:EventTrigger>
                 </i:Interaction.Triggers>
             </RadioButton>
-        </StackPanel>-->
+        </StackPanel>
     </StackPanel>
 </UserControl>
