@@ -39,7 +39,8 @@ namespace Medior
                 services.AddSingleton<ISettingsViewModel, SettingsViewModel>();
                 services.AddSingleton<IAboutViewModel, AboutViewModel>();
 
-                services.AddAppModule<HomeView>("Home", new PackIconOcticons() { Kind = PackIconOcticonsKind.Home });
+                services.AddAppModule<HomeView>("Home", PackIconOcticonsKind.Home);
+                services.AddAppModule<IScreenshotViewModel, ScreenshotViewModel, ScreenshotView>("Screenshot", PackIconOcticonsKind.DeviceCamera);
 
                 services.AddSingleton<IFileSystem, FileSystem>();
                 services.AddSingleton<IDialogService, DialogService>();
@@ -47,6 +48,7 @@ namespace Medior
                 services.AddSingleton<ILoaderService, LoaderService>();
                 services.AddSingleton(services => DialogCoordinator.Instance);
                 services.AddSingleton<ISettings, Settings>();
+                services.AddScoped<ICapturePicker, CapturePicker>();
                 services.AddHttpClient();
                 services.AddLogging(builder => builder.AddProvider(new FileLoggerProvider()));
 

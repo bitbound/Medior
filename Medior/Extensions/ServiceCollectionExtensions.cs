@@ -12,18 +12,27 @@ namespace Medior.Extensions
     internal static class ServiceCollectionExtensions
     {
 
-        internal static void AddAppModule<TViewModelInterface, TViewModelImpl, TControlType>(this ServiceCollection services, string label, PackIconControlBase icon)
+        internal static void AddAppModule<TViewModelInterface, TViewModelImpl, TControlType>(this ServiceCollection services, string label, PackIconOcticonsKind iconKind)
             where TViewModelInterface : class
             where TViewModelImpl : class, TViewModelInterface
         {
             services.AddSingleton<TViewModelInterface, TViewModelImpl>();
-            services.AddSingleton(new AppModule<TControlType>(label, icon, typeof(TViewModelInterface), typeof(TViewModelImpl)));
+
+            services.AddSingleton(new AppModule(
+                label,
+                new PackIconOcticons() { Kind = iconKind }, 
+                typeof(TControlType),
+                typeof(TViewModelInterface), 
+                typeof(TViewModelImpl)));
 
         }
 
-        internal static void AddAppModule<TControlType>(this ServiceCollection services, string label, PackIconControlBase icon)
+        internal static void AddAppModule<TControlType>(this ServiceCollection services, string label, PackIconOcticonsKind iconKind)
         {
-            services.AddSingleton(new AppModule<TControlType>(label, icon));
+            services.AddSingleton(new AppModule(
+                label, 
+                new PackIconOcticons() { Kind = iconKind },
+                typeof(TControlType)));
 
         }
     }

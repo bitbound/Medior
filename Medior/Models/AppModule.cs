@@ -7,12 +7,13 @@ using System.Threading.Tasks;
 
 namespace Medior.Models
 {
-    internal class AppModule<TControlType>
+    internal class AppModule
     {
-        public AppModule(string label, PackIconControlBase icon, Type? vmInterface = null, Type? vmImplementation = null)
+        public AppModule(string label, PackIconControlBase icon, Type controlType, Type? vmInterface = null, Type? vmImplementation = null)
         {
             Label = label;
             Icon = icon;
+            ControlType = controlType;
 
             if (vmInterface is not null && vmImplementation is not null)
             {
@@ -20,7 +21,6 @@ namespace Medior.Models
                 ViewModelImplementationType = vmImplementation;
             }
 
-            ControlType = typeof(TControlType);
         }
 
         public Type ControlType { get; }

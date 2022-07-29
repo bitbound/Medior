@@ -18,6 +18,8 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using Microsoft.Extensions.DependencyInjection;
+using Medior.Models;
 
 namespace Medior
 {
@@ -32,15 +34,17 @@ namespace Medior
 
         private void MetroWindow_Loaded(object sender, RoutedEventArgs e)
         {
-            NavMenu.Items.Add(new NavMenuItem()
+            var appModules = StaticServiceProvider.Instance.GetServices<AppModule>();
+
+            foreach (var module in appModules)
             {
-                Icon = new PackIconOcticons() { Kind = PackIconOcticonsKind.Home },
-                Label = "Home",
-                NavigationType = typeof(HomeView)
-            });
-
-            
-
+                NavMenu.Items.Add(new NavMenuItem()
+                {
+                    Icon = module.Icon,
+                    Label = module.Label,
+                    NavigationType = module.ControlType
+                });
+            }
 
 
             NavMenu.OptionsItems.Add(new NavMenuItem()
