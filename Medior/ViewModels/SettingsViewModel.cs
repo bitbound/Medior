@@ -21,10 +21,12 @@ namespace Medior.ViewModels
     internal class SettingsViewModel : ISettingsViewModel
     {
         private readonly ISettings _settings;
+        private readonly IThemeSetter _themeSetter;
 
-        public SettingsViewModel(ISettings settings)
+        public SettingsViewModel(ISettings settings, IThemeSetter themeSetter)
         {
             _settings = settings;
+            _themeSetter = themeSetter;
             SetThemeCommand = new RelayCommand<AppTheme>(parameter =>
             {
                 Theme = parameter;
@@ -38,21 +40,7 @@ namespace Medior.ViewModels
             set
             {
                 _settings.Theme = value;
-                switch (value)
-                {
-                    case AppTheme.Default:
-                        ThemeManager.Current.ThemeSyncMode = ThemeSyncMode.SyncAll;
-                        ThemeManager.Current.SyncTheme();
-                        break;
-                    case AppTheme.Light:
-                        ThemeManager.Current.ChangeTheme(Application.Current, "Light.Blue");
-                        break;
-                    case AppTheme.Dark:
-                        ThemeManager.Current.ChangeTheme(Application.Current, "Dark.Blue");
-                        break;
-                    default:
-                        break;
-                }
+                _themeSetter.SetTheme(value);
             }
         }
 

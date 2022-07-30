@@ -14,6 +14,8 @@ using MahApps.Metro.IconPacks;
 using Medior.Extensions;
 using Medior.Views;
 using Medior.Services.ScreenCapture;
+using Medior.Services.Messaging;
+using Microsoft.Toolkit.Mvvm.Messaging;
 
 namespace Medior
 {
@@ -50,6 +52,8 @@ namespace Medior
                 services.AddSingleton<ILoaderService, LoaderService>();
                 services.AddSingleton(services => DialogCoordinator.Instance);
                 services.AddSingleton<ISettings, Settings>();
+                services.AddSingleton<IMessenger>(WeakReferenceMessenger.Default);
+                services.AddSingleton<IThemeSetter, ThemeSetter>();
                 services.AddScoped<ICapturePicker, CapturePicker>();
                 services.AddScoped<IScreenGrabber, ScreenGrabber>();
                 services.AddHttpClient();

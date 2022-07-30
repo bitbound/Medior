@@ -1,22 +1,12 @@
 ﻿using Medior.Extensions;
 using PInvoke;
 using System;
-using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
-using System.IO;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Forms;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
 using Rectangle = System.Drawing.Rectangle;
 
 namespace Medior.Controls
@@ -32,7 +22,6 @@ namespace Medior.Controls
 
         private System.Windows.Point _startPoint;
 
-
         public CapturePickerWindow()
         {
             InitializeComponent();
@@ -44,6 +33,8 @@ namespace Medior.Controls
             InitializeComponent();
             _backgroundImage = backgroundImage;
         }
+
+        public Rect Rect => new(0, 0, ActualWidth, ActualHeight);
 
         public Rectangle SelectedArea { get; private set; }
 
@@ -57,16 +48,16 @@ namespace Medior.Controls
             return scaleWithDPI switch
             {
                 true => new Rectangle(
-                    (int)Math.Max(0, CaptureBorder.Margin.Left * _dpiScale + left),
-                    (int)Math.Max(0, CaptureBorder.Margin.Top * _dpiScale + top),
-                    (int)Math.Min(width, CaptureBorder.Width * _dpiScale),
-                    (int)Math.Min(height, CaptureBorder.Height * _dpiScale)),
+                    (int)Math.Max(0, CaptureBorder.Bounds.Left * _dpiScale + left),
+                    (int)Math.Max(0, CaptureBorder.Bounds.Top * _dpiScale + top),
+                    (int)Math.Min(width, CaptureBorder.Bounds.Width * _dpiScale),
+                    (int)Math.Min(height, CaptureBorder.Bounds.Height * _dpiScale)),
 
                 false => new Rectangle(
-                    (int)Math.Max(0, CaptureBorder.Margin.Left + left),
-                    (int)Math.Max(0, CaptureBorder.Margin.Top + top),
-                    (int)Math.Min(width, CaptureBorder.Width),
-                    (int)Math.Min(height, CaptureBorder.Height))
+                    (int)Math.Max(0, CaptureBorder.Bounds.Left + left),
+                    (int)Math.Max(0, CaptureBorder.Bounds.Top + top),
+                    (int)Math.Min(width, CaptureBorder.Bounds.Width),
+                    (int)Math.Min(height, CaptureBorder.Bounds.Height))
             };
         }
 
@@ -109,10 +100,11 @@ namespace Medior.Controls
                     User32.GetWindowRect(shellHandle, out targetRect);
                 }
 
-                // TODO: Factor in DPI.
-                CaptureBorder.Margin = new Thickness(targetRect.left - screen.Left, targetRect.top - screen.Top, 0, 0);
-                CaptureBorder.Width = targetRect.Width();
-                CaptureBorder.Height = targetRect.Height();
+                CaptureBorder.Rect = new Rect(
+                    (targetRect.left - screen.Left) * _dpiScale,
+                    (targetRect.top - screen.Top) * _dpiScale,
+                    targetRect.Width() * _dpiScale,
+                    targetRect.Height() * _dpiScale);
                 await Task.Delay(100);
             }
         }
@@ -128,25 +120,20 @@ namespace Medior.Controls
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             _dpiScale = PresentationSource.FromVisual(this).CompositionTarget.TransformToDevice.M11;
-            HeaderLabel.Visibility = Visibility.Visible;
-            CaptureBorder.Visibility = Visibility.Visible;
             Width = SystemParameters.VirtualScreenWidth;
             Height = SystemParameters.VirtualScreenHeight;
             Left = SystemParameters.VirtualScreenLeft;
             Top = SystemParameters.VirtualScreenTop;
-
             MainGrid.Background = _backgroundImage.ToImageBrush(ImageFormat.Png);
             _ = FrameWindowUnderCursor();
             Activate();
         }
         private void Window_MouseDown(object sender, MouseButtonEventArgs e)
         {
-
             if (e.ChangedButton == MouseButton.Left)
             {
                 _startPoint = e.GetPosition(this);
             }
-
         }
 
         private void Window_MouseMove(object sender, System.Windows.Input.MouseEventArgs e)
@@ -158,9 +145,7 @@ namespace Medior.Controls
                 var top = Math.Min(pos.Y, _startPoint.Y);
                 var width = Math.Abs(_startPoint.X - pos.X);
                 var height = Math.Abs(_startPoint.Y - pos.Y);
-                CaptureBorder.Margin = new Thickness(left, top, 0, 0);
-                CaptureBorder.Width = width;
-                CaptureBorder.Height = height;
+                CaptureBorder.Rect = new Rect(left, top, width, height);
             }
         }
 

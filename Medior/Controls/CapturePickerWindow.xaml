@@ -9,19 +9,34 @@
         WindowStyle="None" 
         Topmost="True" 
         KeyDown="Window_KeyDown" 
-        AllowsTransparency="True" 
-        Background="#02FFFFFF" 
         WindowStartupLocation="CenterScreen"  
         Height="800" Width="800"
         Loaded="Window_Loaded"  
         MouseUp="Window_MouseUp" 
         MouseMove="Window_MouseMove" 
         MouseDown="Window_MouseDown" 
+        Background="Transparent"
+        AllowsTransparency="True"
         Cursor="Cross" 
         Padding="0">
     <Grid x:Name="MainGrid" Margin="0">
-        <Border x:Name="CaptureBorder" BorderBrush="#FF6D29A4" BorderThickness="1" HorizontalAlignment="Left" VerticalAlignment="Top" Visibility="Collapsed" Background="#3F2948C0" Padding="0">
-        </Border>
-        <Label x:Name="HeaderLabel" Content="Select a window or draw a box." HorizontalContentAlignment="Center" VerticalContentAlignment="Center" FontSize="24" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Top" Foreground="WhiteSmoke"/>
+        <Path x:Name="OuterPath"
+              Fill="Black" 
+              Opacity="0.8"
+              HorizontalAlignment="Stretch"
+              VerticalAlignment="Stretch">
+            <Path.Data>
+                <CombinedGeometry GeometryCombineMode="Exclude">
+                    <CombinedGeometry.Geometry1>
+                        <RectangleGeometry x:Name="OuterRectangle" Rect="{Binding Rect, Mode=OneWay, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:CapturePickerWindow}}}" />
+                    </CombinedGeometry.Geometry1>
+                    <CombinedGeometry.Geometry2>
+                        <RectangleGeometry x:Name="CaptureBorder" />
+                    </CombinedGeometry.Geometry2>
+                </CombinedGeometry>
+            </Path.Data>
+        </Path>
+
+        <TextBlock x:Name="HeaderLabel" Text="Select a window or draw a region." HorizontalAlignment="Center" VerticalAlignment="Top" Style="{StaticResource LargeTitle}" />
     </Grid>
 </Window>

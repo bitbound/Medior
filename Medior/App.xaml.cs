@@ -22,15 +22,18 @@ namespace Medior
 
         private void Application_Startup(object sender, StartupEventArgs e)
         {
-            var tray = StaticServiceProvider.Instance.GetRequiredService<ITrayService>();
-
             var backgroundServices = StaticServiceProvider.Instance.GetServices<IBackgroundService>();
             foreach (var backgroundService in backgroundServices)
             {
                 _backgroundServices.Add(backgroundService.Start(_cts.Token));
             }
 
+            var tray = StaticServiceProvider.Instance.GetRequiredService<ITrayService>();
             tray.Initialize();
+
+            var themeSetter = StaticServiceProvider.Instance.GetRequiredService<IThemeSetter>();
+            var settings = StaticServiceProvider.Instance.GetRequiredService<ISettings>();
+            themeSetter.SetTheme(settings.Theme);
         }
 
         private void Application_Exit(object sender, ExitEventArgs e)

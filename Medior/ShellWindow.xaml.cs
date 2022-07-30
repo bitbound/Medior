@@ -20,6 +20,7 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using Microsoft.Extensions.DependencyInjection;
 using Medior.Models;
+using Medior.Native;
 
 namespace Medior
 {
@@ -29,6 +30,7 @@ namespace Medior
         public ShellWindow()
         {
             InitializeComponent();
+            PrintScreenHotkey.Set();
         }
 
 

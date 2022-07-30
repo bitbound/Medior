@@ -36,7 +36,6 @@ namespace Medior.Services.ScreenCapture
         private readonly IBitmapUtility _bitmapUtility;
         private readonly SemaphoreSlim _sentFramesSignal = new(10, 10);
         private string _activeDisplay;
-        private int _quality = 75;
         private bool _forceFullscreen = true;
 
         public event EventHandler? LoopIncremented;

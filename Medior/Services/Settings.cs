@@ -21,15 +21,17 @@ namespace Medior.Services
     internal interface ISettings
     {
         AppTheme Theme { get; set; }
+        bool HandlePrintScreen { get; set; }
+
         Task Save();
     }
     internal class Settings : ISettings
     {
-        private readonly ConcurrentDictionary<string, object?> _settingsStore = new();
         private readonly SemaphoreSlim _fileLock = new(1, 1);
         private readonly string _filePath = AppConstants.SettingsFilePath;
         private readonly IFileSystem _fileSystem;
         private readonly ILogger<Settings> _logger;
+        private SettingsModel _settings = new();
 
         public Settings(IFileSystem fileSystem, ILogger<Settings> logger)
         {
@@ -44,6 +46,12 @@ namespace Medior.Services
             set => Set(value);
         }
 
+        public bool HandlePrintScreen
+        {
+            get => Get<bool>();
+            set => Set(value);
+        }
+
         public async Task Save()
         {
             if (!await _fileLock.WaitAsync(0))
@@ -54,7 +62,7 @@ namespace Medior.Services
             try
             {
                 _fileSystem.CreateDirectory(Path.GetDirectoryName(_filePath)!);
-                var serializedModel = JsonSerializer.Serialize(_settingsStore);
+                var serializedModel = JsonSerializer.Serialize(_settings);
                 await _fileSystem.WriteAllTextAsync(_filePath, serializedModel);
                 _fileSystem.Encrypt(_filePath);
             }
@@ -84,11 +92,7 @@ namespace Medior.Services
                 }
 
                 var serializedModel = _fileSystem.ReadAllText(_filePath);
-                var settings = JsonSerializer.Deserialize<Dictionary<string,object>>(serializedModel) ?? new();
-                foreach (var kvp in settings)
-                {
-                    _settingsStore.AddOrUpdate(kvp.Key, kvp.Value, (k, v) => kvp.Value);
-                }
+                _settings = JsonSerializer.Deserialize<SettingsModel>(serializedModel) ?? new();
                 return Result.Ok();
             }
             catch (Exception ex)
@@ -104,13 +108,16 @@ namespace Medior.Services
 
         private void Set<T>(T newValue, [CallerMemberName] string propertyName = "")
         {
-            _settingsStore.AddOrUpdate(propertyName, newValue, (k, v) => newValue);
+            var prop = _settings.GetType().GetProperty(propertyName);
+            prop?.SetValue(_settings, newValue);
+            _ = Save();
         }
 
         private T? Get<T>([CallerMemberName] string propertyName = "", T? defaultValue = default)
         {
-            if (_settingsStore.TryGetValue(propertyName, out var value) &&
-                value is T typedValue)
+            var prop = _settings.GetType().GetProperty(propertyName);
+            var propValue = prop?.GetValue(_settings);
+            if (propValue is T typedValue)
             {
                 return typedValue;
             }
