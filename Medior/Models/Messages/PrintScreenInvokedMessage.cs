@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Medior.Models.Messages
 {
-    internal class PrintScreenInvokedMessage
+    public class PrintScreenInvokedMessage
     {
     }
 }

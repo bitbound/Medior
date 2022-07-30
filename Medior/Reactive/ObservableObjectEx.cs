@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace Medior.Reactive
 {
-    internal class ObservableObjectEx : ObservableObject
+    public class ObservableObjectEx : ObservableObject
     {
         private readonly ConcurrentDictionary<string, object?> _backingFields = new();
 

@@ -13,7 +13,7 @@ using System.Windows.Forms;
 
 namespace Medior.Native
 {
-    internal class WindowHelpers
+    public class WindowHelpers
     {
         public static bool GetDwmFrameBounds(IntPtr hwnd, out RECT dwmRect)
         {

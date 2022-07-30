@@ -12,14 +12,14 @@ using System.Windows.Input;
 
 namespace Medior.ViewModels
 {
-    internal interface ISettingsViewModel
+    public interface ISettingsViewModel
     {
         bool HandlePrintScreen { get; set; }
         ICommand SetThemeCommand { get; }
         AppTheme Theme { get; set; }
     }
 
-    internal class SettingsViewModel : ISettingsViewModel
+    public class SettingsViewModel : ISettingsViewModel
     {
         private readonly ISettings _settings;
         private readonly IThemeSetter _themeSetter;

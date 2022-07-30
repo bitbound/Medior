@@ -9,12 +9,12 @@ using System.Threading.Tasks;
 
 namespace Medior.Services
 {
-    internal interface IAppStartup
+    public interface IAppStartup
     {
         Task Initialize(CancellationToken cancellationToken);
     }
 
-    internal class AppStartup : IAppStartup
+    public class AppStartup : IAppStartup
     {
         private readonly ISettings _settings;
         private readonly ITrayService _trayService;

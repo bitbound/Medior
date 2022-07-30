@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Medior.Interfaces
 {
-    internal interface IBackgroundService
+    public interface IBackgroundService
     {
         Task Start(CancellationToken cancellationToken);
     }

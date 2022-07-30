@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Medior.Services
 {
-    internal interface ILoaderService
+    public interface ILoaderService
     {
         internal event EventHandler<string>? LoaderShown;
         internal event EventHandler? LoaderHidden;
@@ -17,7 +17,7 @@ namespace Medior.Services
         void Hide();
     }
 
-    internal class LoaderService : ILoaderService
+    public class LoaderService : ILoaderService
     {
         private readonly ILogger<LoaderService> _logger;
 

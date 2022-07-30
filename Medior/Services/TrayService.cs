@@ -10,13 +10,13 @@ using System.Windows.Forms;
 
 namespace Medior.Services
 {
-    internal interface ITrayService
+    public interface ITrayService
     {
         Task ShowBalloon(string title, string message, int timeoutMs = 5_000, ToolTipIcon icon = ToolTipIcon.Info, Action? onclickCallback = null);
         void Initialize();
     }
 
-    internal class TrayService : ITrayService
+    public class TrayService : ITrayService
     {
         private readonly SemaphoreSlim _balloonLock = new(1, 1);
         private NotifyIcon? _notifyIcon;

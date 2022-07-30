@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Medior.Models
 {
-    internal class SettingsModel
+    public class SettingsModel
     {
         public AppTheme Theme { get; set; } = AppTheme.Dark;
 

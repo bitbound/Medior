@@ -17,12 +17,12 @@ using System.Windows.Media;
 
 namespace Medior.ViewModels
 {
-    internal interface IScreenshotViewModel
+    public interface IScreenshotViewModel
     {
         ICommand CaptureCommand { get; }
         ImageSource? CurrentImage { get; }
     }
-    internal class ScreenshotViewModel : ObservableObjectEx, IScreenshotViewModel
+    public class ScreenshotViewModel : ObservableObjectEx, IScreenshotViewModel
     {
         private readonly IDialogService _dialogService;
         private readonly IMessenger _messenger;

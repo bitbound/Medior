@@ -11,14 +11,14 @@ using System.Windows.Forms;
 
 namespace Medior.Services
 {
-    internal interface IWindowService
+    public interface IWindowService
     {
         Rectangle ShowCapturePicker(Bitmap backgroundImage);
         IDisposable HideMainWindow();
         void ShowMainWindow();
     }
 
-    internal class WindowService : IWindowService
+    public class WindowService : IWindowService
     {
         public Rectangle ShowCapturePicker(Bitmap backgroundImage)
         {

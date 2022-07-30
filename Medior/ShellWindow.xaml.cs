@@ -32,6 +32,8 @@ namespace Medior
             InitializeComponent();
         }
 
+        public ShellViewModel? ViewModel => DataContext as ShellViewModel;
+
         private void NavMenu_ItemInvoked(object sender, HamburgerMenuItemInvokedEventArgs args)
         {
             if (args.InvokedItem is not AppModule navMenuItem)

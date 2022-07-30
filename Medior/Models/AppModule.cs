@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Medior.Models
 {
-    internal class AppModule
+    public class AppModule
     {
         public AppModule(string label, PackIconControlBase icon, Type controlType, Type? vmInterface = null, Type? vmImplementation = null)
         {

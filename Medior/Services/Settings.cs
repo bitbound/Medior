@@ -19,14 +19,14 @@ using System.Threading.Tasks;
 
 namespace Medior.Services
 {
-    internal interface ISettings
+    public interface ISettings
     {
         AppTheme Theme { get; set; }
         bool HandlePrintScreen { get; set; }
 
         Task Save();
     }
-    internal class Settings : ISettings
+    public class Settings : ISettings
     {
         private readonly SemaphoreSlim _fileLock = new(1, 1);
         private readonly string _filePath = AppConstants.SettingsFilePath;

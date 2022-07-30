@@ -16,16 +16,18 @@ using Medior.Models.Messages;
 
 namespace Medior.ViewModels
 {
-    internal interface IShellViewModel
+    public interface IShellViewModel
     {
         ObservableCollectionEx<AppModule> AppModules { get; }
+        ObservableCollectionEx<AppModule> FilteredAppModules { get; }
         bool IsLoaderVisible { get; set; }
         string LoaderText { get; set; }
         List<AppModule> OptionsModules { get; }
+        string SearchText { get; set; }
         AppModule? SelectedModule { get; set; }
     }
 
-    internal class ShellViewModel : ObservableObjectEx, IShellViewModel
+    public class ShellViewModel : ObservableObjectEx, IShellViewModel
     {
         private readonly ILoaderService _loader;
         private readonly IMessenger _messenger;
@@ -38,6 +40,7 @@ namespace Medior.ViewModels
             _loader = loader;
             _messenger = messeger;
             AppModules.AddRange(appModules);
+            FilteredAppModules.AddRange(appModules);
 
             _loader.LoaderShown += Loader_LoaderShown;
             _loader.LoaderHidden += Loader_LoaderHidden;
@@ -46,6 +49,7 @@ namespace Medior.ViewModels
         }
 
         public ObservableCollectionEx<AppModule> AppModules { get; } = new();
+        public ObservableCollectionEx<AppModule> FilteredAppModules { get; } = new();
 
         public bool IsLoaderVisible
         {
@@ -72,12 +76,23 @@ namespace Medior.ViewModels
                 typeof(SettingsView))
         };
 
+        public string SearchText
+        {
+            get => Get<string>() ?? string.Empty;
+            set
+            {
+                Set(value);
+                FilteredAppModules.Clear();
+                var filteredModules = AppModules.Where(x => x.Label.Contains(value.Trim(), StringComparison.OrdinalIgnoreCase));
+                FilteredAppModules.AddRange(filteredModules);
+            }
+        }
+
         public AppModule? SelectedModule
         {
             get => Get<AppModule>() ?? AppModules.FirstOrDefault();
             set => Set(value);
         }
-
         private void HandlePrintScreenInvoked(object recipient, PrintScreenInvokedMessage message)
         {
             SelectedModule = AppModules.FirstOrDefault(x => x.ControlType == typeof(ScreenshotView));

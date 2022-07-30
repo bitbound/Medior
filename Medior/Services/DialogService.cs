@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Medior.Services
 {
-    internal interface IDialogService
+    public interface IDialogService
     {
         Task<TDialog> GetCurrentDialogAsync<TDialog>() where TDialog : BaseMetroDialog;
         Task HideMetroDialogAsync(BaseMetroDialog dialog, MetroDialogSettings? settings = null);
@@ -24,7 +24,7 @@ namespace Medior.Services
         Task<ProgressDialogController> ShowProgressAsync(string title, string message, bool isCancelable = false, MetroDialogSettings? settings = null);
     }
 
-    internal class DialogService : IDialogService
+    public class DialogService : IDialogService
     {
         private readonly IDialogCoordinator _dialogCoordinator;
         private readonly IShellViewModel _shellWindowVm;

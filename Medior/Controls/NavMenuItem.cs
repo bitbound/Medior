@@ -8,7 +8,7 @@ using System.Windows;
 
 namespace Medior.Controls
 {
-    internal class NavMenuItem : HamburgerMenuIconItem
+    public class NavMenuItem : HamburgerMenuIconItem
     {
         public static readonly DependencyProperty NavigationDestinationProperty = DependencyProperty.Register(
           nameof(NavigationDestination), typeof(Uri), typeof(NavMenuItem), new PropertyMetadata(default(Uri)));

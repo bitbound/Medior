@@ -12,7 +12,7 @@
         xmlns:views="clr-namespace:Medior.Views"
         xmlns:icons="http://metro.mahapps.com/winfx/xaml/iconpacks"
         mc:Ignorable="d"
-        Title="Medior" Height="450" Width="600" TitleCharacterCasing="Normal"
+        Title="Medior" Height="600" Width="1000" TitleCharacterCasing="Normal"
         ResizeMode="CanResizeWithGrip"
         Icon="/Assets/comet.png"
         dialog:DialogParticipation.Register="{Binding}"
@@ -41,16 +41,29 @@
     </mah:MetroWindow.Resources>
 
     <Grid>
-        <mah:HamburgerMenu x:Name="NavMenu"
-                    DisplayMode="CompactInline"
-                    IsPaneOpen="False"
-                    SelectedItem="{Binding SelectedModule}"
-                    ItemInvoked="NavMenu_ItemInvoked"
-                    ContentTransition="Default"
-                    ItemsSource="{Binding AppModules}"
-                    OptionsItemsSource="{Binding OptionsModules}"
-                    ItemTemplate="{StaticResource MenuItemTemplate}"
-                    OptionsItemTemplate="{StaticResource MenuItemTemplate}">
+        <mah:HamburgerMenu 
+                x:Name="NavMenu"
+                DisplayMode="CompactInline"
+                IsPaneOpen="True"
+                SelectedItem="{Binding SelectedModule}"
+                ItemInvoked="NavMenu_ItemInvoked"
+                ContentTransition="Default"
+                ItemsSource="{Binding FilteredAppModules}"
+                OptionsItemsSource="{Binding OptionsModules}"
+                ItemTemplate="{StaticResource MenuItemTemplate}"
+                OptionsItemTemplate="{StaticResource MenuItemTemplate}">
+            <mah:HamburgerMenu.HamburgerMenuHeaderTemplate>
+                <DataTemplate>
+                    <TextBox
+                        VerticalAlignment="Center"
+                        Margin="0,0,10,0"
+                        mah:TextBoxHelper.Watermark="Search for a tool"
+                        Text="{Binding ViewModel.SearchText, 
+                            Mode=TwoWay, 
+                            UpdateSourceTrigger=PropertyChanged,
+                            RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:ShellWindow}}}"/>
+                </DataTemplate>
+            </mah:HamburgerMenu.HamburgerMenuHeaderTemplate>
             <mah:HamburgerMenu.ContentTemplate>
                 <DataTemplate>
                     <ContentPresenter Margin="10" Content="{Binding}" />

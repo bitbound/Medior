@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Medior.Models
 {
-    internal enum AppTheme
+    public enum AppTheme
     {
         Default,
         Light,

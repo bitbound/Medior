@@ -7,14 +7,14 @@ using System.Threading.Tasks;
 
 namespace Medior.Services
 {
-    internal interface IMessageSigner
+    public interface IMessageSigner
     {
         void GenerateKeys(out RSAParameters privateKey, out RSAParameters publicKey);
         byte[] Sign(byte[] payload, RSAParameters key);
         bool Verify(byte[] payload, byte[] signature, RSAParameters key);
     }
 
-    internal class MessageSigner : IMessageSigner
+    public class MessageSigner : IMessageSigner
     {
         public void GenerateKeys(out RSAParameters privateKey, out RSAParameters publicKey)
         {

@@ -27,7 +27,7 @@ namespace Medior.Services.ScreenCapture
         void SetActiveDisplay(string deviceName);
         void FrameReceived();
     }
-    internal class DesktopStreamer : IDesktopStreamer
+    public class DesktopStreamer : IDesktopStreamer
     {
         private readonly RecyclableMemoryStreamManager _streamManager = new();
         private readonly IScreenGrabber _screenGrabber;

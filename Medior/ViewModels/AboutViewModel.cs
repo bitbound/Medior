@@ -11,13 +11,13 @@ using System.Windows.Input;
 
 namespace Medior.ViewModels
 {
-    internal interface IAboutViewModel
+    public interface IAboutViewModel
     {
         string Version { get; }
         ICommand OpenLogsFolder { get; }
     }
 
-    internal class AboutViewModel : ObservableObjectEx, IAboutViewModel
+    public class AboutViewModel : ObservableObjectEx, IAboutViewModel
     {
         public AboutViewModel()
         {

@@ -12,13 +12,13 @@ using System.Windows.Forms;
 
 namespace Medior.Services.ScreenCapture
 {
-    internal interface ICapturePicker
+    public interface ICapturePicker
     {
         Result<Rectangle> GetCaptureArea();
         Result<Bitmap?> GetScreenCapture();
     }
 
-    internal class CapturePicker : ICapturePicker
+    public class CapturePicker : ICapturePicker
     {
         private readonly IScreenGrabber _grabber;
         private readonly IWindowService _windowService;

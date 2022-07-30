@@ -9,12 +9,12 @@ using System.Windows;
 
 namespace Medior.Services
 {
-    internal interface IThemeSetter
+    public interface IThemeSetter
     {
         void SetTheme(AppTheme appTheme);
     }
 
-    internal class ThemeSetter : IThemeSetter
+    public class ThemeSetter : IThemeSetter
     {
         public void SetTheme(AppTheme appTheme)
         {
