@@ -21,6 +21,7 @@ namespace Medior.ViewModels
     {
         ICommand CaptureCommand { get; }
         ImageSource? CurrentImage { get; }
+        ICommand ShareCommand { get; }
     }
     public class ScreenshotViewModel : ObservableObjectEx, IScreenshotViewModel
     {
@@ -30,7 +31,7 @@ namespace Medior.ViewModels
         private readonly IWindowService _windowService;
 
         public ScreenshotViewModel(
-                    ICapturePicker picker, 
+            ICapturePicker picker, 
             IDialogService dialogService, 
             IMessenger messenger,
             IWindowService windowService)
@@ -40,6 +41,7 @@ namespace Medior.ViewModels
             _messenger = messenger;
             _windowService = windowService;
             CaptureCommand = new AsyncRelayCommand(Capture);
+            ShareCommand = new AsyncRelayCommand(Share);
 
             _messenger.Register<PrintScreenInvokedMessage>(this, HandlePrintScreenInvoked);
         }
@@ -51,6 +53,8 @@ namespace Medior.ViewModels
             get => Get<ImageSource>();
             set => Set(value);
         }
+
+        public ICommand ShareCommand { get; }
 
         public async Task Capture()
         {
@@ -70,6 +74,11 @@ namespace Medior.ViewModels
             CurrentImage = result.Value?.ToBitmapImage(ImageFormat.Png);
 
             _windowService.ShowMainWindow();
+        }
+
+        public async Task Share()
+        {
+            // TODO
         }
 
         private async void HandlePrintScreenInvoked(object recipient, PrintScreenInvokedMessage message)

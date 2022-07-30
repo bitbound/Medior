@@ -3,4 +3,5 @@
                     xmlns:converters="clr-namespace:Medior.Converters">
     
     <converters:ValueEqualsParameterConverter x:Key="ValueEqualsParameterConverter" />
+    <converters:NullToVisibilityConverter x:Key="NullToVisibilityConverter" />
 </ResourceDictionary>
