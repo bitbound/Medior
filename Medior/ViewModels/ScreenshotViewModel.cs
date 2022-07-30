@@ -1,8 +1,10 @@
 ﻿using Medior.Extensions;
+using Medior.Models.Messages;
 using Medior.Reactive;
 using Medior.Services;
 using Medior.Services.ScreenCapture;
 using Microsoft.Toolkit.Mvvm.Input;
+using Microsoft.Toolkit.Mvvm.Messaging;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -22,14 +24,24 @@ namespace Medior.ViewModels
     }
     internal class ScreenshotViewModel : ObservableObjectEx, IScreenshotViewModel
     {
-        private readonly ICapturePicker _picker;
         private readonly IDialogService _dialogService;
+        private readonly IMessenger _messenger;
+        private readonly ICapturePicker _picker;
+        private readonly IWindowService _windowService;
 
-        public ScreenshotViewModel(ICapturePicker picker, IDialogService dialogService)
+        public ScreenshotViewModel(
+                    ICapturePicker picker, 
+            IDialogService dialogService, 
+            IMessenger messenger,
+            IWindowService windowService)
         {
             _picker = picker;
             _dialogService = dialogService;
+            _messenger = messenger;
+            _windowService = windowService;
             CaptureCommand = new AsyncRelayCommand(Capture);
+
+            _messenger.Register<PrintScreenInvokedMessage>(this, HandlePrintScreenInvoked);
         }
 
         public ICommand CaptureCommand { get; }
@@ -56,6 +68,13 @@ namespace Medior.ViewModels
             }
 
             CurrentImage = result.Value?.ToBitmapImage(ImageFormat.Png);
+
+            _windowService.ShowMainWindow();
+        }
+
+        private async void HandlePrintScreenInvoked(object recipient, PrintScreenInvokedMessage message)
+        {
+            await Capture();
         }
     }
 }

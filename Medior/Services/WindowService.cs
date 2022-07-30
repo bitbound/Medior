@@ -15,6 +15,7 @@ namespace Medior.Services
     {
         Rectangle ShowCapturePicker(Bitmap backgroundImage);
         IDisposable HideMainWindow();
+        void ShowMainWindow();
     }
 
     internal class WindowService : IWindowService
@@ -30,6 +31,11 @@ namespace Medior.Services
         {
             try
             {
+                if (WpfApp.Current.MainWindow is null)
+                {
+                    return CallbackDisposable.Empty;
+                }
+
                 var startLeft = WpfApp.Current.MainWindow.Left;
                 var startTop = WpfApp.Current.MainWindow.Top;
                 WpfApp.Current.MainWindow.Left = SystemInformation.VirtualScreen.Right * 2;
@@ -49,6 +55,21 @@ namespace Medior.Services
             {
                 return CallbackDisposable.Empty;
             }
+        }
+
+        public void ShowMainWindow()
+        {
+            try
+            {
+                if (WpfApp.Current.MainWindow is null)
+                {
+                    WpfApp.Current.MainWindow = new ShellWindow();
+                }
+
+                WpfApp.Current.MainWindow.Show();
+                WpfApp.Current.MainWindow.Activate();
+            }
+            catch { }
         }
     }
 }

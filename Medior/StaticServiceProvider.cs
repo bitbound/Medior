@@ -14,7 +14,6 @@ using MahApps.Metro.IconPacks;
 using Medior.Extensions;
 using Medior.Views;
 using Medior.Services.ScreenCapture;
-using Medior.Services.Messaging;
 using Microsoft.Toolkit.Mvvm.Messaging;
 
 namespace Medior

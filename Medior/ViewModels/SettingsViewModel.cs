@@ -14,8 +14,9 @@ namespace Medior.ViewModels
 {
     internal interface ISettingsViewModel
     {
-        AppTheme Theme { get; set; }
+        bool HandlePrintScreen { get; set; }
         ICommand SetThemeCommand { get; }
+        AppTheme Theme { get; set; }
     }
 
     internal class SettingsViewModel : ISettingsViewModel
@@ -34,6 +35,14 @@ namespace Medior.ViewModels
         }
 
 
+        public bool HandlePrintScreen
+        {
+            get => _settings.HandlePrintScreen;
+            set => _settings.HandlePrintScreen = value;
+        }
+
+        public ICommand SetThemeCommand { get; }
+
         public AppTheme Theme
         {
             get => _settings.Theme;
@@ -43,7 +52,5 @@ namespace Medior.ViewModels
                 _themeSetter.SetTheme(value);
             }
         }
-
-        public ICommand SetThemeCommand { get; }
     }
 }

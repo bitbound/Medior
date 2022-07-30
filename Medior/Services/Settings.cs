@@ -1,4 +1,5 @@
 ﻿using Medior.Models;
+using Medior.Native;
 using Medior.Reactive;
 using Medior.Utilities;
 using Medior.ViewModels;
@@ -49,7 +50,18 @@ namespace Medior.Services
         public bool HandlePrintScreen
         {
             get => Get<bool>();
-            set => Set(value);
+            set
+            {
+                Set(value);
+                if (value)
+                {
+                    PrintScreenHotkey.Set();
+                }
+                else
+                {
+                    PrintScreenHotkey.Unset();
+                }
+            }
         }
 
         public async Task Save()

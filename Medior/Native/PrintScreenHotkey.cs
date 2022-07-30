@@ -1,5 +1,5 @@
-﻿using Medior.Services;
-using Medior.Services.Messaging;
+﻿using Medior.Models.Messages;
+using Medior.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Toolkit.Mvvm.Messaging;
 using System;

@@ -44,7 +44,7 @@
         <mah:HamburgerMenu x:Name="NavMenu"
                     DisplayMode="CompactInline"
                     IsPaneOpen="False"
-                    SelectedIndex="0"
+                    SelectedItem="{Binding SelectedModule}"
                     ItemInvoked="NavMenu_ItemInvoked"
                     ContentTransition="Default"
                     ItemsSource="{Binding AppModules}"

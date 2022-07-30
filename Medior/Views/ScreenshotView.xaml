@@ -16,11 +16,7 @@
         </Grid.RowDefinitions>
 
         <StackPanel Grid.Row="0" Orientation="Horizontal">
-            <mah:ToggleSwitch>
-                Handle PrintScreen
-            </mah:ToggleSwitch>
-
-            <Button FontSize="14" Command="{Binding CaptureCommand}"  Margin="10,0,10,0">
+            <Button FontSize="14" Command="{Binding CaptureCommand}"  >
                 Capture
             </Button>
         </StackPanel>

@@ -145,7 +145,7 @@ namespace Medior.Native
 
             if (point.IsOver(foundRect))
             {
-                User32.GetWindowThreadProcessId(hwnd, out var processId);
+                _ = User32.GetWindowThreadProcessId(hwnd, out var processId);
                 Debug.WriteLine($"Window text: {User32.GetWindowText(hwnd)}");
                 Debug.WriteLine($"Window processId: {processId}");
                 Debug.WriteLine($"Found rect: {foundRect.Width()}x{foundRect.Height()}.");
