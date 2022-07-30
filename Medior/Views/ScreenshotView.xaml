@@ -19,6 +19,6 @@
             <Button FontSize="14" Command="{Binding CaptureCommand}">Capture</Button>
         </StackPanel>
 
-        <Image Grid.Row="1"></Image>
+        <Image Source="{Binding CurrentImage}" Grid.Row="1"></Image>
     </Grid>
 </UserControl>

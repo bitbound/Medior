@@ -13,6 +13,7 @@ using Medior.Services;
 using MahApps.Metro.IconPacks;
 using Medior.Extensions;
 using Medior.Views;
+using Medior.Services.ScreenCapture;
 
 namespace Medior
 {
@@ -43,12 +44,14 @@ namespace Medior
                 services.AddAppModule<IScreenshotViewModel, ScreenshotViewModel, ScreenshotView>("Screenshot", PackIconOcticonsKind.DeviceCamera);
 
                 services.AddSingleton<IFileSystem, FileSystem>();
+                services.AddSingleton<ISystemTime, SystemTime>();
                 services.AddSingleton<IDialogService, DialogService>();
                 services.AddSingleton<ITrayService, TrayService>();
                 services.AddSingleton<ILoaderService, LoaderService>();
                 services.AddSingleton(services => DialogCoordinator.Instance);
                 services.AddSingleton<ISettings, Settings>();
                 services.AddScoped<ICapturePicker, CapturePicker>();
+                services.AddScoped<IScreenGrabber, ScreenGrabber>();
                 services.AddHttpClient();
                 services.AddLogging(builder => builder.AddProvider(new FileLoggerProvider()));
 
