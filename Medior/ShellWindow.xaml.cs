@@ -30,50 +30,16 @@ namespace Medior
         public ShellWindow()
         {
             InitializeComponent();
-            PrintScreenHotkey.Set();
-        }
-
-
-        private void MetroWindow_Loaded(object sender, RoutedEventArgs e)
-        {
-            var appModules = StaticServiceProvider.Instance.GetServices<AppModule>();
-
-            foreach (var module in appModules)
-            {
-                NavMenu.Items.Add(new NavMenuItem()
-                {
-                    Icon = module.Icon,
-                    Label = module.Label,
-                    NavigationType = module.ControlType
-                });
-            }
-
-
-            NavMenu.OptionsItems.Add(new NavMenuItem()
-            {
-                Icon = new PackIconOcticons() { Kind = PackIconOcticonsKind.Question },
-                Label = "About",
-                NavigationType = typeof(AboutView)
-            });
-
-            NavMenu.OptionsItems.Add(new NavMenuItem()
-            {
-                Icon = new PackIconOcticons() { Kind = PackIconOcticonsKind.Settings },
-                Label = "Settings",
-                NavigationType = typeof(SettingsView)
-            });
-
-            NavMenu.SelectedIndex = 0;
         }
 
         private void NavMenu_ItemInvoked(object sender, HamburgerMenuItemInvokedEventArgs args)
         {
-            if (args.InvokedItem is not NavMenuItem navMenuItem)
+            if (args.InvokedItem is not AppModule navMenuItem)
             {
                 return;
             }
 
-            NavMenu.Content = Activator.CreateInstance(navMenuItem.NavigationType);
+            NavMenu.Content = Activator.CreateInstance(navMenuItem.ControlType);
         }
     }
 }

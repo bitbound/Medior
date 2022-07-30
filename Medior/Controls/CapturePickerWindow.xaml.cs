@@ -1,12 +1,17 @@
 ﻿using Medior.Extensions;
+using Medior.Native;
 using PInvoke;
+using ScreenR.Shared.Helpers;
 using System;
+using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Imaging;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Forms;
 using System.Windows.Input;
+using System.Windows.Interop;
 using Rectangle = System.Drawing.Rectangle;
 
 namespace Medior.Controls
@@ -64,40 +69,26 @@ namespace Medior.Controls
         private async Task FrameWindowUnderCursor()
         {
             var screen = SystemInformation.VirtualScreen;
-            var thisHandle = new System.Windows.Interop.WindowInteropHelper(this).Handle;
+            var thisHandle = new WindowInteropHelper(this).Handle;
             var shellHandle = User32.GetShellWindow();
             var desktopHandle = User32.GetDesktopWindow();
 
-            while (IsVisible && Mouse.LeftButton == MouseButtonState.Released)
+            while (IsVisible)
             {
-                var targetRect = new RECT();
-                User32.GetCursorPos(out var point);
-
-                User32.EnumWindows((hWin, lParam) =>
+                if (!await WaitHelper.WaitForAsync(() => IsCtrlPressed(), TimeSpan.FromMilliseconds(100)))
                 {
-                    if (hWin == thisHandle || hWin == shellHandle || hWin == desktopHandle || !User32.IsWindowVisible(hWin))
-                    {
-                        return true;
-                    }
+                    CaptureBorder.Rect = new Rect();
+                    continue;
+                }
 
-                    User32.GetWindowRect(hWin, out var rect);
+                var (targetRect, targetHwnd) = WindowHelpers.GetWindowUnderCursor(thisHandle, shellHandle, desktopHandle);
 
-                    if (rect.Width() == screen.Width && rect.Height() == screen.Height)
-                    {
-                        return true;
-                    }
+                var (childRect, childHwnd) = WindowHelpers.GetChildWindow(targetHwnd);
 
-                    if (targetRect.IsEmpty() && point.IsOver(rect))
-                    {
-                        targetRect = rect;
-                    }
-
-                    return true;
-                }, IntPtr.Zero);
-
-                if (targetRect.IsEmpty())
+                if (!childRect.IsEmpty())
                 {
-                    User32.GetWindowRect(shellHandle, out targetRect);
+                    targetRect = childRect;
+                    targetHwnd = childHwnd;
                 }
 
                 CaptureBorder.Rect = new Rect(
@@ -105,8 +96,16 @@ namespace Medior.Controls
                     (targetRect.top - screen.Top) * _dpiScale,
                     targetRect.Width() * _dpiScale,
                     targetRect.Height() * _dpiScale);
+
                 await Task.Delay(100);
             }
+        }
+
+        private bool IsCtrlPressed()
+        {
+            return 
+                Keyboard.GetKeyStates(Key.LeftCtrl).HasFlag(KeyStates.Down) ||
+                Keyboard.GetKeyStates(Key.RightCtrl).HasFlag(KeyStates.Down);
         }
 
         private void Window_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
@@ -138,7 +137,7 @@ namespace Medior.Controls
 
         private void Window_MouseMove(object sender, System.Windows.Input.MouseEventArgs e)
         {
-            if (e.LeftButton == MouseButtonState.Pressed)
+            if (e.LeftButton == MouseButtonState.Pressed && !IsCtrlPressed())
             {
                 var pos = e.GetPosition(this);
                 var left = Math.Min(pos.X, _startPoint.X);

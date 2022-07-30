@@ -14,9 +14,15 @@
             <RowDefinition Height="Auto" />
             <RowDefinition />
         </Grid.RowDefinitions>
-        
+
         <StackPanel Grid.Row="0" Orientation="Horizontal">
-            <Button FontSize="14" Command="{Binding CaptureCommand}">Capture</Button>
+            <mah:ToggleSwitch>
+                Handle PrintScreen
+            </mah:ToggleSwitch>
+
+            <Button FontSize="14" Command="{Binding CaptureCommand}"  Margin="10,0,10,0">
+                Capture
+            </Button>
         </StackPanel>
         
         <Image Source="{Binding CurrentImage}" Grid.Row="1" Margin="10"></Image>

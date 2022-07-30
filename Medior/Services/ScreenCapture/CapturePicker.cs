@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Forms;
 
 namespace Medior.Services.ScreenCapture
 {
@@ -20,15 +21,17 @@ namespace Medior.Services.ScreenCapture
     internal class CapturePicker : ICapturePicker
     {
         private readonly IScreenGrabber _grabber;
+        private readonly IWindowService _windowService;
 
-        public CapturePicker(IScreenGrabber grabber)
+        public CapturePicker(IScreenGrabber grabber, IWindowService windowService)
         {
             _grabber = grabber;
+            _windowService = windowService;
         }
 
         public Result<Rectangle> GetCaptureArea()
         {
-            App.Current.MainWindow?.Hide();
+            using var _ = _windowService.HideMainWindow();
 
             var result = _grabber.GetScreenGrab();
 
@@ -37,19 +40,15 @@ namespace Medior.Services.ScreenCapture
                 return Result.Fail<Rectangle>(result.Exception!);
             }
 
-            var window = new CapturePickerWindow(result.Value!);
-            window.ShowDialog();
+            using var screenshot = result.Value!;
+            var selectedArea = _windowService.ShowCapturePicker(screenshot);
 
-            App.Current.MainWindow?.Show();
-
-            return Result.Ok(window.SelectedArea);
+            return Result.Ok(selectedArea);
         }
 
         public Result<Bitmap?> GetScreenCapture()
         {
-            App.Current.MainWindow?.Hide();
-
-            WaitHelper.WaitFor(() => Application.Current.MainWindow?.IsVisible != true, TimeSpan.FromSeconds(5));
+            using var _ = _windowService.HideMainWindow();
 
             var result = _grabber.GetScreenGrab();
 
@@ -58,18 +57,16 @@ namespace Medior.Services.ScreenCapture
                 return Result.Fail<Bitmap?>(result.Exception!);
             }
 
-            var screenshot = result.Value!;
+            using var screenshot = result.Value!;
 
-            var window = new CapturePickerWindow(screenshot);
-            window.ShowDialog();
+            var selectedArea = _windowService.ShowCapturePicker(screenshot);
 
-            App.Current.MainWindow?.Show();
-
-            if (window.SelectedArea.IsEmpty)
+            if (selectedArea.IsEmpty)
             {
                 return Result.Ok<Bitmap?>(null);
             }
-            var cropped = screenshot.Clone(window.SelectedArea, screenshot.PixelFormat);
+
+            var cropped = screenshot.Clone(selectedArea, screenshot.PixelFormat);
             return Result.Ok<Bitmap?>(cropped);
         }
     }

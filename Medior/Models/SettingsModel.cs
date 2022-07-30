@@ -9,7 +9,7 @@ namespace Medior.Models
 {
     internal class SettingsModel
     {
-        public AppTheme Theme { get; set; }
+        public AppTheme Theme { get; set; } = AppTheme.Dark;
 
         public bool HandlePrintScreen { get; set; }
     }

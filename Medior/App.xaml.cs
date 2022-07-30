@@ -1,4 +1,5 @@
 ﻿using Medior.Interfaces;
+using Medior.Native;
 using Medior.Services;
 using Microsoft.Extensions.DependencyInjection;
 using System;
@@ -18,22 +19,11 @@ namespace Medior
     public partial class App : Application
     {
         private readonly CancellationTokenSource _cts = new();
-        private readonly List<Task> _backgroundServices = new();
 
         private void Application_Startup(object sender, StartupEventArgs e)
         {
-            var backgroundServices = StaticServiceProvider.Instance.GetServices<IBackgroundService>();
-            foreach (var backgroundService in backgroundServices)
-            {
-                _backgroundServices.Add(backgroundService.Start(_cts.Token));
-            }
-
-            var tray = StaticServiceProvider.Instance.GetRequiredService<ITrayService>();
-            tray.Initialize();
-
-            var themeSetter = StaticServiceProvider.Instance.GetRequiredService<IThemeSetter>();
-            var settings = StaticServiceProvider.Instance.GetRequiredService<ISettings>();
-            themeSetter.SetTheme(settings.Theme);
+            var appStartup = StaticServiceProvider.Instance.GetRequiredService<IAppStartup>();
+            appStartup.Initialize(_cts.Token);
         }
 
         private void Application_Exit(object sender, ExitEventArgs e)

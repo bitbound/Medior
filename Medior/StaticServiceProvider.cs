@@ -38,6 +38,7 @@ namespace Medior
 
                 var services = new ServiceCollection();
 
+                services.AddSingleton<IAppStartup, AppStartup>();
                 services.AddSingleton<IShellViewModel, ShellViewModel>();
                 services.AddSingleton<ISettingsViewModel, SettingsViewModel>();
                 services.AddSingleton<IAboutViewModel, AboutViewModel>();
@@ -54,6 +55,8 @@ namespace Medior
                 services.AddSingleton<ISettings, Settings>();
                 services.AddSingleton<IMessenger>(WeakReferenceMessenger.Default);
                 services.AddSingleton<IThemeSetter, ThemeSetter>();
+                services.AddSingleton<IWindowService, WindowService>();
+                services.AddScoped<IMessageSigner, MessageSigner>();
                 services.AddScoped<ICapturePicker, CapturePicker>();
                 services.AddScoped<IScreenGrabber, ScreenGrabber>();
                 services.AddHttpClient();

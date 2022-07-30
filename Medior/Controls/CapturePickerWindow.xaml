@@ -37,6 +37,6 @@
             </Path.Data>
         </Path>
 
-        <TextBlock x:Name="HeaderLabel" Text="Select a window or draw a region." HorizontalAlignment="Center" VerticalAlignment="Top" Style="{StaticResource LargeTitle}" />
+        <TextBlock x:Name="HeaderLabel" Text="Draw a region or hold Ctrl to pick a window." HorizontalAlignment="Center" VerticalAlignment="Top" Style="{StaticResource LargeTitle}" />
     </Grid>
 </Window>

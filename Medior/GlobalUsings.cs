@@ -1,0 +1,1 @@
+﻿global using WpfApp = System.Windows.Application;

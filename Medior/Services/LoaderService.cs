@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Medior.Utilities;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -50,25 +51,8 @@ namespace Medior.Services
             {
                 _logger.LogError(ex, "Error while showing loader.");
             }
-            return new LoaderToken(() => LoaderHidden?.Invoke(this, EventArgs.Empty));
+            return new CallbackDisposable(() => LoaderHidden?.Invoke(this, EventArgs.Empty));
         }
 
-        private class LoaderToken : IDisposable
-        {
-            private readonly Action _disposeCallback;
-
-            public LoaderToken(Action disposeCallback)
-            {
-                _disposeCallback = disposeCallback;
-            }
-            public void Dispose()
-            {
-                try
-                {
-                    _disposeCallback.Invoke();
-                }
-                catch { }
-            }
-        }
     }
 }

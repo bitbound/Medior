@@ -8,16 +8,19 @@
         xmlns:dialog="clr-namespace:MahApps.Metro.Controls.Dialogs;assembly=MahApps.Metro"
         xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
         xmlns:vm="clr-namespace:Medior.ViewModels"
+        xmlns:models="clr-namespace:Medior.Models"
+        xmlns:views="clr-namespace:Medior.Views"
+        xmlns:icons="http://metro.mahapps.com/winfx/xaml/iconpacks"
         mc:Ignorable="d"
         Title="Medior" Height="450" Width="600" TitleCharacterCasing="Normal"
         ResizeMode="CanResizeWithGrip"
-        Loaded="MetroWindow_Loaded" Icon="/Assets/comet.png"
+        Icon="/Assets/comet.png"
         dialog:DialogParticipation.Register="{Binding}"
         DataContext="{x:Static vm:ViewModelLocator.ShellWindowViewModel}">
 
     
     <mah:MetroWindow.Resources>
-        <DataTemplate x:Key="MenuItemTemplate" DataType="{x:Type controls:NavMenuItem}">
+        <DataTemplate x:Key="MenuItemTemplate" DataType="{x:Type models:AppModule}">
             <Grid Height="48">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="{Binding RelativeSource={RelativeSource AncestorType={x:Type mah:HamburgerMenu}}, Path=CompactPaneLength, Mode=OneWay}" />
@@ -41,15 +44,16 @@
         <mah:HamburgerMenu x:Name="NavMenu"
                     DisplayMode="CompactInline"
                     IsPaneOpen="False"
+                    SelectedIndex="0"
                     ItemInvoked="NavMenu_ItemInvoked"
                     ContentTransition="Default"
+                    ItemsSource="{Binding AppModules}"
+                    OptionsItemsSource="{Binding OptionsModules}"
                     ItemTemplate="{StaticResource MenuItemTemplate}"
                     OptionsItemTemplate="{StaticResource MenuItemTemplate}">
             <mah:HamburgerMenu.ContentTemplate>
                 <DataTemplate>
-                    <ScrollViewer Margin="10" VerticalScrollBarVisibility="Auto">
-                        <ContentPresenter Content="{Binding}" />
-                    </ScrollViewer>
+                    <ContentPresenter Margin="10" Content="{Binding}" />
                 </DataTemplate>
             </mah:HamburgerMenu.ContentTemplate>
         </mah:HamburgerMenu>
