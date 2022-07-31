@@ -9,6 +9,11 @@ namespace Medior.Models.Messages
 {
     public class ToastMessage
     {
+        public ToastMessage(string message, ToastType type)
+        {
+            Message = message;
+            Type = type;
+        }
 
         public string Message { get; init; } = string.Empty;
         public ToastType Type { get; init; } = ToastType.Information;

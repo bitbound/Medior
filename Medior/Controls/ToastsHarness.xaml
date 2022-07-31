@@ -17,7 +17,7 @@
                             <EventTrigger RoutedEvent="Border.Loaded">
                                 <BeginStoryboard>
                                     <Storyboard>
-                                        <DoubleAnimation Storyboard.Target="{Binding}"
+                                        <DoubleAnimation
                                                  Storyboard.TargetProperty="Opacity"
                                                  From="1"
                                                  To="0"

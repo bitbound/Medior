@@ -15,6 +15,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
@@ -24,25 +25,30 @@ namespace Medior.ViewModels
     public interface IScreenshotViewModel
     {
         ICommand CaptureCommand { get; }
+        ICommand CopyImageCommand { get; }
+        ICommand CopyViewUrlCommand { get; }
         ImageSource? CurrentImage { get; }
+        string? ImageViewUrl { get; set; }
         ICommand ShareCommand { get; }
     }
     public class ScreenshotViewModel : ObservableObjectEx, IScreenshotViewModel
     {
-        private readonly RecyclableMemoryStreamManager _streamManager = new();
+        private readonly IApiService _apiService;
         private readonly IDialogService _dialogService;
+        private readonly ILogger<ScreenshotViewModel> _logger;
         private readonly IMessenger _messenger;
         private readonly ICapturePicker _picker;
+        private readonly ISettings _settings;
         private readonly IWindowService _windowService;
-        private readonly IApiService _apiService;
-        private readonly ILogger<ScreenshotViewModel> _logger;
+        private Bitmap? _currentBitmap;
 
         public ScreenshotViewModel(
-            ICapturePicker picker, 
+                    ICapturePicker picker, 
             IDialogService dialogService, 
             IMessenger messenger,
             IApiService apiService,
             IWindowService windowService,
+            ISettings settings,
             ILogger<ScreenshotViewModel> logger)
         {
             _picker = picker;
@@ -51,26 +57,36 @@ namespace Medior.ViewModels
             _windowService = windowService;
             _apiService = apiService;
             _logger = logger;
+            _settings = settings;
             CaptureCommand = new AsyncRelayCommand(Capture);
             ShareCommand = new AsyncRelayCommand(Share);
+            CopyViewUrlCommand = new RelayCommand(CopyUrl);
+            CopyImageCommand = new RelayCommand(CopyImage);
 
             _messenger.Register<PrintScreenInvokedMessage>(this, HandlePrintScreenInvoked);
         }
 
         public ICommand CaptureCommand { get; }
 
+        public ICommand CopyImageCommand { get; }
+
+        public ICommand CopyViewUrlCommand { get; }
+
         public ImageSource? CurrentImage
         {
             get => Get<ImageSource>();
             set => Set(value);
         }
-
-        private Bitmap? _currentBitmap;
+        public string? ImageViewUrl
+        {
+            get => Get<string>();
+            set => Set(value);
+        }
 
         public ICommand ShareCommand { get; }
-
-        public async Task Capture()
+        private async Task Capture()
         {
+            ImageViewUrl = null;
             _currentBitmap?.Dispose();
 
             var result = _picker.GetScreenCapture();
@@ -90,9 +106,29 @@ namespace Medior.ViewModels
             _currentBitmap = result.Value;
 
             _windowService.ShowMainWindow();
+
+            System.Windows.Forms.Clipboard.SetImage(_currentBitmap);
+            _messenger.Send(new ToastMessage("Copied to clipboard", ToastType.Success));
         }
 
-        public async Task Share()
+        private void CopyImage()
+        {
+            System.Windows.Forms.Clipboard.SetImage(_currentBitmap);
+            _messenger.Send(new ToastMessage("Copied to clipboard", ToastType.Success));
+        }
+
+        private void CopyUrl()
+        {
+            System.Windows.Forms.Clipboard.SetText(ImageViewUrl);
+            _messenger.Send(new ToastMessage("Copied to clipboard", ToastType.Success));
+        }
+
+        private async void HandlePrintScreenInvoked(object recipient, PrintScreenInvokedMessage message)
+        {
+            await Capture();
+        }
+
+        private async Task Share()
         {
             try
             {
@@ -102,9 +138,31 @@ namespace Medior.ViewModels
                     return;
                 }
 
-                using var ms = _streamManager.GetStream();
-                _currentBitmap.Save(ms, ImageFormat.Jpeg);
-                var result = await _apiService.UploadFile(ms.ToArray());
+                _messenger.Send(new LoaderUpdate()
+                {
+                    IsShown = true,
+                    Text = "Uploading image",
+                    Type = LoaderType.Progress
+                });
+
+                using var fileStream = new ReactiveStream();
+                _currentBitmap.Save(fileStream, ImageFormat.Jpeg);
+
+                var totalSize = fileStream.Length;
+                fileStream.Seek(0, System.IO.SeekOrigin.Begin);
+
+                fileStream.TotalBytesReadChanged += (sender, read) =>
+                {
+                    _messenger.Send(new LoaderUpdate()
+                    {
+                        IsShown = true,
+                        Text = "Uploading image",
+                        Type = LoaderType.Progress,
+                        LoaderProgress = (double)read / totalSize
+                    });
+                };
+                
+                var result = await _apiService.UploadFile(fileStream, "Medior_Screenshot.jpg");
 
                 if (!result.IsSuccess)
                 {
@@ -112,16 +170,16 @@ namespace Medior.ViewModels
                     return;
                 }
 
+                ImageViewUrl = $"{_settings.ServerUri}/api/file/{result.Value!.Id}";
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error while sharing file.");
             }
-        }
-
-        private async void HandlePrintScreenInvoked(object recipient, PrintScreenInvokedMessage message)
-        {
-            await Capture();
+            finally
+            {
+                _messenger.Send(new LoaderUpdate());
+            }
         }
     }
 }

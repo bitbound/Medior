@@ -8,6 +8,7 @@
              mc:Ignorable="d" 
              DataContext="{x:Static vm:ViewModelLocator.AboutViewModel}"
              d:DesignHeight="450" d:DesignWidth="800">
+    
     <StackPanel>
         <TextBlock Style="{StaticResource LargeTitle}">
             About
@@ -18,11 +19,30 @@
             <Run Text="{Binding Version, Mode=OneWay}" />
         </TextBlock>
 
+        <TextBlock Text="Copyright (c) Jared Goodwin.  All rights reserved." Style="{StaticResource ThemeText}" />
+
+        <Separator Height="10" Opacity="0" />
+
+        <TextBlock Style="{StaticResource ThemeText}">
+                <Run>Main icon made by</Run>
+                <Hyperlink NavigateUri="https://www.flaticon.com/authors/nikita-golubev" Click="Hyperlink_Click">
+                    Nikita Golubev
+                </Hyperlink>
+                <Run>from</Run>
+                <Hyperlink NavigateUri="https://www.flaticon.com/" Click="Hyperlink_Click">
+                    www.flaticon.com
+                </Hyperlink>
+        </TextBlock>
+
+        <Separator Height="10" Opacity="0" />
+        
         <Button Content="Show Logs"
                 HorizontalAlignment="Left"
                 Command="{Binding OpenLogsFolder}" />
 
-        <StackPanel Margin="0,20,0,0">
+        <Separator Height="10" Opacity="0" />
+
+        <StackPanel>
             <TextBlock Style="{StaticResource MediumTitle}" Foreground="{StaticResource MahApps.Brushes.Accent2}">
                 Module Details
             </TextBlock>

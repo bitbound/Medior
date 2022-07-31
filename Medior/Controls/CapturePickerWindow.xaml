@@ -22,7 +22,7 @@
     <Grid x:Name="MainGrid" Margin="0">
         <Path x:Name="OuterPath"
               Fill="Black" 
-              Opacity="0.8"
+              Opacity="0.6"
               HorizontalAlignment="Stretch"
               VerticalAlignment="Stretch">
             <Path.Data>

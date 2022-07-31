@@ -16,7 +16,6 @@ namespace Medior.Models.Messages
 
     public enum LoaderType
     {
-        Unknown,
         Message,
         Progress
     }

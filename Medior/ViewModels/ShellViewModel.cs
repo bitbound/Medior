@@ -43,37 +43,6 @@ namespace Medior.ViewModels
 
             _messenger.Register<PrintScreenInvokedMessage>(this, HandlePrintScreenInvoked);
             _messenger.Register<LoaderUpdate>(this, HandleLoaderUpdate);
-
-            _ = Task.Run(async () =>
-            {
-                while (true)
-                {
-                    await Task.Delay(1000);
-                    _messenger.Send(new ToastMessage()
-                    {
-                        Message = "Something happened",
-                        Type = ToastType.Information
-                    });
-                    await Task.Delay(5000);
-                    _messenger.Send(new ToastMessage()
-                    {
-                        Message = "Something happened",
-                        Type = ToastType.Warning
-                    });
-                    await Task.Delay(5000);
-                    _messenger.Send(new ToastMessage()
-                    {
-                        Message = "Something happened",
-                        Type = ToastType.Error
-                    });
-                    await Task.Delay(5000);
-                    _messenger.Send(new ToastMessage()
-                    {
-                        Message = "Something happened",
-                        Type = ToastType.Success
-                    });
-                }
-            });
         }
 
         public ObservableCollectionEx<AppModule> AppModules { get; } = new();

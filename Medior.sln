@@ -8,13 +8,16 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{332081CD-0E21-4DDC-81DC-E44B90572F15}"
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
+		.gitignore = .gitignore
+		LICENSE.txt = LICENSE.txt
+		README.md = README.md
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Medior.Web.Server", "Medior.Web\Server\Medior.Web.Server.csproj", "{EF4EFAE7-B453-4C1C-8491-CF7B0CA5F7A1}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Medior.Web.Client", "Medior.Web\Client\Medior.Web.Client.csproj", "{2207FEF7-32A3-49D0-AEEC-290A2130FD4E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Medior.Shared", "Medior.Shared\Medior.Shared.csproj", "{79AE7ABA-46B7-4A6A-BBA7-9A3CA6DE8A83}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Medior.Shared", "Medior.Shared\Medior.Shared.csproj", "{79AE7ABA-46B7-4A6A-BBA7-9A3CA6DE8A83}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

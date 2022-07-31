@@ -1,8 +1,10 @@
-﻿using Medior.Shared.Entities;
+﻿using Medior.Reactive;
+using Medior.Shared.Entities;
 using Medior.Utilities;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Json;
@@ -13,7 +15,8 @@ namespace Medior.Services
 {
     public interface IApiService
     {
-        Task<Result<UploadedFile>> UploadFile(byte[] fileBytes);
+        Task<Result<UploadedFile>> UploadFile(byte[] fileBytes, string fileName);
+        Task<Result<UploadedFile>> UploadFile(Stream fileStream, string fileName);
     }
     public class ApiService : IApiService
     {
@@ -31,7 +34,12 @@ namespace Medior.Services
             _logger = logger;
         }
 
-        public async Task<Result<UploadedFile>> UploadFile(byte[] fileBytes)
+        public Task<Result<UploadedFile>> UploadFile(byte[] fileBytes, string fileName)
+        {
+            return UploadFile(new MemoryStream(fileBytes), fileName);
+        }
+
+        public async Task<Result<UploadedFile>> UploadFile(Stream fileStream, string fileName)
         {
             try
             {
@@ -39,8 +47,8 @@ namespace Medior.Services
                 var serverUri = _settings.ServerUri;
 
                 var multiContent = new MultipartFormDataContent();
-                var byteContent = new ByteArrayContent(fileBytes);
-                multiContent.Add(byteContent, "file", "Medior_Upload.jpg");
+                var byteContent = new StreamContent(fileStream);
+                multiContent.Add(byteContent, "file", fileName);
 
                 var response = await client.PostAsync($"{serverUri}/api/file", multiContent);
                 response.EnsureSuccessStatusCode();
