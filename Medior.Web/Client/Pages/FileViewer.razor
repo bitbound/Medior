@@ -1,0 +1,191 @@
+﻿@page "/media-viewer/{fileId?}"
+@using Medior.Shared.Interfaces
+@inject NavigationManager NavManager
+@inject HttpClient HttpClient
+@inject ILogger<FileViewer> Logger
+@inject IApiService ApiService
+@inject IToastService ToastService
+@inject ILoaderService LoaderService
+@inject IServerUriProvider ServerUriProvider
+
+<h3>Media Viewer</h3>
+
+@if (FileId is null)
+{
+    <div class="row mt-5">
+        <div class="col-md-8 col-lg-6">
+            <div class="input-group mb-2">
+                <input type="text" class="form-control" placeholder="Enter a file ID to view it"
+                   @bind="_inputFileId"
+                   @bind:event="oninput"
+                   @onkeydown="EvaluateFileIdInputKeyDown">
+                <div class="input-group-append">
+                    <button class="btn btn-primary" @onclick="NavigateToFileId">Go</button>
+                </div>
+            </div>
+
+            <div class="mt-5">
+                <label class="form-label">
+                    Upload New Media
+                </label>
+                <br />
+                <FileUploadButton Multiple="false" OnFilesChanged="HandleFilesChanged" ClassNames="btn btn-primary">
+                    Upload
+                </FileUploadButton>
+            </div>
+        </div>
+    </div>
+}
+else
+{
+    <div class="row mt-5">
+        <div class="col-12">
+            @if (_viewType == ViewType.NotFound)
+            {
+                <h3>File not found.</h3>
+            }
+            else if (_viewType == ViewType.InvalidFileType)
+            {
+                <h3>
+                    Unsupported file type.
+                </h3>
+                <p>
+                    You can download it 
+                    <a target="_blank" href="@(ServerUriProvider.ServerUri)/api/file/@FileId">here</a>.
+                </p>
+            }
+            else if (_viewType == ViewType.Image)
+            {
+                <img class="img-fluid" src="/api/file/@FileId" />
+            }
+            else if (_viewType == ViewType.Video)
+            {
+                <video src="/api/file/@FileId" controls autoplay />
+            }
+        </div>
+    </div>
+}
+
+@code {
+    private string? _inputFileId;
+    private ViewType _viewType;
+
+    [Parameter]
+    public string? FileId { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await TryLoadFile();
+
+        await base.OnInitializedAsync();
+    }
+
+    private void EvaluateFileIdInputKeyDown(KeyboardEventArgs args)
+    {
+        if (args.Key.Equals("Enter", StringComparison.OrdinalIgnoreCase))
+        {
+            NavigateToFileId(_inputFileId ?? string.Empty);
+        }
+    }
+
+    private async Task HandleFilesChanged(InputFileChangeEventArgs args)
+    {
+        try
+        {
+            using var _ = LoaderService.Show("Uploading file");
+
+            using var stream = args.File.OpenReadStream(100_000_000);
+            var result = await ApiService.UploadFile(stream, args.File.Name);
+            if (!result.IsSuccess)
+            {
+                ToastService.Show("Upload failed", ToastType.Error);
+                return;
+            }
+
+            FileId = $"{result.Value}";
+            ToastService.Show("Upload succeeded", ToastType.Success);
+            NavigateToFileId($"{result.Value?.Id}");
+            await TryLoadFile();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error while retrieving file details.");
+        }
+    }
+
+    private void NavigateToFileId()
+    {
+        NavigateToFileId(_inputFileId ?? string.Empty);
+    }
+
+    private void NavigateToFileId(string fileId)
+    {
+        NavManager.NavigateTo($"/media-viewer/{fileId}");
+    }
+
+    private async Task TryLoadFile()
+    {
+        try
+        {
+            if (string.IsNullOrWhiteSpace(FileId))
+            {
+                return;
+            }
+
+            _viewType = ViewType.NotFound;
+
+            using var response = await ApiService.GetFileHeaders(FileId);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                Logger.LogWarning("Received status code {code}.", response.StatusCode);
+                _viewType = ViewType.NotFound;
+                return;
+            }
+            if (!response.Content.Headers.TryGetValues("Content-Type", out var contentTypes))
+            {
+                Logger.LogWarning("Content-Type header was not found.");
+                _viewType = ViewType.NotFound;
+                return;
+            }
+
+            var contentType = contentTypes.FirstOrDefault();
+            if (string.IsNullOrWhiteSpace(contentType))
+            {
+                Logger.LogWarning("Content-Type was empty.");
+                _viewType = ViewType.NotFound;
+                return;
+            }
+
+            Logger.LogInformation("Found content type {type}.", contentType);
+
+            if (contentType.StartsWith("image", StringComparison.OrdinalIgnoreCase))
+            {
+                _viewType = ViewType.Image;
+                return;
+            }
+
+            if (contentType.StartsWith("video", StringComparison.OrdinalIgnoreCase))
+            {
+                _viewType = ViewType.Video;
+                return;
+            }
+
+            _viewType = ViewType.InvalidFileType;
+        }
+        catch (Exception ex)
+        {
+            ToastService.Show("An error occurred", ToastType.Error);
+            Logger.LogError(ex, "Error while retrieving file details.");
+        }
+    }
+
+    private enum ViewType
+    {
+        Unknown,
+        NotFound,
+        InvalidFileType,
+        Image,
+        Video
+    }
+}

@@ -1,0 +1,40 @@
+﻿@inject ILoaderService LoaderService
+
+@if (_isShown)
+{
+    <div class="loader-frame">
+        <div class="loader-inner-frame">
+            <h2>
+                @_message
+            </h2>
+            <div class="signal"></div>
+        </div>
+    </div>
+
+}
+
+@code {
+    private bool _isShown;
+    private string _message = string.Empty;
+
+    protected override void OnInitialized()
+    {
+        LoaderService.LoaderShown += LoaderShown;
+        LoaderService.LoaderHidden += LoaderHidden;
+        base.OnInitialized();
+    }
+
+    private async void LoaderShown(object? sender, string message)
+    {
+        _message = message;
+        _isShown = true;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async void LoaderHidden(object? sender, EventArgs eventArgs)
+    {
+        _isShown = false;
+        _message = string.Empty;
+        await InvokeAsync(StateHasChanged);
+    }
+}

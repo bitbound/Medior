@@ -1,4 +1,4 @@
-﻿using Medior.Utilities;
+﻿using Medior.Shared;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Diagnostics;

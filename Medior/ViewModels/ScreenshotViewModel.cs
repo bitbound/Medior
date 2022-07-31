@@ -1,8 +1,8 @@
 ﻿using Medior.Extensions;
 using Medior.Models.Messages;
 using Medior.Reactive;
-using Medior.Services;
 using Medior.Services.ScreenCapture;
+using Medior.Shared.Services;
 using Microsoft.Extensions.Logging;
 using Microsoft.IO;
 using Microsoft.Toolkit.Mvvm.Input;
@@ -170,7 +170,7 @@ namespace Medior.ViewModels
                     return;
                 }
 
-                ImageViewUrl = $"{_settings.ServerUri}/api/file/{result.Value!.Id}";
+                ImageViewUrl = $"{_settings.ServerUri}/media-viewer/{result.Value!.Id}";
             }
             catch (Exception ex)
             {

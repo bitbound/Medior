@@ -1,6 +1,6 @@
-﻿using Medior.Reactive;
+﻿using Medior.Shared;
 using Medior.Shared.Entities;
-using Medior.Utilities;
+using Medior.Shared.Interfaces;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -11,27 +11,35 @@ using System.Net.Http.Json;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Medior.Services
+namespace Medior.Shared.Services
 {
     public interface IApiService
     {
         Task<Result<UploadedFile>> UploadFile(byte[] fileBytes, string fileName);
         Task<Result<UploadedFile>> UploadFile(Stream fileStream, string fileName);
+        Task<HttpResponseMessage> GetFileHeaders(string fileId);
     }
     public class ApiService : IApiService
     {
         private readonly IHttpClientFactory _clientFactory;
-        private readonly ISettings _settings;
+        private readonly IServerUriProvider _uriProvider;
         private readonly ILogger<ApiService> _logger;
 
         public ApiService(
-            IHttpClientFactory clientFactory, 
-            ISettings settings,
+            IHttpClientFactory clientFactory,
+            IServerUriProvider uriProvider,
             ILogger<ApiService> logger)
         {
             _clientFactory = clientFactory;
-            _settings = settings;
+            _uriProvider = uriProvider;
             _logger = logger;
+        }
+
+        public async Task<HttpResponseMessage> GetFileHeaders(string fileId)
+        {
+            using var client = _clientFactory.CreateClient();
+            using var request = new HttpRequestMessage(HttpMethod.Head, $"{_uriProvider.ServerUri}/api/file/{fileId}");
+            return await client.SendAsync(request);
         }
 
         public Task<Result<UploadedFile>> UploadFile(byte[] fileBytes, string fileName)
@@ -44,7 +52,7 @@ namespace Medior.Services
             try
             {
                 using var client = _clientFactory.CreateClient();
-                var serverUri = _settings.ServerUri;
+                var serverUri = _uriProvider.ServerUri;
 
                 var multiContent = new MultipartFormDataContent();
                 var byteContent = new StreamContent(fileStream);

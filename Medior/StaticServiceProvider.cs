@@ -9,12 +9,13 @@ using System.Net.Http;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Medior.Services;
 using MahApps.Metro.IconPacks;
 using Medior.Extensions;
 using Medior.Views;
 using Medior.Services.ScreenCapture;
 using Microsoft.Toolkit.Mvvm.Messaging;
+using Medior.Shared.Interfaces;
+using Medior.Shared.Services;
 
 namespace Medior
 {
@@ -55,6 +56,7 @@ namespace Medior
                 services.AddSingleton<IEnvironmentHelper, EnvironmentHelper>();
                 services.AddSingleton(services => DialogCoordinator.Instance);
                 services.AddSingleton<ISettings, Settings>();
+                services.AddSingleton<IServerUriProvider>(services => services.GetRequiredService<ISettings>());
                 services.AddSingleton<IMessenger>(WeakReferenceMessenger.Default);
                 services.AddSingleton<IThemeSetter, ThemeSetter>();
                 services.AddSingleton<IWindowService, WindowService>();

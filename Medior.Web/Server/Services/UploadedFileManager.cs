@@ -1,4 +1,5 @@
-﻿using Medior.Shared.Entities;
+﻿using Medior.Shared;
+using Medior.Shared.Entities;
 using Medior.Web.Server.Data;
 using Medior.Web.Server.Models;
 
@@ -9,7 +10,8 @@ namespace Medior.Web.Server.Services
         Task<RetrievedFile> Load(Guid fileId);
 
         Task<UploadedFile> Save(IFormFile uploadedFile);
-        Task Delete(string id);
+        Task Delete(Guid id);
+        Task<Result<UploadedFile>> GetData(Guid id);
     }
     public class UploadedFileManager : IUploadedFileManager
     {
@@ -29,31 +31,27 @@ namespace Medior.Web.Server.Services
             _appData = Directory.CreateDirectory(Path.Combine(_hostEnv.ContentRootPath, "App_Data")).FullName;
         }
 
-        public async Task Delete(string id)
+        public async Task Delete(Guid id)
         {
-            if (!Guid.TryParse(id, out var idResult))
+            var savedFile = await _appDb.UploadedFiles.FindAsync(id);
+
+            if (savedFile is null)
             {
                 return;
             }
 
-            var savedFile = await _appDb.UploadedFiles.FindAsync(idResult);
-
-            if (savedFile is not null)
-            {
-                _appDb.UploadedFiles.Remove(savedFile);
-                await _appDb.SaveChangesAsync();
-            }
+            _appDb.UploadedFiles.Remove(savedFile);
+            await _appDb.SaveChangesAsync();
 
             try
             {
-                if (Directory.Exists(_appData))
+                var filePath = Path.Combine(_appData, $"{savedFile.Id}{Path.GetExtension(savedFile.FileName)}");
+                if (!File.Exists(filePath))
                 {
-                    var fsFile = Directory.EnumerateFiles(_appData).FirstOrDefault(x => x.Contains(id));
-                    if (fsFile is not null)
-                    {
-                        File.Delete(fsFile);
-                    }
+                    return;
                 }
+
+                File.Delete(filePath);
             }
             catch (Exception ex)
             {
@@ -62,6 +60,16 @@ namespace Medior.Web.Server.Services
 
         }
 
+        public async Task<Result<UploadedFile>> GetData(Guid id)
+        {
+            var uploadedFile = await _appDb.UploadedFiles.FindAsync(id);
+
+            if (uploadedFile is null)
+            {
+                return Result.Fail<UploadedFile>("File not found.");
+            }
+            return Result.Ok(uploadedFile);
+        }
         public async Task<RetrievedFile> Load(Guid fileId)
         {
             var savedFile = await _appDb.UploadedFiles.FindAsync(fileId);

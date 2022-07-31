@@ -72,9 +72,9 @@
             </mah:HamburgerMenu.ContentTemplate>
         </mah:HamburgerMenu>
 
-        <Grid Background="{StaticResource MahApps.Brushes.SemiTransparent}" Visibility="{Binding IsLoaderVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
+        <Grid Background="#99000000" Visibility="{Binding IsLoaderVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
             <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                <TextBlock Text="{Binding LoaderText}" Style="{StaticResource LargeTitle}" />
+                <TextBlock Text="{Binding LoaderText}" FontSize="18" Foreground="White" />
 
                 <ProgressBar Value="{Binding LoaderProgress}"
                              Maximum="1"

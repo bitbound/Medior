@@ -1,7 +1,8 @@
 ﻿using Medior.Models;
 using Medior.Native;
 using Medior.Reactive;
-using Medior.Utilities;
+using Medior.Shared;
+using Medior.Shared.Interfaces;
 using Medior.ViewModels;
 using Microsoft.Extensions.Logging;
 using System;
@@ -19,10 +20,9 @@ using System.Threading.Tasks;
 
 namespace Medior.Services
 {
-    public interface ISettings
+    public interface ISettings: IServerUriProvider
     {
         bool HandlePrintScreen { get; set; }
-        string ServerUri { get; set; }
         bool StartAtLogon { get; set; }
         AppTheme Theme { get; set; }
         Task Save();
