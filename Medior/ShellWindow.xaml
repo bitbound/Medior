@@ -87,5 +87,6 @@
                     ConverterParameter={x:Static messages:LoaderType.Message}}" />
             </StackPanel>
         </Grid>
+        <controls:ToastsHarness VerticalAlignment="Bottom" HorizontalAlignment="Right" />
     </Grid>
 </mah:MetroWindow>

@@ -2,6 +2,7 @@
 using Medior.Interfaces;
 using Medior.Native;
 using Medior.Services;
+using Medior.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
@@ -36,7 +37,7 @@ namespace Medior
         private async void Application_DispatcherUnhandledException(object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e)
         {
             e.Handled = true;
-            await _dialogCoordinator.ShowMessageAsync(this,
+            await _dialogCoordinator.ShowMessageAsync(ViewModelLocator.ShellWindowViewModel,
               "Oh darn.  An error.",
               $"Here's what it said:\n\n{e.Exception.Message}",
               MessageDialogStyle.Affirmative);

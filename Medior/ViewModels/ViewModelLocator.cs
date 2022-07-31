@@ -13,5 +13,6 @@ namespace Medior.ViewModels
         public static IScreenshotViewModel ScreenshotViewModel => StaticServiceProvider.Instance.GetRequiredService<IScreenshotViewModel>();
         public static ISettingsViewModel SettingsViewModel => StaticServiceProvider.Instance.GetRequiredService<ISettingsViewModel>();
         public static IShellViewModel ShellWindowViewModel => StaticServiceProvider.Instance.GetRequiredService<IShellViewModel>();
+        public static IToastsViewModel ToastsViewModel => StaticServiceProvider.Instance.GetRequiredService<IToastsViewModel>();
     }
 }

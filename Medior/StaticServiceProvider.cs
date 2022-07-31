@@ -40,6 +40,7 @@ namespace Medior
                 services.AddSingleton<IAppStartup, AppStartup>();
                 services.AddSingleton<IShellViewModel, ShellViewModel>();
                 services.AddSingleton<ISettingsViewModel, SettingsViewModel>();
+                services.AddSingleton<IToastsViewModel, ToastsViewModel>();
                 services.AddSingleton<IAboutViewModel, AboutViewModel>();
 
                 services.AddAppModule<HomeView>("Home", PackIconOcticonsKind.Home);
@@ -50,6 +51,7 @@ namespace Medior
                 services.AddSingleton<IDialogService, DialogService>();
                 services.AddSingleton<ITrayService, TrayService>();
                 services.AddSingleton<IApiService, ApiService>();
+                services.AddSingleton<IUiDispatcher, UiDispatcher>();
                 services.AddSingleton<IEnvironmentHelper, EnvironmentHelper>();
                 services.AddSingleton(services => DialogCoordinator.Instance);
                 services.AddSingleton<ISettings, Settings>();
