@@ -36,11 +36,11 @@ namespace Medior.Web.Server.Services
                 return;
             }
 
-            var savedFile = await _appDb.SavedFiles.FindAsync(idResult);
+            var savedFile = await _appDb.UploadedFiles.FindAsync(idResult);
 
             if (savedFile is not null)
             {
-                _appDb.SavedFiles.Remove(savedFile);
+                _appDb.UploadedFiles.Remove(savedFile);
                 await _appDb.SaveChangesAsync();
             }
 
@@ -64,7 +64,7 @@ namespace Medior.Web.Server.Services
 
         public async Task<RetrievedFile> Load(Guid fileId)
         {
-            var savedFile = await _appDb.SavedFiles.FindAsync(fileId);
+            var savedFile = await _appDb.UploadedFiles.FindAsync(fileId);
 
             if (savedFile is null)
             {
@@ -90,23 +90,22 @@ namespace Medior.Web.Server.Services
 
         public async Task<UploadedFile> Save(IFormFile uploadedFile)
         {
-            var savedFile = new UploadedFile()
+            var uploadEntity = new UploadedFile()
             {
                 FileName = uploadedFile.FileName,
                 UploadedAt = DateTimeOffset.Now,
                 ContentDisposition = uploadedFile.ContentDisposition,
-                ContentType = uploadedFile.ContentType,
                 FileSize = uploadedFile.Length
             };
 
-            _appDb.SavedFiles.Add(savedFile);
+            _appDb.UploadedFiles.Add(uploadEntity);
             await _appDb.SaveChangesAsync();
 
-            var filePath = Path.Combine(_appData, $"{savedFile.Id}{Path.GetExtension(savedFile.FileName)}");
+            var filePath = Path.Combine(_appData, $"{uploadEntity.Id}{Path.GetExtension(uploadEntity.FileName)}");
             using var fs = new FileStream(filePath, FileMode.Create);
             await uploadedFile.CopyToAsync(fs);
 
-            return savedFile;
+            return uploadEntity;
 
         }
     }

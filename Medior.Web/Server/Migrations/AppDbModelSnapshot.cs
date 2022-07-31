@@ -27,10 +27,6 @@ namespace Medior.Web.Server.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("ContentType")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
                     b.Property<string>("FileName")
                         .IsRequired()
                         .HasColumnType("TEXT");
@@ -44,7 +40,7 @@ namespace Medior.Web.Server.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("SavedFiles");
+                    b.ToTable("UploadedFiles");
                 });
 #pragma warning restore 612, 618
         }

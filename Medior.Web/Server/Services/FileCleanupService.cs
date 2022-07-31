@@ -53,8 +53,8 @@ namespace Medior.Web.Server.Services
 
                 var expirationDate = DateTimeOffset.Now - TimeSpan.FromDays(appSettings.FileRetentionDays);
 
-                var expiredFiles = appDb.SavedFiles.Where(x => x.UploadedAt < expirationDate);
-                appDb.SavedFiles.RemoveRange(expiredFiles);
+                var expiredFiles = appDb.UploadedFiles.Where(x => x.UploadedAt < expirationDate);
+                appDb.UploadedFiles.RemoveRange(expiredFiles);
                 appDb.SaveChanges();
 
                 foreach (var file in Directory.EnumerateFiles(appData))
@@ -75,7 +75,7 @@ namespace Medior.Web.Server.Services
                         }
 
                         // Delete file if it doesn't exist in the DB anymore.
-                        if (!appDb.SavedFiles.Any(x => x.Id == fileGuid))
+                        if (!appDb.UploadedFiles.Any(x => x.Id == fileGuid))
                         {
                             File.Delete(file);
                             continue;

@@ -11,11 +11,9 @@ namespace Medior.Shared.Entities
     {
         public string ContentDisposition { get; init; } = string.Empty;
 
-        public string ContentType { get; init; } = string.Empty;
-
         public string FileName { get; init; } = string.Empty;
 
-        public long FileSize { get; set; }
+        public long FileSize { get; init; }
 
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public Guid Id { get; init; }

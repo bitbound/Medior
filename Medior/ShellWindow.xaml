@@ -11,6 +11,7 @@
         xmlns:models="clr-namespace:Medior.Models"
         xmlns:views="clr-namespace:Medior.Views"
         xmlns:icons="http://metro.mahapps.com/winfx/xaml/iconpacks"
+        xmlns:messages="clr-namespace:Medior.Models.Messages"
         mc:Ignorable="d"
         Title="Medior" Height="600" Width="1000" TitleCharacterCasing="Normal"
         ResizeMode="CanResizeWithGrip"
@@ -74,7 +75,16 @@
         <Grid Background="{StaticResource MahApps.Brushes.SemiTransparent}" Visibility="{Binding IsLoaderVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
             <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
                 <TextBlock Text="{Binding LoaderText}" Style="{StaticResource LargeTitle}" />
-                <mah:ProgressRing />
+
+                <ProgressBar Value="{Binding LoaderProgress}"
+                             Maximum="1"
+                             Visibility="{Binding LoaderType,
+                    Converter={StaticResource ValueEqualsParameterVisibilityConverter},
+                    ConverterParameter={x:Static messages:LoaderType.Progress}}" />
+
+                <mah:ProgressRing Visibility="{Binding LoaderType,
+                    Converter={StaticResource ValueEqualsParameterVisibilityConverter},
+                    ConverterParameter={x:Static messages:LoaderType.Message}}" />
             </StackPanel>
         </Grid>
     </Grid>

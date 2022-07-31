@@ -13,7 +13,7 @@ namespace Medior.Web.Server.Data
         }
 
 #nullable disable
-        public DbSet<UploadedFile> SavedFiles { get; set; }
+        public DbSet<UploadedFile> UploadedFiles { get; set; }
 
 #nullable enable
 

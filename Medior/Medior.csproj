@@ -39,4 +39,8 @@
     <PackageReference Include="SharpDX.DXGI" Version="4.2.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Medior.Shared\Medior.Shared.csproj" />
+  </ItemGroup>
+
 </Project>

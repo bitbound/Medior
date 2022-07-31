@@ -49,6 +49,8 @@ namespace Medior
                 services.AddSingleton<ISystemTime, SystemTime>();
                 services.AddSingleton<IDialogService, DialogService>();
                 services.AddSingleton<ITrayService, TrayService>();
+                services.AddSingleton<IApiService, ApiService>();
+                services.AddSingleton<IEnvironmentHelper, EnvironmentHelper>();
                 services.AddSingleton(services => DialogCoordinator.Instance);
                 services.AddSingleton<ISettings, Settings>();
                 services.AddSingleton<IMessenger>(WeakReferenceMessenger.Default);

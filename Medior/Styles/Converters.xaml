@@ -4,4 +4,5 @@
     
     <converters:ValueEqualsParameterConverter x:Key="ValueEqualsParameterConverter" />
     <converters:NullToVisibilityConverter x:Key="NullToVisibilityConverter" />
+    <converters:ValueEqualsParameterVisibilityConverter x:Key="ValueEqualsParameterVisibilityConverter" />
 </ResourceDictionary>

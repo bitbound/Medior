@@ -1,4 +1,5 @@
-﻿using Medior.Interfaces;
+﻿using MahApps.Metro.Controls.Dialogs;
+using Medior.Interfaces;
 using Medior.Native;
 using Medior.Services;
 using Microsoft.Extensions.DependencyInjection;
@@ -19,6 +20,7 @@ namespace Medior
     public partial class App : Application
     {
         private readonly CancellationTokenSource _cts = new();
+        private readonly DialogCoordinator _dialogCoordinator = new();
 
         private void Application_Startup(object sender, StartupEventArgs e)
         {
@@ -31,15 +33,13 @@ namespace Medior
             _cts.Cancel();
         }
 
-        private void Application_DispatcherUnhandledException(object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e)
+        private async void Application_DispatcherUnhandledException(object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e)
         {
             e.Handled = true;
-            MessageBox.Show("There was an unhandled error.\n\n" +
-                $"Error: {e.Exception.Message}\n\n" +
-                $"Stack Trace: {e.Exception.StackTrace}",
-                "Unhandled Error",
-                MessageBoxButton.OK,
-                MessageBoxImage.Error);
+            await _dialogCoordinator.ShowMessageAsync(this,
+              "Oh darn.  An error.",
+              $"Here's what it said:\n\n{e.Exception.Message}",
+              MessageDialogStyle.Affirmative);
         }
     }
 }

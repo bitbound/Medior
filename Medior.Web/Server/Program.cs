@@ -15,6 +15,7 @@ builder.Services.AddRazorPages();
 builder.Services.AddHostedService<FileCleanupService>();
 
 builder.Services.AddSingleton<IAppSettings, AppSettings>();
+builder.Services.AddScoped<IUploadedFileManager, UploadedFileManager>();
 
 var app = builder.Build();
 

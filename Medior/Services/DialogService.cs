@@ -13,7 +13,7 @@ namespace Medior.Services
         Task<TDialog> GetCurrentDialogAsync<TDialog>() where TDialog : BaseMetroDialog;
         Task HideMetroDialogAsync(BaseMetroDialog dialog, MetroDialogSettings? settings = null);
         Task<MessageDialogResult> ShowError(Exception ex);
-
+        Task<MessageDialogResult> ShowError(string message);
         Task<string> ShowInputAsync(string title, string message, MetroDialogSettings? settings = null);
         Task<LoginDialogData> ShowLoginAsync(string title, string message, LoginDialogSettings? settings = null);
         Task<MessageDialogResult> ShowMessageAsync(string title, string message, MessageDialogStyle style = MessageDialogStyle.Affirmative, MetroDialogSettings? settings = null);
@@ -50,6 +50,14 @@ namespace Medior.Services
             return _dialogCoordinator.ShowMessageAsync(_shellWindowVm, 
                 "Oh darn.  An error.", 
                 $"Here's what it said:\n\n{ex.Message}",
+                MessageDialogStyle.Affirmative);
+        }
+
+        public Task<MessageDialogResult> ShowError(string message)
+        {
+            return _dialogCoordinator.ShowMessageAsync(_shellWindowVm,
+                "Oh darn.  An error.",
+                $"Here's what it said:\n\n{message}",
                 MessageDialogStyle.Affirmative);
         }
 

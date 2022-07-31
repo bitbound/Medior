@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.IO;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
@@ -13,9 +14,10 @@ namespace Medior.Extensions
 {
     internal static class BitmapExtensions
     {
+        private static readonly RecyclableMemoryStreamManager _streamManager = new();
         public static BitmapImage ToBitmapImage(this Bitmap bitmap, ImageFormat imageFormat)
         {
-            using var ms = new MemoryStream();
+            using var ms = _streamManager.GetStream();
             bitmap.Save(ms, imageFormat);
             var bitmapImage = new BitmapImage();
             bitmapImage.BeginInit();

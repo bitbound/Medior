@@ -21,30 +21,30 @@ namespace Medior.Services
 {
     public interface ISettings
     {
-        AppTheme Theme { get; set; }
         bool HandlePrintScreen { get; set; }
-
+        string ServerUri { get; set; }
+        bool StartAtLogon { get; set; }
+        AppTheme Theme { get; set; }
         Task Save();
     }
     public class Settings : ISettings
     {
+        private readonly IEnvironmentHelper _environmentHelper;
         private readonly SemaphoreSlim _fileLock = new(1, 1);
         private readonly string _filePath = AppConstants.SettingsFilePath;
         private readonly IFileSystem _fileSystem;
         private readonly ILogger<Settings> _logger;
         private SettingsModel _settings = new();
 
-        public Settings(IFileSystem fileSystem, ILogger<Settings> logger)
+        public Settings(
+            IFileSystem fileSystem, 
+            IEnvironmentHelper environmentHelper,
+            ILogger<Settings> logger)
         {
             _fileSystem = fileSystem;
+            _environmentHelper = environmentHelper;
             _logger = logger;
             Load();
-        }
-
-        public AppTheme Theme
-        {
-            get => Get<AppTheme>();
-            set => Set(value);
         }
 
         public bool HandlePrintScreen
@@ -64,6 +64,37 @@ namespace Medior.Services
             }
         }
 
+        public string ServerUri
+        {
+            get
+            {
+                if (_environmentHelper.IsDebug)
+                {
+                    return "https://localhost:7162";
+                }
+                return Get<string>()?.TrimEnd('/') ?? "https://medior.app";
+            }
+            set
+            {
+                if (_environmentHelper.IsDebug)
+                {
+                    return;
+                }
+                Set(value);
+            }
+        }
+
+        public bool StartAtLogon
+        {
+            get => Get<bool>();
+            set => Set(value);
+        }
+
+        public AppTheme Theme
+        {
+            get => Get<AppTheme>();
+            set => Set(value);
+        }
         public async Task Save()
         {
             if (!await _fileLock.WaitAsync(0))
@@ -89,6 +120,18 @@ namespace Medior.Services
         }
 
 
+
+        private T? Get<T>([CallerMemberName] string propertyName = "", T? defaultValue = default)
+        {
+            var prop = _settings.GetType().GetProperty(propertyName);
+            var propValue = prop?.GetValue(_settings);
+            if (propValue is T typedValue)
+            {
+                return typedValue;
+            }
+
+            return defaultValue;
+        }
 
         private Result Load()
         {
@@ -123,18 +166,6 @@ namespace Medior.Services
             var prop = _settings.GetType().GetProperty(propertyName);
             prop?.SetValue(_settings, newValue);
             _ = Save();
-        }
-
-        private T? Get<T>([CallerMemberName] string propertyName = "", T? defaultValue = default)
-        {
-            var prop = _settings.GetType().GetProperty(propertyName);
-            var propValue = prop?.GetValue(_settings);
-            if (propValue is T typedValue)
-            {
-                return typedValue;
-            }
-
-            return defaultValue;
         }
     }
 }

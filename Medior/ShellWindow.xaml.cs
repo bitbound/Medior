@@ -32,7 +32,7 @@ namespace Medior
             InitializeComponent();
         }
 
-        public ShellViewModel? ViewModel => DataContext as ShellViewModel;
+        public IShellViewModel? ViewModel => DataContext as ShellViewModel;
 
         private void NavMenu_ItemInvoked(object sender, HamburgerMenuItemInvokedEventArgs args)
         {
