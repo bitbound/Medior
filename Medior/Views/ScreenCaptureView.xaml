@@ -50,6 +50,7 @@
                       LoadedBehavior="Play" 
                       Margin="10" 
                       SnapsToDevicePixels="True"
+                      Stretch="UniformToFill"
                       Visibility="{Binding CurrentRecording, Converter={StaticResource NullToVisibilityConverter}}" />
 
         <TextBlock Grid.Row="2" 

@@ -131,7 +131,8 @@ namespace Medior.Services.ScreenCapture
                 encodingProfile.Video.Width = (uint)captureArea.Width;
                 encodingProfile.Video.Height = (uint)captureArea.Height;
                 // Default 15_000_000.
-                encodingProfile.Video.Bitrate = 3_000_000;
+                encodingProfile.Video.Bitrate = 2_000_000;
+                encodingProfile.Video.FrameRate.Numerator = 10;
 
                 var transcoder = new MediaTranscoder
                 {
