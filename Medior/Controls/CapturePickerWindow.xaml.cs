@@ -12,6 +12,7 @@ using System.Windows;
 using System.Windows.Forms;
 using System.Windows.Input;
 using System.Windows.Interop;
+using System.Windows.Shell;
 using Rectangle = System.Drawing.Rectangle;
 
 namespace Medior.Controls
@@ -118,13 +119,18 @@ namespace Medior.Controls
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             _dpiScale = PresentationSource.FromVisual(this).CompositionTarget.TransformToDevice.M11;
+
             Width = SystemParameters.VirtualScreenWidth;
             Height = SystemParameters.VirtualScreenHeight;
             Left = SystemParameters.VirtualScreenLeft;
             Top = SystemParameters.VirtualScreenTop;
+
             MainGrid.Background = _backgroundImage?.ToImageBrush(ImageFormat.Png);
-            _ = FrameWindowUnderCursor();
+
             Activate();
+            HeaderHint.Visibility = Visibility.Visible;
+
+            _ = FrameWindowUnderCursor();
         }
         private void Window_MouseDown(object sender, MouseButtonEventArgs e)
         {

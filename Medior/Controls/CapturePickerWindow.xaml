@@ -14,8 +14,8 @@
         Loaded="Window_Loaded"  
         MouseUp="Window_MouseUp" 
         MouseMove="Window_MouseMove" 
-        MouseDown="Window_MouseDown" 
-        Background="Transparent"
+        MouseDown="Window_MouseDown"
+        Background="#02000000"
         AllowsTransparency="True"
         Cursor="Cross" 
         Padding="0">
@@ -37,6 +37,11 @@
             </Path.Data>
         </Path>
 
-        <TextBlock x:Name="HeaderLabel" Text="Draw a region or hold Ctrl to pick a window." HorizontalAlignment="Center" VerticalAlignment="Top" Style="{StaticResource LargeTitle}" />
+        <TextBlock x:Name="HeaderHint"
+                   Text="Draw a region or hold Ctrl to pick a window."
+                   HorizontalAlignment="Center" 
+                   VerticalAlignment="Top" 
+                   Style="{StaticResource LargeTitle}"
+                   Visibility="Collapsed"/>
     </Grid>
 </Window>
