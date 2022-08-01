@@ -27,12 +27,16 @@ namespace Medior.ViewModels
     public interface IScreenCaptureViewModel
     {
         ICommand CaptureCommand { get; }
-        ICommand RecordCommand { get; }
+        string? CaptureViewUrl { get; set; }
         ICommand CopyImageCommand { get; }
         ICommand CopyViewUrlCommand { get; }
         ImageSource? CurrentImage { get; }
-        string? CaptureViewUrl { get; set; }
+        Uri? CurrentRecording { get; }
+        bool IsHintTextVisible { get; }
+        bool IsRecordingInProgress { get; }
+        ICommand RecordCommand { get; }
         ICommand ShareCommand { get; }
+        ICommand StopVideoCaptureCommand { get; }
     }
     public class ScreenCaptureViewModel : ObservableObjectEx, IScreenCaptureViewModel
     {
@@ -44,9 +48,10 @@ namespace Medior.ViewModels
         private readonly ISettings _settings;
         private readonly IWindowService _windowService;
         private Bitmap? _currentBitmap;
+        private CancellationTokenSource? _recordingCts;
 
         public ScreenCaptureViewModel(
-                    ICapturePicker picker, 
+            ICapturePicker picker, 
             IDialogService dialogService, 
             IMessenger messenger,
             IApiService apiService,
@@ -66,13 +71,18 @@ namespace Medior.ViewModels
             ShareCommand = new AsyncRelayCommand(Share);
             CopyViewUrlCommand = new RelayCommand(CopyUrl);
             CopyImageCommand = new RelayCommand(CopyImage);
+            StopVideoCaptureCommand = new RelayCommand(StopVideoCapture);
 
             _messenger.Register<PrintScreenInvokedMessage>(this, HandlePrintScreenInvoked);
         }
 
         public ICommand CaptureCommand { get; }
 
-        public ICommand RecordCommand { get; }
+        public string? CaptureViewUrl
+        {
+            get => Get<string>();
+            set => Set(value);
+        }
 
         public ICommand CopyImageCommand { get; }
 
@@ -81,30 +91,43 @@ namespace Medior.ViewModels
         public ImageSource? CurrentImage
         {
             get => Get<ImageSource>();
-            set => Set(value);
+            set
+            {
+                Set(value);
+                OnPropertyChanged(nameof(IsHintTextVisible));
+            }
         }
-        public string? CaptureViewUrl
+
+        public Uri? CurrentRecording
         {
-            get => Get<string>();
+            get => Get<Uri?>();
+            set
+            {
+                Set(value);
+                OnPropertyChanged(nameof(IsHintTextVisible));
+            }
+        }
+
+        public bool IsHintTextVisible => 
+            CurrentImage is null &&
+            CurrentRecording is null &&
+            !IsRecordingInProgress;
+
+        public bool IsRecordingInProgress
+        {
+            get => Get<bool>();
             set => Set(value);
         }
+
+        public ICommand RecordCommand { get; }
 
         public ICommand ShareCommand { get; }
 
-        private async Task Record()
-        {
-            CaptureViewUrl = null;
-            _currentBitmap?.Dispose();
-            _currentBitmap = null;
-
-            var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
-            var result = await _picker.GetScreenRecording(cts.Token);
-        }
+        public ICommand StopVideoCaptureCommand { get; }
 
         private async Task Capture(bool captureCursor)
         {
-            CaptureViewUrl = null;
-            _currentBitmap?.Dispose();
+            ResetCaptureState();
 
             var result = _picker.GetScreenCapture(captureCursor);
 
@@ -145,6 +168,33 @@ namespace Medior.ViewModels
             await Capture(true);
         }
 
+        private async Task Record()
+        {
+            IsRecordingInProgress = true;
+
+            ResetCaptureState();
+
+            _recordingCts = new CancellationTokenSource();
+
+            var result = await _picker.GetScreenRecording(_recordingCts.Token);
+            if (!result.IsSuccess)
+            {
+                await _dialogService.ShowError(result.Exception!);
+                return;
+            }
+
+            CurrentRecording = result.Value;
+            _windowService.ShowMainWindow();
+        }
+
+        private void ResetCaptureState()
+        {
+            CaptureViewUrl = null;
+            _currentBitmap?.Dispose();
+            _currentBitmap = null;
+            CurrentImage = null;
+            CurrentRecording = null;
+        }
         private async Task Share()
         {
             try
@@ -178,7 +228,7 @@ namespace Medior.ViewModels
                         LoaderProgress = (double)read / totalSize
                     });
                 };
-                
+
                 var result = await _apiService.UploadFile(fileStream, "Medior_Screenshot.jpg");
 
                 if (!result.IsSuccess)
@@ -197,6 +247,13 @@ namespace Medior.ViewModels
             {
                 _messenger.Send(new LoaderUpdate());
             }
+        }
+
+        private void StopVideoCapture()
+        {
+            _recordingCts?.Cancel();
+            _recordingCts?.Dispose();
+            IsRecordingInProgress = false;
         }
     }
 }

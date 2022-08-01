@@ -44,13 +44,23 @@
             </Button>
         </StackPanel>
 
-        <Image Source="{Binding CurrentImage}" Grid.Row="2" Margin="10"></Image>
-        
+        <Image Grid.Row="2"  Source="{Binding CurrentImage}" Margin="10" Visibility="{Binding CurrentImage, Converter={StaticResource NullToVisibilityConverter}}"></Image>
+        <MediaElement Grid.Row="2" Source="{Binding CurrentRecording}" LoadedBehavior="Play" Margin="10" Visibility="{Binding CurrentRecording, Converter={StaticResource NullToVisibilityConverter}}" />
+
         <TextBlock Grid.Row="2" 
                    VerticalAlignment="Center" 
                    HorizontalAlignment="Center" 
-                   Style="{StaticResource MediumTitle}">
+                   Style="{StaticResource MediumTitle}"
+                   Visibility="{Binding IsHintTextVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
             Capture an image or video to start.
         </TextBlock>
+
+        <StackPanel Grid.Row="2" 
+                    VerticalAlignment="Center"
+                    Visibility="{Binding IsRecordingInProgress, Converter={StaticResource BooleanToVisibilityConverter}}">
+            <TextBlock Text="Recording in progress" HorizontalAlignment="Center" Style="{StaticResource MediumTitle}" Margin="0,0,0,10" />
+            <Ellipse Fill="Red" Height="50" Width="50" HorizontalAlignment="Center" Margin="0,0,0,10" />
+            <Button Content="Stop" HorizontalAlignment="Center" Command="{Binding StopVideoCaptureCommand}" />
+        </StackPanel>
     </Grid>
 </UserControl>

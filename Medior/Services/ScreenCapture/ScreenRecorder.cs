@@ -133,7 +133,9 @@ namespace Medior.Services.ScreenCapture
 
                 var transcoder = new MediaTranscoder
                 {
-                    HardwareAccelerationEnabled = true
+                    HardwareAccelerationEnabled = true,
+                    AlwaysReencode = true,
+                    VideoProcessingAlgorithm = MediaVideoProcessingAlgorithm.Default
                 };
 
                 var prepareResult = await transcoder.PrepareMediaStreamSourceTranscodeAsync(

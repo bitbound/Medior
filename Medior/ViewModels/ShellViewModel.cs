@@ -43,6 +43,7 @@ namespace Medior.ViewModels
 
             _messenger.Register<PrintScreenInvokedMessage>(this, HandlePrintScreenInvoked);
             _messenger.Register<LoaderUpdate>(this, HandleLoaderUpdate);
+            _messenger.Register<NavigateRequestMessage>(this, HandleNavigateRequest);
         }
 
         public ObservableCollectionEx<AppModule> AppModules { get; } = new();
@@ -60,6 +61,7 @@ namespace Medior.ViewModels
             get => Get<double>();
             set => Set(value);
         }
+
         public string LoaderText
         {
             get => Get<string>() ?? string.Empty;
@@ -71,6 +73,7 @@ namespace Medior.ViewModels
             get => Get<LoaderType>();
             set => Set(value);
         }
+
         public List<AppModule> OptionsModules { get; } = new()
         {
              new AppModule(
@@ -108,6 +111,11 @@ namespace Medior.ViewModels
             LoaderText = message.Text;
             LoaderProgress = message.LoaderProgress;
             LoaderType = message.Type;
+        }
+
+        private void HandleNavigateRequest(object recipient, NavigateRequestMessage message)
+        {
+            SelectedModule = AppModules.FirstOrDefault(x => x.ControlType == message.ControlType);
         }
         private void HandlePrintScreenInvoked(object recipient, PrintScreenInvokedMessage message)
         {

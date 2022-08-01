@@ -108,7 +108,7 @@ namespace Medior.Services.ScreenCapture
             var filePath = Path.Combine(AppConstants.RecordingsDirectory, fileName);
             using var fs = new FileStream(filePath, FileMode.Create);
             await _screenRecorder.CaptureVideo(selectedArea, 30, fs, cancellationToken);
-            return Result.Ok<Uri?>(null);
+            return Result.Ok<Uri?>(new Uri(filePath));
         }
     }
 }
