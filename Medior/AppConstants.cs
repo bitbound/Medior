@@ -14,9 +14,9 @@ namespace Medior
             get
             {
 #if DEBUG
-                return Path.Combine(Path.GetTempPath(), "Medior_Debug");
+                return Path.Combine(Path.GetTempPath(), "Medior", "Logs_Debug");
 #else
-                return Path.Combine(Path.GetTempPath(), "Medior");
+                return Path.Combine(Path.GetTempPath(), "Medior", "Logs");
 #endif
             }
         }
