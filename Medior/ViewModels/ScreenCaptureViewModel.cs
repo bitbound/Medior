@@ -61,7 +61,7 @@ namespace Medior.ViewModels
             _apiService = apiService;
             _logger = logger;
             _settings = settings;
-            CaptureCommand = new AsyncRelayCommand(Capture);
+            CaptureCommand = new AsyncRelayCommand(() => Capture(false));
             RecordCommand = new AsyncRelayCommand(Record);
             ShareCommand = new AsyncRelayCommand(Share);
             CopyViewUrlCommand = new RelayCommand(CopyUrl);
@@ -97,15 +97,16 @@ namespace Medior.ViewModels
             _currentBitmap?.Dispose();
             _currentBitmap = null;
 
-            var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+            var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
             var result = await _picker.GetScreenRecording(cts.Token);
         }
-        private async Task Capture()
+
+        private async Task Capture(bool captureCursor)
         {
             CaptureViewUrl = null;
             _currentBitmap?.Dispose();
 
-            var result = _picker.GetScreenCapture();
+            var result = _picker.GetScreenCapture(captureCursor);
 
             if (!result.IsSuccess)
             {
@@ -141,7 +142,7 @@ namespace Medior.ViewModels
 
         private async void HandlePrintScreenInvoked(object recipient, PrintScreenInvokedMessage message)
         {
-            await Capture();
+            await Capture(true);
         }
 
         private async Task Share()

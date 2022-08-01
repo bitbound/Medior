@@ -18,7 +18,7 @@ namespace Medior.Services.ScreenCapture
         Result<Rectangle> GetCaptureArea();
         Result<Rectangle> GetCaptureAreaNoBackground();
 
-        Result<Bitmap?> GetScreenCapture();
+        Result<Bitmap?> GetScreenCapture(bool captureCursor);
         Task<Result<Uri?>> GetScreenRecording(CancellationToken cancellationToken);
     }
 
@@ -44,7 +44,7 @@ namespace Medior.Services.ScreenCapture
         {
             using var _ = _windowService.HideMainWindow();
 
-            var result = _grabber.GetScreenGrab();
+            var result = _grabber.GetScreenGrab(false);
 
             if (!result.IsSuccess)
             {
@@ -61,23 +61,16 @@ namespace Medior.Services.ScreenCapture
         {
             using var _ = _windowService.HideMainWindow();
 
-            var result = _grabber.GetScreenGrab();
-
-            if (!result.IsSuccess)
-            {
-                return Result.Fail<Rectangle>(result.Exception!);
-            }
-
             var selectedArea = _windowService.ShowCapturePicker();
 
             return Result.Ok(selectedArea);
         }
 
-        public Result<Bitmap?> GetScreenCapture()
+        public Result<Bitmap?> GetScreenCapture(bool captureCursor)
         {
             using var _ = _windowService.HideMainWindow();
 
-            var result = _grabber.GetScreenGrab();
+            var result = _grabber.GetScreenGrab(captureCursor);
 
             if (!result.IsSuccess)
             {

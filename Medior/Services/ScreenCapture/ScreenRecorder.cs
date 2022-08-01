@@ -106,11 +106,11 @@ namespace Medior.Services.ScreenCapture
                         }
 
 
-                        var result = _grabber.GetScreenGrab(captureArea);
+                        var result = _grabber.GetScreenGrab(captureArea, true);
 
                         while (!result.IsSuccess || result.Value is null)
                         {
-                            result = _grabber.GetScreenGrab(captureArea);
+                            result = _grabber.GetScreenGrab(captureArea, true);
                         }
 
                         using var currentFrame = result.Value;
@@ -127,7 +127,7 @@ namespace Medior.Services.ScreenCapture
                     }
                 };
 
-                var encodingProfile = MediaEncodingProfile.CreateMp4(VideoEncodingQuality.HD1080p);
+                var encodingProfile = MediaEncodingProfile.CreateHevc(VideoEncodingQuality.HD1080p);
                 encodingProfile.Video.Width = (uint)captureArea.Width;
                 encodingProfile.Video.Height = (uint)captureArea.Height;
 

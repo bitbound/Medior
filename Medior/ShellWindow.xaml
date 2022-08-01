@@ -74,7 +74,7 @@
 
         <Grid Background="#99000000" Visibility="{Binding IsLoaderVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
             <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                <TextBlock Text="{Binding LoaderText}" FontSize="18" Foreground="White" />
+                <TextBlock Text="{Binding LoaderText}" FontSize="18" Foreground="White" Margin="0,0,0,10" />
 
                 <ProgressBar Value="{Binding LoaderProgress}"
                              Maximum="1"

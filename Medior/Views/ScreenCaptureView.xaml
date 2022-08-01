@@ -45,7 +45,11 @@
         </StackPanel>
 
         <Image Source="{Binding CurrentImage}" Grid.Row="2" Margin="10"></Image>
-        <TextBlock Grid.Row="2" VerticalAlignment="Center" HorizontalAlignment="Center" Style="{StaticResource MediumTitle}">
+        
+        <TextBlock Grid.Row="2" 
+                   VerticalAlignment="Center" 
+                   HorizontalAlignment="Center" 
+                   Style="{StaticResource MediumTitle}">
             Capture an image or video to start.
         </TextBlock>
     </Grid>
