@@ -24,6 +24,7 @@ namespace Medior.Services.ScreenCapture
 
         Result<Bitmap> GetScreenGrab(string outputName);
         Result<Bitmap> GetScreenGrab();
+        Result<Bitmap> GetScreenGrab(Rectangle captureArea);
     }
     public class ScreenGrabber : IScreenGrabber
     {
@@ -95,6 +96,11 @@ namespace Medior.Services.ScreenCapture
                 _logger.LogError(ex, "Error grabbing screen.");
                 return Result.Fail<Bitmap>(ex);
             }
+        }
+
+        public Result<Bitmap> GetScreenGrab(Rectangle captureArea)
+        {
+            return GetBitBltGrab(captureArea);
         }
 
         internal Result<Bitmap> GetBitBltGrab(Rectangle captureArea)

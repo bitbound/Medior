@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Medior.Controls"
         mc:Ignorable="d"
-        Title="Medior Screenshot"  
+        Title="Medior Screen Capture"  
         WindowStyle="None" 
         Topmost="True" 
         KeyDown="Window_KeyDown" 

@@ -111,7 +111,7 @@ namespace Medior.ViewModels
         }
         private void HandlePrintScreenInvoked(object recipient, PrintScreenInvokedMessage message)
         {
-            SelectedModule = AppModules.FirstOrDefault(x => x.ControlType == typeof(ScreenshotView));
+            SelectedModule = AppModules.FirstOrDefault(x => x.ControlType == typeof(ScreenCaptureView));
         }
     }
 }

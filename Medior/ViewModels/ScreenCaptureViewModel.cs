@@ -14,42 +14,45 @@ using System.Drawing.Imaging;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 
 namespace Medior.ViewModels
 {
-    public interface IScreenshotViewModel
+    public interface IScreenCaptureViewModel
     {
         ICommand CaptureCommand { get; }
+        ICommand RecordCommand { get; }
         ICommand CopyImageCommand { get; }
         ICommand CopyViewUrlCommand { get; }
         ImageSource? CurrentImage { get; }
-        string? ImageViewUrl { get; set; }
+        string? CaptureViewUrl { get; set; }
         ICommand ShareCommand { get; }
     }
-    public class ScreenshotViewModel : ObservableObjectEx, IScreenshotViewModel
+    public class ScreenCaptureViewModel : ObservableObjectEx, IScreenCaptureViewModel
     {
         private readonly IApiService _apiService;
         private readonly IDialogService _dialogService;
-        private readonly ILogger<ScreenshotViewModel> _logger;
+        private readonly ILogger<ScreenCaptureViewModel> _logger;
         private readonly IMessenger _messenger;
         private readonly ICapturePicker _picker;
         private readonly ISettings _settings;
         private readonly IWindowService _windowService;
         private Bitmap? _currentBitmap;
 
-        public ScreenshotViewModel(
+        public ScreenCaptureViewModel(
                     ICapturePicker picker, 
             IDialogService dialogService, 
             IMessenger messenger,
             IApiService apiService,
             IWindowService windowService,
             ISettings settings,
-            ILogger<ScreenshotViewModel> logger)
+            ILogger<ScreenCaptureViewModel> logger)
         {
             _picker = picker;
             _dialogService = dialogService;
@@ -59,6 +62,7 @@ namespace Medior.ViewModels
             _logger = logger;
             _settings = settings;
             CaptureCommand = new AsyncRelayCommand(Capture);
+            RecordCommand = new AsyncRelayCommand(Record);
             ShareCommand = new AsyncRelayCommand(Share);
             CopyViewUrlCommand = new RelayCommand(CopyUrl);
             CopyImageCommand = new RelayCommand(CopyImage);
@@ -67,6 +71,8 @@ namespace Medior.ViewModels
         }
 
         public ICommand CaptureCommand { get; }
+
+        public ICommand RecordCommand { get; }
 
         public ICommand CopyImageCommand { get; }
 
@@ -77,16 +83,26 @@ namespace Medior.ViewModels
             get => Get<ImageSource>();
             set => Set(value);
         }
-        public string? ImageViewUrl
+        public string? CaptureViewUrl
         {
             get => Get<string>();
             set => Set(value);
         }
 
         public ICommand ShareCommand { get; }
+
+        private async Task Record()
+        {
+            CaptureViewUrl = null;
+            _currentBitmap?.Dispose();
+            _currentBitmap = null;
+
+            var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+            var result = await _picker.GetScreenRecording(cts.Token);
+        }
         private async Task Capture()
         {
-            ImageViewUrl = null;
+            CaptureViewUrl = null;
             _currentBitmap?.Dispose();
 
             var result = _picker.GetScreenCapture();
@@ -119,7 +135,7 @@ namespace Medior.ViewModels
 
         private void CopyUrl()
         {
-            System.Windows.Forms.Clipboard.SetText(ImageViewUrl);
+            System.Windows.Forms.Clipboard.SetText(CaptureViewUrl);
             _messenger.Send(new ToastMessage("Copied to clipboard", ToastType.Success));
         }
 
@@ -170,7 +186,7 @@ namespace Medior.ViewModels
                     return;
                 }
 
-                ImageViewUrl = $"{_settings.ServerUri}/media-viewer/{result.Value!.Id}";
+                CaptureViewUrl = $"{_settings.ServerUri}/media-viewer/{result.Value!.Id}";
             }
             catch (Exception ex)
             {

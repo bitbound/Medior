@@ -13,20 +13,15 @@ namespace Medior.Services
 {
     public interface IWindowService
     {
-        Rectangle ShowCapturePicker(Bitmap backgroundImage);
         IDisposable HideMainWindow();
+
+        Rectangle ShowCapturePicker(Bitmap backgroundImage);
+        Rectangle ShowCapturePicker();
         void ShowMainWindow();
     }
 
     public class WindowService : IWindowService
     {
-        public Rectangle ShowCapturePicker(Bitmap backgroundImage)
-        {
-            var window = new CapturePickerWindow(backgroundImage);
-            window.ShowDialog();
-            return window.SelectedArea;
-        }
-
         public IDisposable HideMainWindow()
         {
             try
@@ -55,6 +50,19 @@ namespace Medior.Services
             {
                 return CallbackDisposable.Empty;
             }
+        }
+
+        public Rectangle ShowCapturePicker(Bitmap backgroundImage)
+        {
+            var window = new CapturePickerWindow(backgroundImage);
+            window.ShowDialog();
+            return window.SelectedArea;
+        }
+        public Rectangle ShowCapturePicker()
+        {
+            var window = new CapturePickerWindow();
+            window.ShowDialog();
+            return window.SelectedArea;
         }
 
         public void ShowMainWindow()

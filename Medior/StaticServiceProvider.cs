@@ -45,7 +45,7 @@ namespace Medior
                 services.AddSingleton<IAboutViewModel, AboutViewModel>();
 
                 services.AddAppModule<HomeView>("Home", PackIconOcticonsKind.Home);
-                services.AddAppModule<IScreenshotViewModel, ScreenshotViewModel, ScreenshotView>("Screenshot", PackIconOcticonsKind.DeviceCamera);
+                services.AddAppModule<IScreenCaptureViewModel, ScreenCaptureViewModel, ScreenCaptureView>("Screen Capture", PackIconOcticonsKind.DeviceCamera);
 
                 services.AddSingleton<IFileSystem, FileSystem>();
                 services.AddSingleton<ISystemTime, SystemTime>();
@@ -63,6 +63,7 @@ namespace Medior
                 services.AddScoped<IMessageSigner, MessageSigner>();
                 services.AddScoped<ICapturePicker, CapturePicker>();
                 services.AddScoped<IScreenGrabber, ScreenGrabber>();
+                services.AddScoped<IScreenRecorder, ScreenRecorder>();
                 services.AddHttpClient();
                 services.AddLogging(builder => builder.AddProvider(new FileLoggerProvider()));
 

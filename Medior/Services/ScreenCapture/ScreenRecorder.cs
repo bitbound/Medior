@@ -25,6 +25,12 @@ namespace Medior.Services.ScreenCapture
             int frameRate,
             Stream destinationStream,
             CancellationToken cancellationToken);
+
+        Task<Result> CaptureVideo(
+             Rectangle captureArea,
+             int frameRate,
+             Stream destinationStream,
+             CancellationToken cancellationToken);
     }
 
     public class ScreenRecorder : IScreenRecorder
@@ -35,17 +41,31 @@ namespace Medior.Services.ScreenCapture
         {
             _grabber = screenGrabber;
         }
+
+        public async Task<Result> CaptureVideo(Rectangle captureArea, int frameRate, Stream destinationStream, CancellationToken cancellationToken)
+        {
+            return await CaptureVideoImpl(captureArea, frameRate, destinationStream, cancellationToken);
+        }
+
         public async Task<Result> CaptureVideo(
             DisplayInfo display,
             int frameRate,
             Stream destinationStream,
             CancellationToken cancellationToken)
         {
+
+            var captureArea = new Rectangle(Point.Empty, display.MonitorArea.Size);
+            return await CaptureVideoImpl(captureArea, frameRate, destinationStream, cancellationToken);
+        }
+
+        public async Task<Result> CaptureVideoImpl(
+            Rectangle captureArea,
+            int frameRate,
+            Stream destinationStream,
+            CancellationToken cancellationToken)
+        {
             try
             {
-
-                var captureArea = new Rectangle(Point.Empty, display.MonitorArea.Size);
-
                 var evenWidth = captureArea.Width % 2 == 0 ? (uint)captureArea.Width : (uint)captureArea.Width + 1;
                 var evenHeight = captureArea.Height % 2 == 0 ? (uint)captureArea.Height : (uint)captureArea.Height + 1;
 
@@ -80,19 +100,19 @@ namespace Medior.Services.ScreenCapture
                         return;
                     }
 
-                    var result = _grabber.GetScreenGrab(display.DeviceName);
+                    var result = _grabber.GetScreenGrab(captureArea);
 
                     while (!result.IsSuccess || result.Value is null)
                     {
-                        result = _grabber.GetScreenGrab(display.DeviceName);
+                        result = _grabber.GetScreenGrab(captureArea);
                     }
 
                     using var currentFrame = result.Value;
 
                     var bd = currentFrame.LockBits(new Rectangle(Point.Empty, currentFrame.Size), ImageLockMode.ReadOnly, PixelFormat.Format32bppArgb);
                     Marshal.Copy(bd.Scan0, tempBuffer, 0, size);
-                    args.Request.Sample = MediaStreamSample.CreateFromBuffer(tempBuffer.AsBuffer(), stopwatch.Elapsed);
                     currentFrame.UnlockBits(bd);
+                    args.Request.Sample = MediaStreamSample.CreateFromBuffer(tempBuffer.AsBuffer(), stopwatch.Elapsed);
                 };
 
                 var encodingProfile = MediaEncodingProfile.CreateMp4(VideoEncodingQuality.HD1080p);

@@ -21,7 +21,7 @@ namespace Medior.Controls
     /// </summary>
     public partial class CapturePickerWindow : Window
     {
-        public Bitmap _backgroundImage;
+        public Bitmap? _backgroundImage;
 
         private double _dpiScale = 1;
 
@@ -30,7 +30,6 @@ namespace Medior.Controls
         public CapturePickerWindow()
         {
             InitializeComponent();
-            _backgroundImage = new(0, 0);
         }
 
         public CapturePickerWindow(Bitmap backgroundImage)
@@ -123,7 +122,7 @@ namespace Medior.Controls
             Height = SystemParameters.VirtualScreenHeight;
             Left = SystemParameters.VirtualScreenLeft;
             Top = SystemParameters.VirtualScreenTop;
-            MainGrid.Background = _backgroundImage.ToImageBrush(ImageFormat.Png);
+            MainGrid.Background = _backgroundImage?.ToImageBrush(ImageFormat.Png);
             _ = FrameWindowUnderCursor();
             Activate();
         }
