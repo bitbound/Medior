@@ -77,7 +77,6 @@ namespace Medior.Controls
             {
                 if (!await WaitHelper.WaitForAsync(() => IsCtrlPressed(), TimeSpan.FromMilliseconds(100)))
                 {
-                    CaptureBorder.Rect = new Rect();
                     continue;
                 }
 
