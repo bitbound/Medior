@@ -45,7 +45,12 @@
         </StackPanel>
 
         <Image Grid.Row="2"  Source="{Binding CurrentImage}" Margin="10" Visibility="{Binding CurrentImage, Converter={StaticResource NullToVisibilityConverter}}"></Image>
-        <MediaElement Grid.Row="2" Source="{Binding CurrentRecording}" LoadedBehavior="Play" Margin="10" Visibility="{Binding CurrentRecording, Converter={StaticResource NullToVisibilityConverter}}" />
+        <MediaElement Grid.Row="2" 
+                      Source="{Binding CurrentRecording}"
+                      LoadedBehavior="Play" 
+                      Margin="10" 
+                      SnapsToDevicePixels="True"
+                      Visibility="{Binding CurrentRecording, Converter={StaticResource NullToVisibilityConverter}}" />
 
         <TextBlock Grid.Row="2" 
                    VerticalAlignment="Center" 

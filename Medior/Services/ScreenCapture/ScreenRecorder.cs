@@ -130,6 +130,8 @@ namespace Medior.Services.ScreenCapture
                 var encodingProfile = MediaEncodingProfile.CreateHevc(VideoEncodingQuality.HD1080p);
                 encodingProfile.Video.Width = (uint)captureArea.Width;
                 encodingProfile.Video.Height = (uint)captureArea.Height;
+                // Default 15_000_000.
+                encodingProfile.Video.Bitrate = 3_000_000;
 
                 var transcoder = new MediaTranscoder
                 {
