@@ -127,7 +127,7 @@ namespace Medior.Services.ScreenCapture
                     }
                 };
 
-                var encodingProfile = MediaEncodingProfile.CreateHevc(VideoEncodingQuality.HD1080p);
+                var encodingProfile = MediaEncodingProfile.CreateMp4(VideoEncodingQuality.HD1080p);
                 encodingProfile.Video.Width = (uint)captureArea.Width;
                 encodingProfile.Video.Height = (uint)captureArea.Height;
                 // Default 15_000_000.

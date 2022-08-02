@@ -4,6 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:Medior.Views"
+             xmlns:controls="clr-namespace:Medior.Controls"
              mc:Ignorable="d" 
              xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
              xmlns:vm="clr-namespace:Medior.ViewModels"
@@ -45,13 +46,11 @@
         </StackPanel>
 
         <Image Grid.Row="2"  Source="{Binding CurrentImage}" Margin="10" Visibility="{Binding CurrentImage, Converter={StaticResource NullToVisibilityConverter}}"></Image>
-        <MediaElement Grid.Row="2" 
-                      Source="{Binding CurrentRecording}"
-                      LoadedBehavior="Play" 
-                      Margin="10" 
-                      SnapsToDevicePixels="True"
-                      Stretch="UniformToFill"
-                      Visibility="{Binding CurrentRecording, Converter={StaticResource NullToVisibilityConverter}}" />
+
+        <controls:MediaPlayer Grid.Row="2"
+                              MediaUri="{Binding CurrentRecording}"
+                              Margin="10"
+                              Visibility="{Binding CurrentRecording, Converter={StaticResource NullToVisibilityConverter}}" />
 
         <TextBlock Grid.Row="2" 
                    VerticalAlignment="Center" 

@@ -18,6 +18,7 @@ namespace Medior.Services
         Rectangle ShowCapturePicker(Bitmap backgroundImage);
         Rectangle ShowCapturePicker();
         void ShowMainWindow();
+        IDisposable ShowRecordingFrame(Rectangle selectedArea);
     }
 
     public class WindowService : IWindowService
@@ -78,6 +79,16 @@ namespace Medior.Services
                 WpfApp.Current.MainWindow.Activate();
             }
             catch { }
+        }
+
+        public IDisposable ShowRecordingFrame(Rectangle selectedArea)
+        {
+            var window = new RecordingFrameWindow(selectedArea);
+            window.Show();
+            return new CallbackDisposable(() =>
+            {
+                window.Close();
+            });
         }
     }
 }

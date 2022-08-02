@@ -170,21 +170,28 @@ namespace Medior.ViewModels
 
         private async Task Record()
         {
-            IsRecordingInProgress = true;
-
-            ResetCaptureState();
-
-            _recordingCts = new CancellationTokenSource();
-
-            var result = await _picker.GetScreenRecording(_recordingCts.Token);
-            if (!result.IsSuccess)
+            try
             {
-                await _dialogService.ShowError(result.Exception!);
-                return;
-            }
+                IsRecordingInProgress = true;
 
-            CurrentRecording = result.Value;
-            _windowService.ShowMainWindow();
+                ResetCaptureState();
+
+                _recordingCts = new CancellationTokenSource();
+
+                var result = await _picker.GetScreenRecording(_recordingCts.Token);
+                if (!result.IsSuccess)
+                {
+                    await _dialogService.ShowError(result.Exception!);
+                    return;
+                }
+
+                CurrentRecording = result.Value;
+                _windowService.ShowMainWindow();
+            }
+            finally
+            {
+                IsRecordingInProgress = false;
+            }
         }
 
         private void ResetCaptureState()
