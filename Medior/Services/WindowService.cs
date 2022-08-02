@@ -1,4 +1,5 @@
 ﻿using Medior.Controls;
+using Medior.Controls.ScreenCapture;
 using Medior.Utilities;
 using System;
 using System.Collections.Generic;
@@ -83,11 +84,14 @@ namespace Medior.Services
 
         public IDisposable ShowRecordingFrame(Rectangle selectedArea)
         {
-            var window = new RecordingFrameWindow(selectedArea);
-            window.Show();
+            var frame = new RecordingFrameWindow(selectedArea);
+            var stopButton = new StopRecordingButton();
+            frame.Show();
+            stopButton.Show();
             return new CallbackDisposable(() =>
             {
-                window.Close();
+                frame.Close();
+                stopButton.Close();
             });
         }
     }

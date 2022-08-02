@@ -24,14 +24,21 @@
             <Button FontSize="14" Command="{Binding RecordCommand}">
                 Record
             </Button>
-            <StackPanel Margin="10,0,0,0" Orientation="Horizontal" Visibility="{Binding CurrentImage, Converter={StaticResource NullToVisibilityConverter}}">
+            <StackPanel Margin="10,0,0,0" Orientation="Horizontal">
+                <StackPanel.Visibility>
+                    <MultiBinding Converter="{StaticResource MultiBoolAnyToVisibilityConverter}">
+                        <Binding Path="CurrentImage" Converter="{StaticResource NotNullToBoolConverter}" />
+                        <Binding Path="CurrentRecording" Converter="{StaticResource NotNullToBoolConverter}"  />
+                    </MultiBinding>
+                </StackPanel.Visibility>
                 <Separator Style="{StaticResource {x:Static ToolBar.SeparatorStyleKey}}" />
 
                 <Button FontSize="14" Command="{Binding ShareCommand}" Margin="10,0,0,0">
                     Share
                 </Button>
 
-                <Button FontSize="14" Command="{Binding CopyImageCommand}" Margin="10,0,0,0">
+                <Button FontSize="14" Command="{Binding CopyImageCommand}" Margin="10,0,0,0" 
+                        Visibility="{Binding CurrentImage, Converter={StaticResource NullToVisibilityConverter}}">
                     Copy Image
                 </Button>
             </StackPanel>

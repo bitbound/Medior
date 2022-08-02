@@ -15,7 +15,7 @@ using System.Windows.Interop;
 using System.Windows.Shell;
 using Rectangle = System.Drawing.Rectangle;
 
-namespace Medior.Controls
+namespace Medior.Controls.ScreenCapture
 {
     /// <summary>
     /// Interaction logic for CapturePickerWindow.xaml

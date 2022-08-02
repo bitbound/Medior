@@ -13,10 +13,11 @@ namespace Medior
         {
             get
             {
+                var tempDir = Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), "Medior")).FullName;
 #if DEBUG
-                return Path.Combine(Path.GetTempPath(), "Medior", "Logs_Debug");
+                return Path.Combine(tempDir, "Logs_Debug");
 #else
-                return Path.Combine(Path.GetTempPath(), "Medior", "Logs");
+                return Path.Combine(tempDir, "Logs");
 #endif
             }
         }
@@ -25,10 +26,12 @@ namespace Medior
         {
             get
             {
+                var appDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Medior");
+                Directory.CreateDirectory(appDir);
 #if DEBUG
-                return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Medior", "settings_debug.json");
+                return Path.Combine(appDir, "settings_debug.json");
 #else
-                return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Medior", "settings.json");
+                return Path.Combine(appDir, "settings.json");
 #endif
             }
         }

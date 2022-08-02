@@ -20,6 +20,7 @@ namespace Medior.Services
         void WriteAllText(string filePath, string contents);
         Task WriteAllTextAsync(string path, string content);
         void Encrypt(string filePath);
+        FileStream CreateFileStream(string filePath, FileMode mode);
     }
 
     public class FileSystem : IFileSystem
@@ -42,6 +43,11 @@ namespace Medior.Services
         public Stream CreateFile(string filePath)
         {
             return File.Create(filePath);
+        }
+
+        public FileStream CreateFileStream(string filePath, FileMode mode)
+        {
+            return new FileStream(filePath, mode);
         }
 
         public void Encrypt(string filePath)

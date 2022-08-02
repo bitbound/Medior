@@ -44,8 +44,8 @@ namespace Medior
                 services.AddSingleton<IToastsViewModel, ToastsViewModel>();
                 services.AddSingleton<IAboutViewModel, AboutViewModel>();
 
-                services.AddAppModule<HomeView>("Home", PackIconOcticonsKind.Home);
-                services.AddAppModule<IScreenCaptureViewModel, ScreenCaptureViewModel, ScreenCaptureView>("Screen Capture", PackIconOcticonsKind.DeviceCamera);
+                services.AddAppModule<HomeView>("Home", PackIconBoxIconsKind.RegularHome);
+                services.AddAppModule<IScreenCaptureViewModel, ScreenCaptureViewModel, ScreenCaptureView>("Screen Capture", PackIconBoxIconsKind.RegularCamera);
 
                 services.AddSingleton<IFileSystem, FileSystem>();
                 services.AddSingleton<IPowerControl, PowerControl>();

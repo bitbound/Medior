@@ -23,7 +23,7 @@
 
   <ItemGroup>
     <PackageReference Include="MahApps.Metro" Version="2.4.9" />
-    <PackageReference Include="MahApps.Metro.IconPacks.Octicons" Version="4.11.0" />
+    <PackageReference Include="MahApps.Metro.IconPacks.BoxIcons" Version="4.11.0" />
     <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="6.0.1" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="6.0.0" />
     <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="6.0.0" />

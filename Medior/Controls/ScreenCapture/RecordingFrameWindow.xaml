@@ -1,4 +1,4 @@
-﻿<Window x:Class="Medior.Controls.RecordingFrameWindow"
+﻿<Window x:Class="Medior.Controls.ScreenCapture.RecordingFrameWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -10,8 +10,11 @@
         AllowsTransparency="True"
         ShowInTaskbar="False"
         IsHitTestVisible="False"
-        Title="Medior Recording" Height="450" Width="800">
-    <Grid>
-        
-    </Grid>
+        Title="Medior Recording" 
+        d:Height="600" d:Width="800"
+        Topmost="True"
+        Loaded="Window_Loaded">
+    <Rectangle x:Name="RecordingFrame" Stroke="ForestGreen" StrokeThickness="2" StrokeDashArray="5" IsHitTestVisible="False">
+
+    </Rectangle>
 </Window>

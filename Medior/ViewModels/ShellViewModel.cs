@@ -78,12 +78,12 @@ namespace Medior.ViewModels
         {
              new AppModule(
                 "About",
-                new PackIconOcticons() { Kind = PackIconOcticonsKind.Question },
+                new PackIconBoxIcons() { Kind = PackIconBoxIconsKind.RegularQuestionMark },
                 typeof(AboutView)),
 
             new AppModule(
                 "Settings",
-                new PackIconOcticons() { Kind = PackIconOcticonsKind.Settings },
+                new PackIconBoxIcons() { Kind = PackIconBoxIconsKind.RegularWrench },
                 typeof(SettingsView))
         };
 

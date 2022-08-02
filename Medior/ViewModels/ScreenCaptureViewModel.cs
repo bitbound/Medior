@@ -11,6 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
+using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
@@ -46,17 +47,19 @@ namespace Medior.ViewModels
         private readonly IMessenger _messenger;
         private readonly ICapturePicker _picker;
         private readonly ISettings _settings;
+        private readonly ISystemTime _systemTime;
         private readonly IWindowService _windowService;
         private Bitmap? _currentBitmap;
         private CancellationTokenSource? _recordingCts;
 
         public ScreenCaptureViewModel(
-            ICapturePicker picker, 
-            IDialogService dialogService, 
+            ICapturePicker picker,
+            IDialogService dialogService,
             IMessenger messenger,
             IApiService apiService,
             IWindowService windowService,
             ISettings settings,
+            ISystemTime systemTime,
             ILogger<ScreenCaptureViewModel> logger)
         {
             _picker = picker;
@@ -66,6 +69,8 @@ namespace Medior.ViewModels
             _apiService = apiService;
             _logger = logger;
             _settings = settings;
+            _systemTime = systemTime;
+
             CaptureCommand = new AsyncRelayCommand(() => Capture(false));
             RecordCommand = new AsyncRelayCommand(Record);
             ShareCommand = new AsyncRelayCommand(Share);
@@ -74,6 +79,7 @@ namespace Medior.ViewModels
             StopVideoCaptureCommand = new RelayCommand(StopVideoCapture);
 
             _messenger.Register<PrintScreenInvokedMessage>(this, HandlePrintScreenInvoked);
+            _messenger.Register<StopRecordingRequested>(this, HandleStopRecordingRequested);
         }
 
         public ICommand CaptureCommand { get; }
@@ -108,7 +114,7 @@ namespace Medior.ViewModels
             }
         }
 
-        public bool IsHintTextVisible => 
+        public bool IsHintTextVisible =>
             CurrentImage is null &&
             CurrentRecording is null &&
             !IsRecordingInProgress;
@@ -168,6 +174,11 @@ namespace Medior.ViewModels
             await Capture(true);
         }
 
+        private void HandleStopRecordingRequested(object recipient, StopRecordingRequested message)
+        {
+            _recordingCts?.Cancel();
+        }
+
         private async Task Record()
         {
             try
@@ -202,13 +213,29 @@ namespace Medior.ViewModels
             CurrentImage = null;
             CurrentRecording = null;
         }
+
         private async Task Share()
+        {
+            if (_currentBitmap is not null)
+            {
+                await ShareScreenshot();
+            }
+            else if (CurrentRecording is not null)
+            {
+                await ShareVideo();
+            }
+            else
+            {
+                await _dialogService.ShowError("Unexpected state.  No image or video to share.");
+            }
+        }
+
+        private async Task ShareScreenshot()
         {
             try
             {
                 if (_currentBitmap is null)
                 {
-                    await _dialogService.ShowError("Unexpected state.  Underlying bitmap is null.");
                     return;
                 }
 
@@ -221,9 +248,9 @@ namespace Medior.ViewModels
 
                 using var fileStream = new ReactiveStream();
                 _currentBitmap.Save(fileStream, ImageFormat.Jpeg);
+                fileStream.Seek(0, SeekOrigin.Begin);
 
                 var totalSize = fileStream.Length;
-                fileStream.Seek(0, System.IO.SeekOrigin.Begin);
 
                 fileStream.TotalBytesReadChanged += (sender, read) =>
                 {
@@ -236,7 +263,8 @@ namespace Medior.ViewModels
                     });
                 };
 
-                var result = await _apiService.UploadFile(fileStream, "Medior_Screenshot.jpg");
+                var fileName = $"Medior_Screenshot_{_systemTime.Now:yyyy-MM-dd hh.mm.ss.fff}.mp4";
+                var result = await _apiService.UploadFile(fileStream, fileName);
 
                 if (!result.IsSuccess)
                 {
@@ -249,6 +277,7 @@ namespace Medior.ViewModels
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error while sharing file.");
+                await _dialogService.ShowError(ex);
             }
             finally
             {
@@ -256,6 +285,61 @@ namespace Medior.ViewModels
             }
         }
 
+        private async Task ShareVideo()
+        {
+            try
+            {
+                if (CurrentRecording is null)
+                {
+                    return;
+                }
+
+                _messenger.Send(new LoaderUpdate()
+                {
+                    IsShown = true,
+                    Text = "Uploading video",
+                    Type = LoaderType.Progress
+                });
+
+                using var reactiveStream = new ReactiveStream();
+                using var fileStream = new FileStream(CurrentRecording.LocalPath, FileMode.Open, FileAccess.Read);
+                await fileStream.CopyToAsync(reactiveStream);
+                reactiveStream.Seek(0, SeekOrigin.Begin);
+
+                var totalSize = fileStream.Length;
+
+                reactiveStream.TotalBytesReadChanged += (sender, read) =>
+                {
+                    _messenger.Send(new LoaderUpdate()
+                    {
+                        IsShown = true,
+                        Text = "Uploading video",
+                        Type = LoaderType.Progress,
+                        LoaderProgress = (double)read / totalSize
+                    });
+                };
+
+                var fileName = $"Medior_Recording_{_systemTime.Now:yyyy-MM-dd hh.mm.ss.fff}.mp4";
+                var result = await _apiService.UploadFile(reactiveStream, fileName);
+
+                if (!result.IsSuccess)
+                {
+                    await _dialogService.ShowError(result.Error!);
+                    return;
+                }
+
+                CaptureViewUrl = $"{_settings.ServerUri}/media-viewer/{result.Value!.Id}";
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error while sharing video.");
+                await _dialogService.ShowError(ex);
+            }
+            finally
+            {
+                _messenger.Send(new LoaderUpdate());
+            }
+        }
         private void StopVideoCapture()
         {
             _recordingCts?.Cancel();

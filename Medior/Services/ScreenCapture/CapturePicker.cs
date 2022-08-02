@@ -1,5 +1,6 @@
 ﻿using Medior.Controls;
 using Medior.Shared;
+using Microsoft.Toolkit.Mvvm.Messaging;
 using ScreenR.Shared.Helpers;
 using System;
 using System.Collections.Generic;
@@ -26,17 +27,20 @@ namespace Medior.Services.ScreenCapture
     {
         private readonly IScreenGrabber _grabber;
         private readonly IScreenRecorder _screenRecorder;
+        private readonly IFileSystem _fileSystem;
         private readonly ISystemTime _systemTime;
         private readonly IWindowService _windowService;
         public CapturePicker(
             IScreenGrabber grabber, 
             IWindowService windowService,
             IScreenRecorder screenRecorder,
+            IFileSystem fileSystem,
             ISystemTime systemTime)
         {
             _grabber = grabber;
             _windowService = windowService;
             _screenRecorder = screenRecorder;
+            _fileSystem = fileSystem;
             _systemTime = systemTime;
         }
 
@@ -92,24 +96,21 @@ namespace Medior.Services.ScreenCapture
 
         public async Task<Result<Uri?>> GetScreenRecording(CancellationToken cancellationToken)
         {
-            Rectangle selectedArea;
-
-            using (var _ = _windowService.HideMainWindow())
-            {
-                selectedArea = _windowService.ShowCapturePicker();
-            }
+            using var _ = _windowService.HideMainWindow();
+            var selectedArea = _windowService.ShowCapturePicker();
 
             if (selectedArea.IsEmpty)
             {
                 return Result.Ok<Uri?>(null);
             }
 
-            using var __ = _windowService.ShowRecordingFrame(selectedArea);
+            using var _2 = _windowService.ShowRecordingFrame(selectedArea);
 
+            _screenRecorder.CleanupRecordings();
             var fileName = $"Recording_{_systemTime.Now:yyyy-MM-dd hh.mm.ss.fff}.mp4";
             var filePath = Path.Combine(AppConstants.RecordingsDirectory, fileName);
-            using var fs = new FileStream(filePath, FileMode.Create);
-            var result = await _screenRecorder.CaptureVideo(selectedArea, 30, fs, cancellationToken);
+            using var fs = _fileSystem.CreateFileStream(filePath, FileMode.Create);
+            var result = await _screenRecorder.CaptureVideo(selectedArea, 10, fs, cancellationToken);
             if (!result.IsSuccess)
             {
                 return Result.Fail<Uri?>(result.Exception!);

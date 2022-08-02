@@ -32,6 +32,7 @@ namespace Medior.Services.ScreenCapture
              int frameRate,
              Stream destinationStream,
              CancellationToken cancellationToken);
+        void CleanupRecordings();
     }
 
     public class ScreenRecorder : IScreenRecorder
@@ -39,7 +40,9 @@ namespace Medior.Services.ScreenCapture
         private readonly IScreenGrabber _grabber;
         private readonly ILogger<ScreenRecorder> _logger;
 
-        public ScreenRecorder(IScreenGrabber screenGrabber, ILogger<ScreenRecorder> logger)
+        public ScreenRecorder(
+            IScreenGrabber screenGrabber, 
+            ILogger<ScreenRecorder> logger)
         {
             _grabber = screenGrabber;
             _logger = logger;
@@ -61,7 +64,25 @@ namespace Medior.Services.ScreenCapture
             return await CaptureVideoImpl(captureArea, frameRate, destinationStream, cancellationToken);
         }
 
-        public async Task<Result> CaptureVideoImpl(
+        public void CleanupRecordings()
+        {
+            var expiredFiles = Directory
+                .GetFiles(AppConstants.RecordingsDirectory)
+                .Select(x => new FileInfo(x))
+                .OrderByDescending(x => x.CreationTime)
+                .Skip(10);
+
+            foreach (var file in expiredFiles)
+            {
+                try
+                {
+                    file.Delete();
+                }
+                catch { }
+            }
+        }
+
+        private async Task<Result> CaptureVideoImpl(
             Rectangle captureArea,
             int frameRate,
             Stream destinationStream,
@@ -132,7 +153,7 @@ namespace Medior.Services.ScreenCapture
                 encodingProfile.Video.Height = (uint)captureArea.Height;
                 // Default 15_000_000.
                 encodingProfile.Video.Bitrate = 2_000_000;
-                encodingProfile.Video.FrameRate.Numerator = 10;
+                encodingProfile.Video.FrameRate.Numerator = (uint)frameRate;
 
                 var transcoder = new MediaTranscoder
                 {
