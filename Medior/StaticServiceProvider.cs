@@ -48,6 +48,7 @@ namespace Medior
                 services.AddAppModule<IScreenCaptureViewModel, ScreenCaptureViewModel, ScreenCaptureView>("Screen Capture", PackIconOcticonsKind.DeviceCamera);
 
                 services.AddSingleton<IFileSystem, FileSystem>();
+                services.AddSingleton<IPowerControl, PowerControl>();
                 services.AddSingleton<ISystemTime, SystemTime>();
                 services.AddSingleton<IDialogService, DialogService>();
                 services.AddSingleton<ITrayService, TrayService>();

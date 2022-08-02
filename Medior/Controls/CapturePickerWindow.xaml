@@ -42,6 +42,7 @@
                    HorizontalAlignment="Center" 
                    VerticalAlignment="Top" 
                    Style="{StaticResource LargeTitle}"
+                   IsHitTestVisible="False"
                    Visibility="Collapsed"/>
     </Grid>
 </Window>
