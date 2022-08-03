@@ -5,6 +5,7 @@ using Medior.Models;
 using MahApps.Metro.IconPacks;
 using Medior.Views;
 using Microsoft.Toolkit.Mvvm.Messaging;
+using System.Threading.Tasks;
 
 namespace Medior.ViewModels
 {
@@ -25,14 +26,17 @@ namespace Medior.ViewModels
     public class ShellViewModel : ObservableObjectEx, IShellViewModel
     {
         private readonly IMessenger _messenger;
+        private readonly IWindowService _windowService;
         private readonly ISettings _settings;
         public ShellViewModel(
             IMessenger messeger,
             ISettings settings,
+            IWindowService windowService,
             IEnumerable<AppModule> appModules)
         {
             _settings = settings;
             _messenger = messeger;
+            _windowService = windowService;
             AppModules.AddRange(appModules);
             FilteredAppModules.AddRange(appModules);
 
@@ -116,10 +120,13 @@ namespace Medior.ViewModels
         private void HandleNavigateRequest(object recipient, NavigateRequestMessage message)
         {
             SelectedModule = AppModules.FirstOrDefault(x => x.ControlType == message.ControlType);
+            _windowService.ShowMainWindow();
         }
-        private void HandlePrintScreenInvoked(object recipient, PrintScreenInvokedMessage message)
+        private async void HandlePrintScreenInvoked(object recipient, PrintScreenInvokedMessage message)
         {
             SelectedModule = AppModules.FirstOrDefault(x => x.ControlType == typeof(ScreenCaptureView));
+            await Task.Delay(10);
+            _messenger.Send(new ScreenCaptureRequest(CaptureKind.Snip));
         }
     }
 }

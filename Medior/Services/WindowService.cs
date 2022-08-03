@@ -71,6 +71,10 @@ namespace Medior.Services
                 }
 
                 WpfApp.Current.MainWindow.Show();
+                if (WpfApp.Current.MainWindow.WindowState == System.Windows.WindowState.Minimized)
+                {
+                    WpfApp.Current.MainWindow.WindowState = System.Windows.WindowState.Normal;
+                }
                 WpfApp.Current.MainWindow.Activate();
             }
             catch { }

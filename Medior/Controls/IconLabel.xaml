@@ -1,0 +1,19 @@
+﻿<UserControl x:Class="Medior.Controls.IconLabel"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:Medior.Controls"
+             xmlns:icons="http://metro.mahapps.com/winfx/xaml/iconpacks"
+             mc:Ignorable="d" 
+             d:DesignHeight="40" d:DesignWidth="80">
+    <StackPanel Orientation="Horizontal">
+        <icons:PackIconBoxIcons Kind="{Binding Path=IconKind, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:IconLabel}}"  
+                                VerticalAlignment="Center" />
+        
+        <TextBlock Text="{Binding Path=IconText, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:IconLabel}}"  
+                   VerticalAlignment="Center" 
+                   Margin="5,0,0,0" 
+                   Style="{StaticResource ThemeText}"/>
+    </StackPanel>
+</UserControl>

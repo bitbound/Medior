@@ -1,4 +1,5 @@
 ﻿using Medior.Shared.Services;
+using Medior.Views;
 using Microsoft.Extensions.Logging;
 using Microsoft.Toolkit.Mvvm.Input;
 using Microsoft.Toolkit.Mvvm.Messaging;
@@ -69,9 +70,10 @@ namespace Medior.ViewModels
             StopVideoCaptureCommand = new RelayCommand(StopVideoCapture);
             SaveCommand = new AsyncRelayCommand(Save);
 
-            _messenger.Register<PrintScreenInvokedMessage>(this, HandlePrintScreenInvoked);
+            _messenger.Register<ScreenCaptureRequest>(this, HandleScreenCaptureRequest);
             _messenger.Register<StopRecordingRequested>(this, HandleStopRecordingRequested);
         }
+
 
         public ICommand CaptureCommand { get; }
 
@@ -144,26 +146,38 @@ namespace Medior.ViewModels
 
             _windowService.ShowMainWindow();
 
-            System.Windows.Forms.Clipboard.SetImage(_currentBitmap);
+            Clipboard.SetImage(_currentBitmap);
             _messenger.Send(new ToastMessage("Copied to clipboard", ToastType.Success));
         }
 
         private void CopyImage()
         {
-            System.Windows.Forms.Clipboard.SetImage(_currentBitmap);
+            Clipboard.SetImage(_currentBitmap);
             _messenger.Send(new ToastMessage("Copied to clipboard", ToastType.Success));
         }
 
         private void CopyUrl()
         {
-            System.Windows.Forms.Clipboard.SetText(CaptureViewUrl);
+            Clipboard.SetText(CaptureViewUrl);
             _messenger.Send(new ToastMessage("Copied to clipboard", ToastType.Success));
         }
 
-        private async void HandlePrintScreenInvoked(object recipient, PrintScreenInvokedMessage message)
+        private async void HandleScreenCaptureRequest(object recipient, ScreenCaptureRequest message)
         {
-            await Capture(true);
+            switch (message.Kind)
+            {
+                case CaptureKind.Snip:
+                    await Capture(true);
+                    break;
+                case CaptureKind.Record:
+                    await Record();
+                    break;
+                default:
+                    break;
+            }
+            _windowService.ShowMainWindow();
         }
+
 
         private void HandleStopRecordingRequested(object recipient, StopRecordingRequested message)
         {

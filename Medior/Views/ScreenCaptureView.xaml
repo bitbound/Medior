@@ -5,6 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:Medior.Views"
              xmlns:controls="clr-namespace:Medior.Controls"
+             xmlns:icons="http://metro.mahapps.com/winfx/xaml/iconpacks"
              mc:Ignorable="d" 
              xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
              xmlns:vm="clr-namespace:Medior.ViewModels"
@@ -19,10 +20,10 @@
 
         <StackPanel Grid.Row="0" Orientation="Horizontal">
             <Button FontSize="14" Command="{Binding CaptureCommand}" Margin="0,0,10,0">
-                Capture
+                <controls:IconLabel IconKind="SolidCamera" IconText="Capture" />
             </Button>
             <Button FontSize="14" Command="{Binding RecordCommand}">
-                Record
+                <controls:IconLabel IconKind="SolidVideo" IconText="Record" />
             </Button>
             <StackPanel Margin="10,0,0,0" Orientation="Horizontal">
                 <StackPanel.Visibility>
@@ -39,7 +40,7 @@
 
                 <Button FontSize="14" Command="{Binding CopyImageCommand}" Margin="10,0,0,0" 
                         Visibility="{Binding CurrentImage, Converter={StaticResource NullToVisibilityConverter}}">
-                    Copy Image
+                    Copy
                 </Button>
 
                 <Button FontSize="14" Command="{Binding SaveCommand}" Margin="10,0,0,0">

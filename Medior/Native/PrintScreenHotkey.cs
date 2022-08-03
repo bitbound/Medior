@@ -39,6 +39,7 @@ namespace Medior.Native
         {
             if (_isHotkeySet)
             {
+                _isHotkeySet = false;
                 UnhookWindowsHookEx(_hookId);
             }
         }
