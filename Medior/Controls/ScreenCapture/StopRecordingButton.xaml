@@ -23,8 +23,8 @@
                         <Storyboard>
                             <ColorAnimation
                                 Storyboard.TargetProperty="(Button.BorderBrush).(SolidColorBrush.Color)"
-                                From="White"
-                                To="Red"
+                                From="Red"
+                                To="White"
                                 AutoReverse="True"
                                 BeginTime="0:0:0"
                                 Duration="0:0:0.5"

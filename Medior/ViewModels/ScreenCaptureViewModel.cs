@@ -130,13 +130,10 @@ namespace Medior.ViewModels
 
         public ICommand RecordCommand { get; }
 
+        public ICommand SaveCommand { get; }
         public ICommand ShareCommand { get; }
 
         public ICommand StopVideoCaptureCommand { get; }
-
-        public ICommand SaveCommand { get; }
-
-
         private async Task Capture(bool captureCursor)
         {
             ResetCaptureState();
