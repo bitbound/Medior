@@ -3,19 +3,13 @@ using MahApps.Metro.Controls.Dialogs;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Http;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using MahApps.Metro.IconPacks;
-using Medior.Extensions;
 using Medior.Views;
-using Medior.Services.ScreenCapture;
 using Microsoft.Toolkit.Mvvm.Messaging;
 using Medior.Shared.Interfaces;
 using Medior.Shared.Services;
+using Medior.Services.PhotoSorter;
 
 namespace Medior
 {
@@ -66,6 +60,11 @@ namespace Medior
                 services.AddScoped<ICapturePicker, CapturePicker>();
                 services.AddScoped<IScreenGrabber, ScreenGrabber>();
                 services.AddScoped<IScreenRecorder, ScreenRecorder>();
+                services.AddScoped<IMetadataReader, MetadataReader>();
+                services.AddScoped<IJobRunner, JobRunner>();
+                services.AddScoped<IReportWriter, ReportWriter>();
+                services.AddScoped<IPathTransformer, PathTransformer>();
+
                 services.AddHttpClient();
                 services.AddLogging(builder => builder.AddProvider(new FileLoggerProvider()));
 

@@ -1,18 +1,14 @@
-﻿using Medior.Extensions;
-using Medior.Native;
+﻿using Medior.Native;
+using Medior.Utilities;
 using PInvoke;
-using ScreenR.Shared.Helpers;
 using System;
-using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Imaging;
-using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Forms;
 using System.Windows.Input;
 using System.Windows.Interop;
-using System.Windows.Shell;
 using Rectangle = System.Drawing.Rectangle;
 
 namespace Medior.Controls.ScreenCapture

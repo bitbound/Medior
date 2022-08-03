@@ -2,7 +2,6 @@
 using Medior.Shared;
 using Medior.Utilities;
 using Microsoft.Extensions.Logging;
-using Microsoft.IO;
 using PInvoke;
 using SharpDX.Direct3D11;
 using SharpDX.DXGI;

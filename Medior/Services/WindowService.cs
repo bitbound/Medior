@@ -1,13 +1,7 @@
-﻿using Medior.Controls;
-using Medior.Controls.ScreenCapture;
+﻿using Medior.Controls.ScreenCapture;
 using Medior.Utilities;
 using System;
-using System.Collections.Generic;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
 using System.Windows.Forms;
 
 namespace Medior.Services

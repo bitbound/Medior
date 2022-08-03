@@ -2,7 +2,6 @@
 using Medior.Models;
 using Microsoft.Extensions.Logging;
 using Microsoft.IO;
-using ScreenR.Desktop.Control.Services;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -10,9 +9,7 @@ using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace Medior.Services.ScreenCapture
 {
