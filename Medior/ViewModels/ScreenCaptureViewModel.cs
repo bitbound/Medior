@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Toolkit.Mvvm.Input;
 using Microsoft.Toolkit.Mvvm.Messaging;
 using System;
+using System.Collections.Specialized;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
@@ -19,7 +20,7 @@ namespace Medior.ViewModels
     {
         ICommand CaptureCommand { get; }
         string? CaptureViewUrl { get; set; }
-        ICommand CopyImageCommand { get; }
+        ICommand CopyCaptureCommand { get; }
         ICommand CopyViewUrlCommand { get; }
         ImageSource? CurrentImage { get; }
         Uri? CurrentRecording { get; }
@@ -66,7 +67,7 @@ namespace Medior.ViewModels
             RecordCommand = new AsyncRelayCommand(Record);
             ShareCommand = new AsyncRelayCommand(Share);
             CopyViewUrlCommand = new RelayCommand(CopyUrl);
-            CopyImageCommand = new RelayCommand(CopyImage);
+            CopyCaptureCommand = new AsyncRelayCommand(CopyCapture);
             StopVideoCaptureCommand = new RelayCommand(StopVideoCapture);
             SaveCommand = new AsyncRelayCommand(Save);
 
@@ -83,7 +84,7 @@ namespace Medior.ViewModels
             set => Set(value);
         }
 
-        public ICommand CopyImageCommand { get; }
+        public ICommand CopyCaptureCommand { get; }
 
         public ICommand CopyViewUrlCommand { get; }
 
@@ -150,10 +151,26 @@ namespace Medior.ViewModels
             _messenger.Send(new ToastMessage("Copied to clipboard", ToastType.Success));
         }
 
-        private void CopyImage()
+        private async Task CopyCapture()
         {
-            Clipboard.SetImage(_currentBitmap);
-            _messenger.Send(new ToastMessage("Copied to clipboard", ToastType.Success));
+            if (_currentBitmap is not null)
+            {
+                Clipboard.SetImage(_currentBitmap);
+                _messenger.Send(new ToastMessage("Copied to clipboard", ToastType.Success));
+            }
+            else if (CurrentRecording is not null)
+            {
+                var collection = new StringCollection
+                {
+                    CurrentRecording.LocalPath
+                };
+                Clipboard.SetFileDropList(collection);
+                _messenger.Send(new ToastMessage("Copied file to clipboard", ToastType.Success));
+            }
+            else
+            {
+                await _dialogService.ShowError("Unexpected state.  No image or video to copy.");
+            }
         }
 
         private void CopyUrl()

@@ -38,8 +38,7 @@
                     Share
                 </Button>
 
-                <Button FontSize="14" Command="{Binding CopyImageCommand}" Margin="10,0,0,0" 
-                        Visibility="{Binding CurrentImage, Converter={StaticResource NullToVisibilityConverter}}">
+                <Button FontSize="14" Command="{Binding CopyCaptureCommand}" Margin="10,0,0,0">
                     Copy
                 </Button>
 

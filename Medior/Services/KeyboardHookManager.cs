@@ -1,7 +1,9 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Medior.Native;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Toolkit.Mvvm.Messaging;
 using PInvoke;
 using System;
+using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 
@@ -20,45 +22,47 @@ namespace Medior.Services
         private const int ScrollLock = 0x91;
         private const int WH_KEYBOARD_LL = 13;
         private const int WM_KEYDOWN = 0x0100;
-        private static readonly LowLevelKeyboardProc _proc = HookCallback;
-        private static IntPtr _hookId = IntPtr.Zero;
-        private static bool _isHotkeySet;
+        private readonly ConcurrentDictionary<HookType, IntPtr> _hooks = new();
+        private readonly User32Ex.LowLevelKeyboardProc _proc = HookCallback;
+
         public KeyboardHookManager()
         {
             System.Windows.Application.Current.Exit += (send, arg) =>
             {
-                UnhookWindowsHookEx(_hookId);
+                foreach (var hook in _hooks.Values)
+                {
+                    User32Ex.UnhookWindowsHookEx(hook);
+                }
             };
         }
 
-        private delegate IntPtr LowLevelKeyboardProc(int nCode, IntPtr wParam, IntPtr lParam);
+        private enum HookType
+        {
+            PrintScreen
+        }
 
         public void SetPrintScreenHook()
         {
-            if (!_isHotkeySet)
+            if (!_hooks.ContainsKey(HookType.PrintScreen))
             {
-                _isHotkeySet = true;
-                _hookId = SetHook(_proc);
+                var hookId = SetHook(_proc);
+                _hooks.AddOrUpdate(HookType.PrintScreen, hookId, (k, v) =>
+                {
+                    User32Ex.UnhookWindowsHookEx(v);
+                    return hookId;
+                });
             }
         }
 
         public void UnsetPrintScreenHook()
         {
-            if (_isHotkeySet)
+            if (_hooks.TryRemove(HookType.PrintScreen, out var hookId))
             {
-                _isHotkeySet = false;
-                UnhookWindowsHookEx(_hookId);
+                User32Ex.UnhookWindowsHookEx(hookId);
             }
         }
 
-        [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
-        private static extern IntPtr CallNextHookEx(IntPtr hhk, int nCode, IntPtr wParam, IntPtr lParam);
-
-        [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
-        private static extern IntPtr GetModuleHandle(string lpModuleName);
-
-
-        private static IntPtr HookCallback(int nCode, IntPtr wParam, IntPtr lParam)
+        private static int HookCallback(int nCode, IntPtr wParam, IntPtr lParam)
         {
             if (nCode >= 0 && wParam == (IntPtr)WM_KEYDOWN)
             {
@@ -70,14 +74,15 @@ namespace Medior.Services
                     {
                         var messenger = StaticServiceProvider.Instance.GetRequiredService<IMessenger>();
                         messenger.Send<PrintScreenInvokedMessage>();
-                        return new IntPtr(1);
+                        return 1;
                     }
                 }
             }
-            return CallNextHookEx(_hookId, nCode, wParam, lParam);
+            
+            return User32.CallNextHookEx(IntPtr.Zero, nCode, wParam, lParam);
         }
 
-        private static IntPtr SetHook(LowLevelKeyboardProc proc)
+        private static IntPtr SetHook(User32Ex.LowLevelKeyboardProc proc)
         {
             using var curProcess = Process.GetCurrentProcess();
             using var curModule = curProcess?.MainModule;
@@ -87,15 +92,12 @@ namespace Medior.Services
                 return IntPtr.Zero;
             }
 
-            return SetWindowsHookEx(WH_KEYBOARD_LL, proc,
-                GetModuleHandle(curModule.ModuleName), 0);
+           
+            return User32Ex.SetWindowsHookEx(
+                (int)User32.WindowsHookType.WH_KEYBOARD_LL,
+                proc, 
+                Kernel32Ex.GetModuleHandle(curModule.ModuleName), 
+                0);
         }
-
-        [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
-        private static extern IntPtr SetWindowsHookEx(int idHook, LowLevelKeyboardProc lpfn, IntPtr hMod, uint dwThreadId);
-
-        [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        private static extern bool UnhookWindowsHookEx(IntPtr hhk);
     }
 }
