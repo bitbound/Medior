@@ -16,13 +16,15 @@
         Title="Medior" Height="600" Width="1000" TitleCharacterCasing="Normal"
         ResizeMode="CanResizeWithGrip"
         Icon="/Assets/comet.png"
+        OverlayFadeIn="{DynamicResource DialogFadeIn}"
+        OverlayFadeOut="{DynamicResource DialogFadeOut}"
         dialog:DialogParticipation.Register="{Binding}"
         DataContext="{x:Static vm:ViewModelLocator.ShellWindowViewModel}">
 
     
     <mah:MetroWindow.Resources>
         <DataTemplate x:Key="MenuItemTemplate" DataType="{x:Type models:AppModule}">
-            <Grid Height="48">
+            <Grid Height="48" ToolTip="{Binding Label}" Background="#02000000">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="{Binding RelativeSource={RelativeSource AncestorType={x:Type mah:HamburgerMenu}}, Path=CompactPaneLength, Mode=OneWay}" />
                     <ColumnDefinition />
@@ -38,9 +40,46 @@
                    Text="{Binding Label}" />
             </Grid>
         </DataTemplate>
-
+        
+        <!--
+            Defaults can be found here: 
+            https://github.com/MahApps/MahApps.Metro/blob/fbaad878a84a38f7eecf0926869ef384db8754b8/src/MahApps.Metro/Themes/MetroWindow.xaml
+        -->
+        <Storyboard x:Key="DialogFadeIn" 
+             AccelerationRatio=".5" 
+             BeginTime="0:0:0" 
+             SpeedRatio="20" 
+             Storyboard.TargetProperty="Opacity">
+            <DoubleAnimation To=".7" />
+        </Storyboard>
+        <Storyboard x:Key="DialogFadeOut" 
+             AccelerationRatio=".5" 
+             BeginTime="0:0:0" 
+             SpeedRatio="20" 
+             Storyboard.TargetProperty="Opacity">
+        </Storyboard>
     </mah:MetroWindow.Resources>
 
+    <mah:MetroWindow.Flyouts>
+        <mah:FlyoutsControl>
+            <mah:Flyout x:Name="VariablesFlyout" IsOpen="False" Position="Right">
+                <StackPanel Margin="20">
+                    <TextBlock Text="Available Variables" Style="{StaticResource MediumTitle}" Margin="0,0,0,10" />
+                    <TextBlock>{year} - Year taken</TextBlock>
+                    <TextBlock>{month} - Month taken</TextBlock>
+                    <TextBlock>{day} - Day taken</TextBlock>
+                    <TextBlock>{hour} - Hour taken</TextBlock>
+                    <TextBlock>{minute} - Minute taken</TextBlock>
+                    <TextBlock>{second} - Second taken</TextBlock>
+                    <TextBlock>{millisecond} - Millisecond taken</TextBlock>
+                    <TextBlock>{filename} - File name without extension</TextBlock>
+                    <TextBlock>{extension} - File extension</TextBlock>
+                    <TextBlock>{camera} - Camera model</TextBlock>
+                </StackPanel>
+            </mah:Flyout>
+        </mah:FlyoutsControl>
+    </mah:MetroWindow.Flyouts>
+    
     <Grid>
         <mah:HamburgerMenu 
                 x:Name="NavMenu"

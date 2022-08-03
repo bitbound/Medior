@@ -1,0 +1,156 @@
+﻿<UserControl x:Class="Medior.Views.PhotoSorterView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:vm="clr-namespace:Medior.ViewModels"
+             xmlns:controls="clr-namespace:Medior.Controls"
+             xmlns:icons="http://metro.mahapps.com/winfx/xaml/iconpacks"
+             xmlns:local="clr-namespace:Medior.Views"
+             xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800"
+             DataContext="{x:Static vm:ViewModelLocator.PhotoSorterViewModel}">
+    
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition />
+        </Grid.RowDefinitions>
+
+        <controls:GridEx Grid.Row="0" ColumnDefinitionsEx="Auto, *">
+            <ComboBox Grid.Column="0" 
+                      Text="Select or create a sort job"
+                      MinWidth="175"
+                      DisplayMemberPath="Name"
+                      SelectedValuePath="Id"
+                      IsEditable="True"
+                      IsReadOnly="True"
+                      ItemsSource="{Binding SortJobs, Mode=OneWay}"
+                      SelectedItem="{Binding SelectedJob, Mode=TwoWay}"
+                      SelectionChanged="SortJobComboBox_SelectionChanged"
+                      VerticalAlignment="Center">
+            </ComboBox>
+
+            <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right">
+                <Button Command="{Binding CreateNewJobCommand}" Margin="0,0,10,0">
+                    <controls:IconLabel IconText="New" IconKind="RegularPlus"/>
+                </Button>
+                <Button Command="{Binding SaveJobCommand}" Margin="0,0,10,0">
+                    <controls:IconLabel IconText="Save" IconKind="RegularSave" />
+                </Button>
+                <Button Command="{Binding RenameJobCommand}" Margin="0,0,10,0">
+                    <controls:IconLabel IconText="Rename" IconKind="RegularRename" />
+                </Button>
+                <Button Command="{Binding DeleteJobCommand}">
+                    <controls:IconLabel IconText="Delete" IconKind="RegularTrash" />
+                </Button>
+            </StackPanel>
+        </controls:GridEx>
+
+        <Grid Grid.Row="1" Margin="0,30,0,0">
+            <controls:GridEx 
+                  ColumnDefinitionsEx="Auto, 10, *" 
+                  RowDefinitionsEx="Auto, Auto, Auto, Auto, Auto, Auto, Auto, *">
+
+                <Label Grid.Row="0" Content="Source Directory" VerticalAlignment="Center" />
+                <TextBox Grid.Row="0" Grid.Column="2"
+                         Margin="0,0,0,10"
+                         mah:TextBoxHelper.Watermark="The source directory to search recursively for photos and videos"
+                         Text="{Binding SelectedJob.SourceDirectory, Mode=TwoWay}" />
+
+                <Label Grid.Row="1" Content="Destination File Path" VerticalAlignment="Center"/>
+                <controls:GridEx Grid.Row="1" Grid.Column="2" ColumnDefinitionsEx="*, Auto, Auto" Margin="0,0,0,10">
+                    <TextBox Grid.Column="0" 
+                        Margin="0,0,5,0"
+                        mah:TextBoxHelper.Watermark="The destination path, after variables are transformed, where each file will be placed."
+                        Text="{Binding SelectedJob.DestinationFile, Mode=TwoWay}" TextChanged="DestinationFileTextBox_TextChanged" />
+
+                    <Button Grid.Column="1"
+                            Margin="0,0,5,0"
+                            ToolTip="Show destination path as if it were applied to an example file named 'Example.ext', with a date taken of right now." 
+                            Command="{Binding ShowDestinationTransformCommand}">
+                        <icons:PackIconBoxIcons Kind="RegularCheck" />
+                    </Button>
+
+                    <Button Grid.Column="2" ToolTip="Variable help" Click="VariableHelpButton_Click">
+                        <Grid>
+                            <icons:PackIconBoxIcons Kind="RegularHelpCircle" />
+                        </Grid>
+                    </Button>
+                </controls:GridEx>
+
+                <Label Grid.Row="2" Content="Sort Operation" VerticalAlignment="Center" />
+                <ComboBox Grid.Row="2" 
+                          Grid.Column="2"
+                          Width="200"
+                          HorizontalAlignment="Left"
+                          Margin="0,0,0,10"
+                          ItemsSource="{Binding GetSortOperations()}"
+                          SelectedItem="{Binding SelectedJob.Operation, Mode=TwoWay}" />
+
+                <Label Grid.Row="3" Content="Overwrite Action" VerticalAlignment="Center" />
+                <ComboBox Grid.Row="3" 
+                          Grid.Column="2"
+                          HorizontalAlignment="Left"
+                          Width="200"
+                          Margin="0,0,0,10"
+                          ItemsSource="{Binding GetOverwriteActions()}"
+                          SelectedItem="{Binding SelectedJob.OverwriteAction, Mode=TwoWay}" />
+
+                <Label Grid.Row="4" Content="Include Extensions" VerticalAlignment="Center" />
+                <TextBox Grid.Row="4" 
+                         Grid.Column="2"
+                         Margin="0,0,0,10"
+                         mah:TextBoxHelper.Watermark="A comma-separted list of extensions to include (e.g. 'jpg, png').  Use '*' for all except excluded extensions."
+                         Text="{Binding IncludedExtensions, Mode=TwoWay}" />
+
+                <Label Grid.Row="5" Content="Exclude Extensions" VerticalAlignment="Center" />
+                <TextBox Grid.Row="5" 
+                         Grid.Column="2"
+                         Margin="0,0,0,10"
+                         mah:TextBoxHelper.Watermark="A comma-separated list of extensions to exclude/skip (e.g. 'mp4, mov')."
+                         Text="{Binding ExcludedExtensions, Mode=TwoWay}" />
+
+                <Label Grid.Row="6" Content="Missing EXIF Directory" VerticalAlignment="Center" />
+                <TextBox Grid.Row="6" 
+                         Grid.Column="2"
+                         mah:TextBoxHelper.Watermark="Where to move files that do not contain EXIF data.  Leave blank to leave files in place."
+                         Text="{Binding SelectedJob.NoExifDirectory, Mode=TwoWay}" />
+
+                <controls:GridEx Grid.Row="8" 
+                      Grid.ColumnSpan="3" 
+                      ColumnDefinitionsEx="*, Auto" 
+                      VerticalAlignment="Bottom">
+
+                    <controls:GridEx Grid.Column="0"
+                          RowDefinitionsEx="*, *"
+                          Margin="0,0,10,0"
+                          Visibility="{Binding IsJobRunning, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}">
+
+                        <Label Content="{Binding CurrentJobRunnerTask, Mode=OneWay}" HorizontalAlignment="Center" />
+
+                        <ProgressBar Grid.Row="1"
+                                     Maximum="100"
+                                     Value="{Binding JobRunnerProgress, Mode=OneWay}" />
+
+                        <TextBlock Grid.Row="1"
+                                   FontWeight="Bold"
+                                   HorizontalAlignment="Center" 
+                                   Text="{Binding JobRunnerProgressPercent, Mode=OneWay}" />
+                    </controls:GridEx>
+
+                    <StackPanel Grid.Column="1" Orientation="Horizontal">
+                        <CheckBox Content="Dry Run" 
+                                  Margin="0,0,10,0"
+                                  IsChecked="{Binding IsDryRun, Mode=TwoWay}"
+                                  ToolTipService.ToolTip="Simulate running this job and get a report of what will happen, without actually making changes."/>
+
+                        <Button Content="Cancel" Command="{Binding CancelJobCommand}" Margin="0,0,10,0" Height="30" />
+                        <Button Content="Start" Command="{Binding StartJobCommand}" Height="30" />
+                    </StackPanel>
+                </controls:GridEx>
+            </controls:GridEx>
+        </Grid>
+    </Grid>
+</UserControl>

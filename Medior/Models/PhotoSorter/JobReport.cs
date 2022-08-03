@@ -4,10 +4,10 @@ namespace Medior.Models.PhotoSorter
 {
     public class JobReport
     {
-        public string JobName { get; init; } = string.Empty;
-        public SortOperation Operation { get; init; }
+        public string JobName { get; set; } = string.Empty;
+        public SortOperation Operation { get; set; }
         public List<OperationResult> Results { get; } = new();
-        public bool DryRun { get; init; }
-        public string ReportPath { get; init; } = string.Empty;
+        public bool DryRun { get; set; }
+        public string ReportPath { get; set; } = string.Empty;
     }
 }

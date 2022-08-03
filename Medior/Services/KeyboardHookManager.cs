@@ -19,8 +19,8 @@ namespace Medior.Services
     public class KeyboardHookManager : IKeyboardHookManager
     {
         private const int PrintScreen = 0x2C;
-        private const int ScrollLock = 0x91;
-        private const int WH_KEYBOARD_LL = 13;
+        //private const int ScrollLock = 0x91;
+        //private const int WH_KEYBOARD_LL = 13;
         private const int WM_KEYDOWN = 0x0100;
         private readonly ConcurrentDictionary<HookType, IntPtr> _hooks = new();
         private readonly User32Ex.LowLevelKeyboardProc _proc = HookCallback;

@@ -40,6 +40,8 @@ namespace Medior
 
                 services.AddAppModule<HomeView>("Home", PackIconBoxIconsKind.RegularHome);
                 services.AddAppModule<IScreenCaptureViewModel, ScreenCaptureViewModel, ScreenCaptureView>("Screen Capture", PackIconBoxIconsKind.RegularCamera);
+                services.AddAppModule<IPhotoSorterViewModel, PhotoSorterViewModel, PhotoSorterView>("Photo Sorter", PackIconBoxIconsKind.RegularPhotoAlbum);
+                services.AddAppModule<IKeepAwakeViewModel, KeepAwakeViewModel, KeepAwakeView>("Keep Awake", PackIconBoxIconsKind.RegularCoffee);
 
                 services.AddSingleton<IFileSystem, FileSystem>();
                 services.AddSingleton<IRegistryService, RegistryService>();
@@ -65,7 +67,7 @@ namespace Medior
                 services.AddScoped<IJobRunner, JobRunner>();
                 services.AddScoped<IReportWriter, ReportWriter>();
                 services.AddScoped<IPathTransformer, PathTransformer>();
-
+                
                 services.AddHttpClient();
                 services.AddLogging(builder => builder.AddProvider(new FileLoggerProvider()));
 

@@ -1,7 +1,9 @@
 ﻿using Medior.Models;
+using Medior.Models.PhotoSorter;
 using Medior.Shared;
 using Medior.Shared.Interfaces;
 using Microsoft.Extensions.Logging;
+using Microsoft.Toolkit.Diagnostics;
 using System;
 using System.IO;
 using System.Runtime.CompilerServices;
@@ -17,6 +19,8 @@ namespace Medior.Services
         bool IsNavPaneOpen { get; set; }
         bool StartAtLogon { get; set; }
         AppTheme Theme { get; set; }
+        SortJob[] SortJobs { get; set; }
+
         Task Save();
     }
     public class Settings : ISettings
@@ -28,6 +32,7 @@ namespace Medior.Services
         private readonly IFileSystem _fileSystem;
         private readonly ILogger<Settings> _logger;
         private readonly IRegistryService _registryService;
+        private readonly JsonSerializerOptions _serializerOptions = new() { WriteIndented = true };
         private SettingsModel _settings = new();
 
         public Settings(
@@ -103,6 +108,12 @@ namespace Medior.Services
             get => Get<AppTheme>();
             set => Set(value);
         }
+        public SortJob[] SortJobs
+        {
+            get => Get<SortJob[]>() ?? Array.Empty<SortJob>();
+            set => Set(value);
+        }
+
         public async Task Save()
         {
             if (!await _fileLock.WaitAsync(0))
@@ -113,7 +124,7 @@ namespace Medior.Services
             try
             {
                 _fileSystem.CreateDirectory(Path.GetDirectoryName(_filePath)!);
-                var serializedModel = JsonSerializer.Serialize(_settings);
+                var serializedModel = JsonSerializer.Serialize(_settings, _serializerOptions);
                 await _fileSystem.WriteAllTextAsync(_filePath, serializedModel);
                 _fileSystem.Encrypt(_filePath);
             }
@@ -132,7 +143,9 @@ namespace Medior.Services
         private T? Get<T>([CallerMemberName] string propertyName = "", T? defaultValue = default)
         {
             var prop = _settings.GetType().GetProperty(propertyName);
-            var propValue = prop?.GetValue(_settings);
+            Guard.IsNotNull(prop, nameof(propertyName));
+
+            var propValue = prop.GetValue(_settings);
             if (propValue is T typedValue)
             {
                 return typedValue;
