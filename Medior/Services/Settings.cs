@@ -1,5 +1,4 @@
 ﻿using Medior.Models;
-using Medior.Native;
 using Medior.Shared;
 using Medior.Shared.Interfaces;
 using Microsoft.Extensions.Logging;
@@ -23,6 +22,7 @@ namespace Medior.Services
     public class Settings : ISettings
     {
         private readonly IEnvironmentHelper _environmentHelper;
+        private readonly IKeyboardHookManager _keyboardHookManager;
         private readonly SemaphoreSlim _fileLock = new(1, 1);
         private readonly string _filePath = AppConstants.SettingsFilePath;
         private readonly IFileSystem _fileSystem;
@@ -34,11 +34,13 @@ namespace Medior.Services
             IFileSystem fileSystem, 
             IRegistryService registryService,
             IEnvironmentHelper environmentHelper,
+            IKeyboardHookManager keyboardHookManager,
             ILogger<Settings> logger)
         {
             _fileSystem = fileSystem;
             _registryService = registryService;
             _environmentHelper = environmentHelper;
+            _keyboardHookManager = keyboardHookManager;
             _logger = logger;
             Load();
         }
@@ -51,11 +53,11 @@ namespace Medior.Services
                 Set(value);
                 if (value)
                 {
-                    PrintScreenHotkey.Set();
+                    _keyboardHookManager.SetPrintScreenHook();
                 }
                 else
                 {
-                    PrintScreenHotkey.Unset();
+                    _keyboardHookManager.UnsetPrintScreenHook();
                 }
             }
         }

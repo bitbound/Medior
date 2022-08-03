@@ -1,13 +1,20 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Toolkit.Mvvm.Messaging;
+using PInvoke;
 using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 
-namespace Medior.Native
+namespace Medior.Services
 {
+    public interface IKeyboardHookManager
+    {
+        void SetPrintScreenHook();
+        void UnsetPrintScreenHook();
+    }
+
     // Code for Hotkey class derived from here: https://blogs.msdn.microsoft.com/toub/2006/05/03/low-level-keyboard-hook-in-c/
-    public static class PrintScreenHotkey
+    public class KeyboardHookManager : IKeyboardHookManager
     {
         private const int PrintScreen = 0x2C;
         private const int ScrollLock = 0x91;
@@ -16,9 +23,7 @@ namespace Medior.Native
         private static readonly LowLevelKeyboardProc _proc = HookCallback;
         private static IntPtr _hookId = IntPtr.Zero;
         private static bool _isHotkeySet;
-        private delegate IntPtr LowLevelKeyboardProc(int nCode, IntPtr wParam, IntPtr lParam);
-
-        static PrintScreenHotkey()
+        public KeyboardHookManager()
         {
             System.Windows.Application.Current.Exit += (send, arg) =>
             {
@@ -26,7 +31,9 @@ namespace Medior.Native
             };
         }
 
-        public static void Set()
+        private delegate IntPtr LowLevelKeyboardProc(int nCode, IntPtr wParam, IntPtr lParam);
+
+        public void SetPrintScreenHook()
         {
             if (!_isHotkeySet)
             {
@@ -35,7 +42,7 @@ namespace Medior.Native
             }
         }
 
-        public static void Unset()
+        public void UnsetPrintScreenHook()
         {
             if (_isHotkeySet)
             {

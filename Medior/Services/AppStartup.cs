@@ -1,5 +1,4 @@
 ﻿using Medior.Interfaces;
-using Medior.Native;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -16,17 +15,20 @@ namespace Medior.Services
         private readonly ISettings _settings;
         private readonly ITrayService _trayService;
         private readonly IThemeSetter _themeSetter;
+        private readonly IKeyboardHookManager _keyboardHookManager;
         private readonly IEnumerable<IBackgroundService> _backgroundServices;
         private readonly List<Task> _backgroundTasks = new();
         public AppStartup(
             ISettings settings, 
             ITrayService trayService,
             IThemeSetter themeSetter,
+            IKeyboardHookManager keyboardHookManager,
             IEnumerable<IBackgroundService> backgroundServices)
         {
             _settings = settings;
             _trayService = trayService;
             _themeSetter = themeSetter;
+            _keyboardHookManager = keyboardHookManager;
             _backgroundServices = backgroundServices;
         }
 
@@ -42,7 +44,7 @@ namespace Medior.Services
 
             if (_settings.HandlePrintScreen)
             {
-                PrintScreenHotkey.Set();
+                _keyboardHookManager.SetPrintScreenHook();
             }
 
             return Task.CompletedTask;
