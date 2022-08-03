@@ -1,11 +1,4 @@
-﻿using Medior.Models.Messages;
-using Medior.Reactive;
-using Medior.Services;
-using Microsoft.Toolkit.Mvvm.Messaging;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using Microsoft.Toolkit.Mvvm.Messaging;
 using System.Threading.Tasks;
 
 namespace Medior.ViewModels

@@ -1,12 +1,10 @@
 ﻿using Medior.Shared;
 using Microsoft.Extensions.Logging;
 using System;
-using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Imaging;
-using System.Runtime.Versioning;
 
-namespace ScreenR.Desktop.Control.Services
+namespace Medior.Services
 {
     public interface IBitmapUtility
     {
@@ -65,7 +63,7 @@ namespace ScreenR.Desktop.Control.Services
                 bd1 = previousFrame.LockBits(new Rectangle(0, 0, width, height), ImageLockMode.ReadOnly, currentFrame.PixelFormat);
                 bd2 = currentFrame.LockBits(new Rectangle(0, 0, width, height), ImageLockMode.ReadOnly, previousFrame.PixelFormat);
 
-                var bytesPerPixel = Bitmap.GetPixelFormatSize(currentFrame.PixelFormat) / 8;
+                var bytesPerPixel = Image.GetPixelFormatSize(currentFrame.PixelFormat) / 8;
                 var totalSize = bd1.Height * bd1.Width * bytesPerPixel;
 
                 unsafe
@@ -77,7 +75,7 @@ namespace ScreenR.Desktop.Control.Services
                     {
                         for (var column = 0; column < width; column++)
                         {
-                            var index = (row * width * bytesPerPixel) + (column * bytesPerPixel);
+                            var index = row * width * bytesPerPixel + column * bytesPerPixel;
 
                             byte* data1 = scan1 + index;
                             byte* data2 = scan2 + index;

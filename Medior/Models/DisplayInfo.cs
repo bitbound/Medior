@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Drawing;
 using System.Numerics;
-using System.Runtime.Serialization;
 
 namespace Medior.Models
 {

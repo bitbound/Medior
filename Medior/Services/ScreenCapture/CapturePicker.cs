@@ -1,16 +1,9 @@
-﻿using Medior.Controls;
-using Medior.Shared;
-using Microsoft.Toolkit.Mvvm.Messaging;
-using ScreenR.Shared.Helpers;
+﻿using Medior.Shared;
 using System;
-using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows;
 
 namespace Medior.Services.ScreenCapture
 {

@@ -1,18 +1,10 @@
-﻿using Medior.Reactive;
-using Medior.Services;
-using MahApps.Metro.Controls.Dialogs;
-using Microsoft.Extensions.Logging;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
 using Medior.Models;
 using MahApps.Metro.IconPacks;
 using Medior.Views;
 using Microsoft.Toolkit.Mvvm.Messaging;
-using Medior.Models.Messages;
 
 namespace Medior.ViewModels
 {

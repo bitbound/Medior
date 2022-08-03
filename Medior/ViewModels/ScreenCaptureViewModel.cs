@@ -1,28 +1,16 @@
-﻿using Medior.Extensions;
-using Medior.Models.Messages;
-using Medior.Reactive;
-using Medior.Services.ScreenCapture;
-using Medior.Shared.Services;
+﻿using Medior.Shared.Services;
 using Microsoft.Extensions.Logging;
-using Microsoft.IO;
 using Microsoft.Toolkit.Mvvm.Input;
 using Microsoft.Toolkit.Mvvm.Messaging;
 using System;
-using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
-using System.Linq;
-using System.Net.Http;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Controls;
 using System.Windows.Forms;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
 
 namespace Medior.ViewModels
 {
