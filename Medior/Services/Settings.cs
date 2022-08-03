@@ -15,6 +15,7 @@ namespace Medior.Services
     public interface ISettings: IServerUriProvider
     {
         bool HandlePrintScreen { get; set; }
+        bool IsNavPaneOpen { get; set; }
         bool StartAtLogon { get; set; }
         AppTheme Theme { get; set; }
         Task Save();
@@ -25,8 +26,8 @@ namespace Medior.Services
         private readonly SemaphoreSlim _fileLock = new(1, 1);
         private readonly string _filePath = AppConstants.SettingsFilePath;
         private readonly IFileSystem _fileSystem;
-        private readonly IRegistryService _registryService;
         private readonly ILogger<Settings> _logger;
+        private readonly IRegistryService _registryService;
         private SettingsModel _settings = new();
 
         public Settings(
@@ -57,6 +58,12 @@ namespace Medior.Services
                     PrintScreenHotkey.Unset();
                 }
             }
+        }
+
+        public bool IsNavPaneOpen
+        {
+            get => Get<bool>();
+            set => Set(value);
         }
 
         public string ServerUri

@@ -13,6 +13,7 @@ namespace Medior.ViewModels
         ObservableCollectionEx<AppModule> AppModules { get; }
         ObservableCollectionEx<AppModule> FilteredAppModules { get; }
         bool IsLoaderVisible { get; set; }
+        bool IsNavPaneOpen { get; set; }
         double LoaderProgress { get; }
         string LoaderText { get; set; }
         LoaderType LoaderType { get; set; }
@@ -24,11 +25,13 @@ namespace Medior.ViewModels
     public class ShellViewModel : ObservableObjectEx, IShellViewModel
     {
         private readonly IMessenger _messenger;
-
+        private readonly ISettings _settings;
         public ShellViewModel(
             IMessenger messeger,
+            ISettings settings,
             IEnumerable<AppModule> appModules)
         {
+            _settings = settings;
             _messenger = messeger;
             AppModules.AddRange(appModules);
             FilteredAppModules.AddRange(appModules);
@@ -46,6 +49,12 @@ namespace Medior.ViewModels
         {
             get => Get<bool>();
             set => Set(value);
+        }
+
+        public bool IsNavPaneOpen
+        {
+            get => _settings.IsNavPaneOpen;
+            set => _settings.IsNavPaneOpen = value;
         }
 
         public double LoaderProgress
@@ -96,7 +105,6 @@ namespace Medior.ViewModels
             get => Get<AppModule>() ?? AppModules.FirstOrDefault();
             set => Set(value);
         }
-
         private void HandleLoaderUpdate(object recipient, LoaderUpdate message)
         {
             IsLoaderVisible = message.IsShown;

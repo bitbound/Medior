@@ -45,7 +45,7 @@
         <mah:HamburgerMenu 
                 x:Name="NavMenu"
                 DisplayMode="CompactInline"
-                IsPaneOpen="True"
+                IsPaneOpen="{Binding IsNavPaneOpen, Mode=TwoWay}"
                 SelectedItem="{Binding SelectedModule}"
                 ItemInvoked="NavMenu_ItemInvoked"
                 ContentTransition="Default"

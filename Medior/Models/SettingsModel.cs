@@ -2,9 +2,10 @@
 {
     public class SettingsModel
     {
-        public AppTheme Theme { get; set; } = AppTheme.Dark;
-        public string ServerUri { get; set; } = string.Empty;
         public bool HandlePrintScreen { get; set; } = true;
+        public bool IsNavPaneOpen { get; set; } = true;
+        public string ServerUri { get; set; } = string.Empty;
         public bool StartAtLogon { get; set; } = true;
+        public AppTheme Theme { get; set; } = AppTheme.Dark;
     }
 }
