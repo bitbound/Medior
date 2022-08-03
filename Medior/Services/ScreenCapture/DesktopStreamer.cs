@@ -81,7 +81,7 @@ namespace Medior.Services.ScreenCapture
                     previousFrame?.Dispose();
                     previousFrame = currentFrame;
 
-                    var result = _screenGrabber.GetScreenGrab(_activeDisplay);
+                    var result = _screenGrabber.GetScreenGrab(_activeDisplay, false);
                     if (result.IsSuccess && result.Value is not null)
                     {
                         currentFrame = result.Value;

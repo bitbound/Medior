@@ -22,8 +22,9 @@ namespace Medior.Services.ScreenCapture
     {
         IEnumerable<DisplayInfo> GetDisplays();
 
-        Result<Bitmap> GetScreenGrab(string outputName);
-        Result<Bitmap> GetScreenGrab();
+        Result<Bitmap> GetScreenGrab(string outputName, bool captureCursor);
+        Result<Bitmap> GetScreenGrab(bool captureCursor);
+        Result<Bitmap> GetScreenGrab(Rectangle captureArea, bool captureCursor);
     }
     public class ScreenGrabber : IScreenGrabber
     {
@@ -47,7 +48,7 @@ namespace Medior.Services.ScreenCapture
             return _displays.ToArray();
         }
 
-        public Result<Bitmap> GetScreenGrab(string outputName)
+        public Result<Bitmap> GetScreenGrab(string outputName, bool captureCursor)
         {
             try
             {
@@ -62,7 +63,7 @@ namespace Medior.Services.ScreenCapture
 
                 if (!result.IsSuccess || result.Value is null || IsEmpty(result.Value))
                 {
-                    result = GetBitBltGrab(display.MonitorArea);
+                    result = GetBitBltGrab(display.MonitorArea, captureCursor);
                     if (!result.IsSuccess || result.Value is null)
                     {
                         return Result.Fail<Bitmap>(result.Exception ?? new("Unknown error."));
@@ -78,11 +79,11 @@ namespace Medior.Services.ScreenCapture
             }
         }
 
-        public Result<Bitmap> GetScreenGrab()
+        public Result<Bitmap> GetScreenGrab(bool captureCursor)
         {
             try
             {
-                var result = GetBitBltGrab(SystemInformation.VirtualScreen);
+                var result = GetBitBltGrab(SystemInformation.VirtualScreen, captureCursor);
                 if (!result.IsSuccess || result.Value is null)
                 {
                     return Result.Fail<Bitmap>(result.Exception ?? new("Unknown error."));
@@ -97,7 +98,12 @@ namespace Medior.Services.ScreenCapture
             }
         }
 
-        internal Result<Bitmap> GetBitBltGrab(Rectangle captureArea)
+        public Result<Bitmap> GetScreenGrab(Rectangle captureArea, bool captureCursor)
+        {
+            return GetBitBltGrab(captureArea, captureCursor);
+        }
+
+        internal Result<Bitmap> GetBitBltGrab(Rectangle captureArea, bool captureCursor)
         {
             var hwnd = IntPtr.Zero;
             var screenDc = new User32.SafeDCHandle();
@@ -114,6 +120,21 @@ namespace Medior.Services.ScreenCapture
                     screenDc, captureArea.X, captureArea.Y, unchecked((int)CopyPixelOperation.SourceCopy));
 
                 graphics.ReleaseHdc(targetDc);
+
+                if (captureCursor)
+                {
+                    // Get cursor information to draw on the screenshot.
+                    var ci = new User32.CURSORINFO();
+                    ci.cbSize = Marshal.SizeOf(ci);
+                    User32.GetCursorInfo(ref ci);
+                    if (ci.flags == User32.CURSORINFOFlags.CURSOR_SHOWING)
+                    {
+                        using var icon = Icon.FromHandle(ci.hCursor);
+                        graphics.DrawIcon(icon,
+                            (int)(ci.ptScreenPos.x - SystemInformation.VirtualScreen.Left - captureArea.Left),
+                            (int)(ci.ptScreenPos.y - SystemInformation.VirtualScreen.Top - captureArea.Top));
+                    }
+                }
 
                 return Result.Ok(bitmap);
             }

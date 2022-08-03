@@ -27,6 +27,12 @@ namespace Medior
         {
             var appStartup = StaticServiceProvider.Instance.GetRequiredService<IAppStartup>();
             appStartup.Initialize(_cts.Token);
+
+            if (!Environment.GetCommandLineArgs().Any(x => x.Equals("--hidden", StringComparison.OrdinalIgnoreCase)))
+            {
+                Current.MainWindow = new ShellWindow();
+                Current.MainWindow.Show();
+            }
         }
 
         private void Application_Exit(object sender, ExitEventArgs e)

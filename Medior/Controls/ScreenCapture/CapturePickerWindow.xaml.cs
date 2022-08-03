@@ -12,16 +12,17 @@ using System.Windows;
 using System.Windows.Forms;
 using System.Windows.Input;
 using System.Windows.Interop;
+using System.Windows.Shell;
 using Rectangle = System.Drawing.Rectangle;
 
-namespace Medior.Controls
+namespace Medior.Controls.ScreenCapture
 {
     /// <summary>
     /// Interaction logic for CapturePickerWindow.xaml
     /// </summary>
     public partial class CapturePickerWindow : Window
     {
-        public Bitmap _backgroundImage;
+        public Bitmap? _backgroundImage;
 
         private double _dpiScale = 1;
 
@@ -30,7 +31,6 @@ namespace Medior.Controls
         public CapturePickerWindow()
         {
             InitializeComponent();
-            _backgroundImage = new(0, 0);
         }
 
         public CapturePickerWindow(Bitmap backgroundImage)
@@ -77,7 +77,6 @@ namespace Medior.Controls
             {
                 if (!await WaitHelper.WaitForAsync(() => IsCtrlPressed(), TimeSpan.FromMilliseconds(100)))
                 {
-                    CaptureBorder.Rect = new Rect();
                     continue;
                 }
 
@@ -119,13 +118,18 @@ namespace Medior.Controls
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             _dpiScale = PresentationSource.FromVisual(this).CompositionTarget.TransformToDevice.M11;
+
             Width = SystemParameters.VirtualScreenWidth;
             Height = SystemParameters.VirtualScreenHeight;
             Left = SystemParameters.VirtualScreenLeft;
             Top = SystemParameters.VirtualScreenTop;
-            MainGrid.Background = _backgroundImage.ToImageBrush(ImageFormat.Png);
-            _ = FrameWindowUnderCursor();
+
+            MainGrid.Background = _backgroundImage?.ToImageBrush(ImageFormat.Png);
+
             Activate();
+            HeaderHint.Visibility = Visibility.Visible;
+
+            _ = FrameWindowUnderCursor();
         }
         private void Window_MouseDown(object sender, MouseButtonEventArgs e)
         {

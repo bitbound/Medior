@@ -1,4 +1,5 @@
 ﻿using Medior.Controls;
+using Medior.Controls.ScreenCapture;
 using Medior.Utilities;
 using System;
 using System.Collections.Generic;
@@ -13,20 +14,16 @@ namespace Medior.Services
 {
     public interface IWindowService
     {
-        Rectangle ShowCapturePicker(Bitmap backgroundImage);
         IDisposable HideMainWindow();
+
+        Rectangle ShowCapturePicker(Bitmap backgroundImage);
+        Rectangle ShowCapturePicker();
         void ShowMainWindow();
+        IDisposable ShowRecordingFrame(Rectangle selectedArea);
     }
 
     public class WindowService : IWindowService
     {
-        public Rectangle ShowCapturePicker(Bitmap backgroundImage)
-        {
-            var window = new CapturePickerWindow(backgroundImage);
-            window.ShowDialog();
-            return window.SelectedArea;
-        }
-
         public IDisposable HideMainWindow()
         {
             try
@@ -57,6 +54,19 @@ namespace Medior.Services
             }
         }
 
+        public Rectangle ShowCapturePicker(Bitmap backgroundImage)
+        {
+            var window = new CapturePickerWindow(backgroundImage);
+            window.ShowDialog();
+            return window.SelectedArea;
+        }
+        public Rectangle ShowCapturePicker()
+        {
+            var window = new CapturePickerWindow();
+            window.ShowDialog();
+            return window.SelectedArea;
+        }
+
         public void ShowMainWindow()
         {
             try
@@ -70,6 +80,19 @@ namespace Medior.Services
                 WpfApp.Current.MainWindow.Activate();
             }
             catch { }
+        }
+
+        public IDisposable ShowRecordingFrame(Rectangle selectedArea)
+        {
+            var frame = new RecordingFrameWindow(selectedArea);
+            var stopButton = new StopRecordingButton();
+            frame.Show();
+            stopButton.Show();
+            return new CallbackDisposable(() =>
+            {
+                frame.Close();
+                stopButton.Close();
+            });
         }
     }
 }

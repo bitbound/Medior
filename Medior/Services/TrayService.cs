@@ -42,12 +42,12 @@ namespace Medior.Services
             openItem.Click += ShowMainWindow;
 
             var exitItem = new ToolStripMenuItem("Exit");
-            exitItem.Click += (s, a) => App.Current.Shutdown();
+            exitItem.Click += (s, a) => WpfApp.Current.Shutdown();
 
             _notifyIcon.ContextMenuStrip.Items.Add(openItem);
             _notifyIcon.ContextMenuStrip.Items.Add(exitItem);
 
-            App.Current.Exit += (s, e) =>
+            WpfApp.Current.Exit += (s, e) =>
             {
                 _notifyIcon.Dispose();
             };
@@ -58,11 +58,11 @@ namespace Medior.Services
 
         private void ShowMainWindow(object? sender, EventArgs e)
         {
-            if (App.Current.MainWindow is null)
+            if (WpfApp.Current.MainWindow is null)
             {
-                App.Current.MainWindow = new ShellWindow();
+                WpfApp.Current.MainWindow = new ShellWindow();
             }
-            App.Current.MainWindow.Show();
+            WpfApp.Current.MainWindow.Show();
         }
 
         public async Task ShowBalloon(string title, string message, int timeoutMs = 5_000, ToolTipIcon icon = ToolTipIcon.Info, Action? onclickCallback = null)

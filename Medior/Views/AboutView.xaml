@@ -48,10 +48,10 @@
             </TextBlock>
             
             <TextBlock Style="{StaticResource MediumTitle}">
-                Screenshot
+                Screen Capture
             </TextBlock>
             <TextBlock Style="{StaticResource Paragraph}">
-                Capture and share screenshots.  Requires Snipping Tool to be installed.
+                Capture and share screenshots or recordings.
             </TextBlock>
 
         </StackPanel>

@@ -6,8 +6,7 @@
              Startup="Application_Startup"
              Exit="Application_Exit"
              DispatcherUnhandledException="Application_DispatcherUnhandledException"
-             ShutdownMode="OnExplicitShutdown"
-             StartupUri="ShellWindow.xaml">
+             ShutdownMode="OnExplicitShutdown">
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>

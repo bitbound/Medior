@@ -1,0 +1,82 @@
+﻿<UserControl x:Class="Medior.Views.ScreenCaptureView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:Medior.Views"
+             xmlns:controls="clr-namespace:Medior.Controls"
+             mc:Ignorable="d" 
+             xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
+             xmlns:vm="clr-namespace:Medior.ViewModels"
+             DataContext="{x:Static vm:ViewModelLocator.ScreenCaptureViewModel}"
+             d:DesignHeight="450" d:DesignWidth="800">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition />
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Row="0" Orientation="Horizontal">
+            <Button FontSize="14" Command="{Binding CaptureCommand}" Margin="0,0,10,0">
+                Capture
+            </Button>
+            <Button FontSize="14" Command="{Binding RecordCommand}">
+                Record
+            </Button>
+            <StackPanel Margin="10,0,0,0" Orientation="Horizontal">
+                <StackPanel.Visibility>
+                    <MultiBinding Converter="{StaticResource MultiBoolAnyToVisibilityConverter}">
+                        <Binding Path="CurrentImage" Converter="{StaticResource NotNullToBoolConverter}" />
+                        <Binding Path="CurrentRecording" Converter="{StaticResource NotNullToBoolConverter}"  />
+                    </MultiBinding>
+                </StackPanel.Visibility>
+                <Separator Style="{StaticResource {x:Static ToolBar.SeparatorStyleKey}}" />
+
+                <Button FontSize="14" Command="{Binding ShareCommand}" Margin="10,0,0,0">
+                    Share
+                </Button>
+
+                <Button FontSize="14" Command="{Binding CopyImageCommand}" Margin="10,0,0,0" 
+                        Visibility="{Binding CurrentImage, Converter={StaticResource NullToVisibilityConverter}}">
+                    Copy Image
+                </Button>
+
+                <Button FontSize="14" Command="{Binding SaveCommand}" Margin="10,0,0,0">
+                    Save
+                </Button>
+            </StackPanel>
+
+        </StackPanel>
+
+        <StackPanel Grid.Row="1" Margin="0,10,0,0" Orientation="Horizontal" Visibility="{Binding CaptureViewUrl, Converter={StaticResource NullToVisibilityConverter}}">
+            <TextBox IsReadOnly="True" Text="{Binding CaptureViewUrl}" />
+            <Button FontSize="14" Command="{Binding CopyViewUrlCommand}" Margin="10,0,0,0">
+                Copy URL
+            </Button>
+        </StackPanel>
+
+        <Image Grid.Row="2"  Source="{Binding CurrentImage}" Margin="10" Visibility="{Binding CurrentImage, Converter={StaticResource NullToVisibilityConverter}}"></Image>
+
+        <controls:MediaPlayer Grid.Row="2"
+                              MediaUri="{Binding CurrentRecording}"
+                              Margin="10"
+                              Visibility="{Binding CurrentRecording, Converter={StaticResource NullToVisibilityConverter}}" />
+
+        <TextBlock Grid.Row="2" 
+                   VerticalAlignment="Center" 
+                   HorizontalAlignment="Center" 
+                   Style="{StaticResource MediumTitle}"
+                   Visibility="{Binding IsHintTextVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
+            Capture an image or video to start.
+        </TextBlock>
+
+        <StackPanel Grid.Row="2" 
+                    VerticalAlignment="Center"
+                    Visibility="{Binding IsRecordingInProgress, Converter={StaticResource BooleanToVisibilityConverter}}">
+            <TextBlock Text="Recording in progress" HorizontalAlignment="Center" Style="{StaticResource MediumTitle}" Margin="0,0,0,10" />
+            <Ellipse Fill="Red" Height="50" Width="50" HorizontalAlignment="Center" Margin="0,0,0,10" />
+            <Button Content="Stop" HorizontalAlignment="Center" Command="{Binding StopVideoCaptureCommand}" />
+        </StackPanel>
+    </Grid>
+</UserControl>

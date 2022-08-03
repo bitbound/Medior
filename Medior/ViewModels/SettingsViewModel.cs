@@ -1,5 +1,6 @@
 ﻿using ControlzEx.Theming;
 using Medior.Models;
+using Medior.Native;
 using Medior.Services;
 using Microsoft.Toolkit.Mvvm.Input;
 using System;
@@ -15,6 +16,7 @@ namespace Medior.ViewModels
     public interface ISettingsViewModel
     {
         bool HandlePrintScreen { get; set; }
+        bool StartAtLogon { get; set; }
         ICommand SetThemeCommand { get; }
         AppTheme Theme { get; set; }
     }
@@ -51,6 +53,12 @@ namespace Medior.ViewModels
                 _settings.Theme = value;
                 _themeSetter.SetTheme(value);
             }
+        }
+
+        public bool StartAtLogon
+        {
+            get => _settings.StartAtLogon;
+            set => _settings.StartAtLogon = value;
         }
     }
 }

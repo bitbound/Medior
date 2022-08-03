@@ -9,7 +9,6 @@ namespace Medior.Services
     public interface ISystemTime
     {
         DateTimeOffset Now { get; }
-        DateTimeOffset UtcNow { get; }
 
         DateTimeOffset Offset(TimeSpan offset);
         void Restore();
@@ -18,7 +17,7 @@ namespace Medior.Services
 
     public class SystemTime : ISystemTime
     {
-        private TimeSpan? _offset;
+        private TimeSpan _offset;
         private DateTimeOffset? _time;
 
         public DateTimeOffset Now
@@ -26,39 +25,25 @@ namespace Medior.Services
             get
             {
                 var baseTime = _time ?? DateTimeOffset.Now;
-                if (_offset.HasValue)
-                {
-                    return baseTime.Add(_offset.Value);
-                }
-                return baseTime;
+                return baseTime.Add(_offset);
             }
         }
 
-        public DateTimeOffset UtcNow => _time ?? DateTimeOffset.UtcNow;
-
         public DateTimeOffset Offset(TimeSpan offset)
         {
-            if (_offset.HasValue)
-            {
-                _offset = _offset.Value.Add(offset);
-            }
-            else
-            {
-                _offset = offset;
-            }
-
+            _offset = _offset.Add(offset);
             return Now;
         }
 
         public void Restore()
         {
-            _offset = null;
+            _offset = TimeSpan.Zero;
             _time = null;
         }
 
         public void Set(DateTimeOffset time)
         {
-            _offset = null;
+            _offset = TimeSpan.Zero;
             _time = time;
         }
     }

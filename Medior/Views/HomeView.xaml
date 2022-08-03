@@ -9,9 +9,9 @@
       mc:Ignorable="d" 
       d:DesignHeight="450" d:DesignWidth="800">
 
-    <Grid HorizontalAlignment="Center">
-        <icons:PackIconOcticons Kind="Code" Height="200" Width="200" HorizontalAlignment="Center" Foreground="SteelBlue" Opacity=".2" />
-        <StackPanel  Margin="0,30,0,0">
+    <Grid HorizontalAlignment="Center" VerticalAlignment="Center" >
+        <icons:PackIconBoxIcons  Kind="RegularCode" Height="250" Width="250" HorizontalAlignment="Center" Foreground="SteelBlue" Opacity=".2" />
+        <StackPanel Margin="0,60,0,0">
             <TextBlock Text="Medior" FontSize="48" HorizontalAlignment="Center" Style="{StaticResource ThemeText}" />
             <TextBlock Text="Multimedia productivity.  Simplified." FontSize="24" Margin="0,20,0,0" HorizontalAlignment="Center" Style="{StaticResource ThemeText}" />
         </StackPanel>

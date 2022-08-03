@@ -1,11 +1,11 @@
-﻿<Window x:Class="Medior.Controls.CapturePickerWindow"
+﻿<Window x:Class="Medior.Controls.ScreenCapture.CapturePickerWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:Medior.Controls"
+        xmlns:local="clr-namespace:Medior.Controls.ScreenCapture"
         mc:Ignorable="d"
-        Title="Medior Screenshot"  
+        Title="Medior Screen Capture"  
         WindowStyle="None" 
         Topmost="True" 
         KeyDown="Window_KeyDown" 
@@ -14,8 +14,8 @@
         Loaded="Window_Loaded"  
         MouseUp="Window_MouseUp" 
         MouseMove="Window_MouseMove" 
-        MouseDown="Window_MouseDown" 
-        Background="Transparent"
+        MouseDown="Window_MouseDown"
+        Background="#02000000"
         AllowsTransparency="True"
         Cursor="Cross" 
         Padding="0">
@@ -37,6 +37,12 @@
             </Path.Data>
         </Path>
 
-        <TextBlock x:Name="HeaderLabel" Text="Draw a region or hold Ctrl to pick a window." HorizontalAlignment="Center" VerticalAlignment="Top" Style="{StaticResource LargeTitle}" />
+        <TextBlock x:Name="HeaderHint"
+                   Text="Draw a region or hold Ctrl to pick a window."
+                   HorizontalAlignment="Center" 
+                   VerticalAlignment="Top" 
+                   Style="{StaticResource LargeTitle}"
+                   IsHitTestVisible="False"
+                   Visibility="Collapsed"/>
     </Grid>
 </Window>

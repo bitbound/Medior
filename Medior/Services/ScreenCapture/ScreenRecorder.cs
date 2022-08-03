@@ -1,5 +1,6 @@
 ﻿using Medior.Models;
 using Medior.Shared;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -25,29 +26,72 @@ namespace Medior.Services.ScreenCapture
             int frameRate,
             Stream destinationStream,
             CancellationToken cancellationToken);
+
+        Task<Result> CaptureVideo(
+             Rectangle captureArea,
+             int frameRate,
+             Stream destinationStream,
+             CancellationToken cancellationToken);
+        void CleanupRecordings();
     }
 
     public class ScreenRecorder : IScreenRecorder
     {
         private readonly IScreenGrabber _grabber;
+        private readonly ILogger<ScreenRecorder> _logger;
 
-        public ScreenRecorder(IScreenGrabber screenGrabber)
+        public ScreenRecorder(
+            IScreenGrabber screenGrabber, 
+            ILogger<ScreenRecorder> logger)
         {
             _grabber = screenGrabber;
+            _logger = logger;
         }
+
+        public async Task<Result> CaptureVideo(Rectangle captureArea, int frameRate, Stream destinationStream, CancellationToken cancellationToken)
+        {
+            return await CaptureVideoImpl(captureArea, frameRate, destinationStream, cancellationToken);
+        }
+
         public async Task<Result> CaptureVideo(
             DisplayInfo display,
             int frameRate,
             Stream destinationStream,
             CancellationToken cancellationToken)
         {
+
+            var captureArea = new Rectangle(Point.Empty, display.MonitorArea.Size);
+            return await CaptureVideoImpl(captureArea, frameRate, destinationStream, cancellationToken);
+        }
+
+        public void CleanupRecordings()
+        {
+            var expiredFiles = Directory
+                .GetFiles(AppConstants.RecordingsDirectory)
+                .Select(x => new FileInfo(x))
+                .OrderByDescending(x => x.CreationTime)
+                .Skip(10);
+
+            foreach (var file in expiredFiles)
+            {
+                try
+                {
+                    file.Delete();
+                }
+                catch { }
+            }
+        }
+
+        private async Task<Result> CaptureVideoImpl(
+            Rectangle captureArea,
+            int frameRate,
+            Stream destinationStream,
+            CancellationToken cancellationToken)
+        {
             try
             {
-
-                var captureArea = new Rectangle(Point.Empty, display.MonitorArea.Size);
-
-                var evenWidth = captureArea.Width % 2 == 0 ? (uint)captureArea.Width : (uint)captureArea.Width + 1;
-                var evenHeight = captureArea.Height % 2 == 0 ? (uint)captureArea.Height : (uint)captureArea.Height + 1;
+                captureArea.Width = captureArea.Width % 2 == 0 ? captureArea.Width : captureArea.Width + 1;
+                captureArea.Height = captureArea.Height % 2 == 0 ? captureArea.Height : captureArea.Height + 1;
 
                 var size = captureArea.Width * 4 * captureArea.Height;
 
@@ -55,8 +99,8 @@ namespace Medior.Services.ScreenCapture
 
                 var sourceVideoProperties = VideoEncodingProperties.CreateUncompressed(
                     MediaEncodingSubtypes.Argb32,
-                    evenWidth,
-                    evenHeight);
+                    (uint)captureArea.Width,
+                    (uint)captureArea.Height);
 
                 var videoDescriptor = new VideoStreamDescriptor(sourceVideoProperties);
 
@@ -74,35 +118,48 @@ namespace Medior.Services.ScreenCapture
 
                 mediaStreamSource.SampleRequested += (sender, args) =>
                 {
-                    if (cancellationToken.IsCancellationRequested)
+                    try
                     {
-                        args.Request.Sample = null;
-                        return;
+                        if (cancellationToken.IsCancellationRequested)
+                        {
+                            args.Request.Sample = null;
+                            return;
+                        }
+
+
+                        var result = _grabber.GetScreenGrab(captureArea, true);
+
+                        while (!result.IsSuccess || result.Value is null)
+                        {
+                            result = _grabber.GetScreenGrab(captureArea, true);
+                        }
+
+                        using var currentFrame = result.Value;
+                        currentFrame.RotateFlip(RotateFlipType.RotateNoneFlipY);
+
+                        var bd = currentFrame.LockBits(new Rectangle(Point.Empty, currentFrame.Size), ImageLockMode.ReadOnly, PixelFormat.Format32bppArgb);
+                        Marshal.Copy(bd.Scan0, tempBuffer, 0, size);
+                        args.Request.Sample = MediaStreamSample.CreateFromBuffer(tempBuffer.AsBuffer(), stopwatch.Elapsed);
+                        currentFrame.UnlockBits(bd);
                     }
-
-                    var result = _grabber.GetScreenGrab(display.DeviceName);
-
-                    while (!result.IsSuccess || result.Value is null)
+                    catch (Exception ex)
                     {
-                        result = _grabber.GetScreenGrab(display.DeviceName);
+                        _logger.LogError(ex, "Error while getting sample.");
                     }
-
-                    using var currentFrame = result.Value;
-
-                    var bd = currentFrame.LockBits(new Rectangle(Point.Empty, currentFrame.Size), ImageLockMode.ReadOnly, PixelFormat.Format32bppArgb);
-                    Marshal.Copy(bd.Scan0, tempBuffer, 0, size);
-                    args.Request.Sample = MediaStreamSample.CreateFromBuffer(tempBuffer.AsBuffer(), stopwatch.Elapsed);
-                    currentFrame.UnlockBits(bd);
                 };
 
                 var encodingProfile = MediaEncodingProfile.CreateMp4(VideoEncodingQuality.HD1080p);
-                encodingProfile.Video.Width = evenWidth;
-                encodingProfile.Video.Height = evenHeight;
+                encodingProfile.Video.Width = (uint)captureArea.Width;
+                encodingProfile.Video.Height = (uint)captureArea.Height;
+                // Default 15_000_000.
+                encodingProfile.Video.Bitrate = 2_000_000;
+                encodingProfile.Video.FrameRate.Numerator = (uint)frameRate;
 
                 var transcoder = new MediaTranscoder
                 {
                     HardwareAccelerationEnabled = true,
-                    AlwaysReencode = true
+                    AlwaysReencode = true,
+                    VideoProcessingAlgorithm = MediaVideoProcessingAlgorithm.Default
                 };
 
                 var prepareResult = await transcoder.PrepareMediaStreamSourceTranscodeAsync(

@@ -44,10 +44,12 @@ namespace Medior
                 services.AddSingleton<IToastsViewModel, ToastsViewModel>();
                 services.AddSingleton<IAboutViewModel, AboutViewModel>();
 
-                services.AddAppModule<HomeView>("Home", PackIconOcticonsKind.Home);
-                services.AddAppModule<IScreenshotViewModel, ScreenshotViewModel, ScreenshotView>("Screenshot", PackIconOcticonsKind.DeviceCamera);
+                services.AddAppModule<HomeView>("Home", PackIconBoxIconsKind.RegularHome);
+                services.AddAppModule<IScreenCaptureViewModel, ScreenCaptureViewModel, ScreenCaptureView>("Screen Capture", PackIconBoxIconsKind.RegularCamera);
 
                 services.AddSingleton<IFileSystem, FileSystem>();
+                services.AddSingleton<IRegistryService, RegistryService>();
+                services.AddSingleton<IPowerControl, PowerControl>();
                 services.AddSingleton<ISystemTime, SystemTime>();
                 services.AddSingleton<IDialogService, DialogService>();
                 services.AddSingleton<ITrayService, TrayService>();
@@ -63,6 +65,7 @@ namespace Medior
                 services.AddScoped<IMessageSigner, MessageSigner>();
                 services.AddScoped<ICapturePicker, CapturePicker>();
                 services.AddScoped<IScreenGrabber, ScreenGrabber>();
+                services.AddScoped<IScreenRecorder, ScreenRecorder>();
                 services.AddHttpClient();
                 services.AddLogging(builder => builder.AddProvider(new FileLoggerProvider()));
 
