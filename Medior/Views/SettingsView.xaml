@@ -19,7 +19,7 @@
         <Label>
             App Theme
         </Label>
-        <StackPanel>
+        <StackPanel Margin="0,0,0,10">
             <RadioButton
                 GroupName="AppTheme"
                 Content="System Default"
@@ -54,7 +54,11 @@
             </RadioButton>
         </StackPanel>
 
-        <mah:ToggleSwitch Margin="0,10,0,10" IsOn="{Binding HandlePrintScreen, Mode=TwoWay}">
+        <mah:ToggleSwitch Margin="0,10,0,10" IsOn="{Binding StartAtLogon, Mode=TwoWay}">
+            Start at logon
+        </mah:ToggleSwitch>
+
+        <mah:ToggleSwitch Margin="0,0,0,10" IsOn="{Binding HandlePrintScreen, Mode=TwoWay}">
             Handle PrintScreen
         </mah:ToggleSwitch>
     </StackPanel>

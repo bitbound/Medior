@@ -41,6 +41,10 @@
                         Visibility="{Binding CurrentImage, Converter={StaticResource NullToVisibilityConverter}}">
                     Copy Image
                 </Button>
+
+                <Button FontSize="14" Command="{Binding SaveCommand}" Margin="10,0,0,0">
+                    Save
+                </Button>
             </StackPanel>
 
         </StackPanel>

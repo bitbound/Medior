@@ -16,7 +16,25 @@
         Topmost="True"
         Loaded="Window_Loaded">
     <Grid>
-        <Button x:Name="StopButton" Click="StopCaptureButton_Click" BorderBrush="Red" BorderThickness="4">
+        <Button x:Name="StopButton" Click="StopCaptureButton_Click" BorderBrush="Red" BorderThickness="3">
+            <Button.Triggers>
+                <EventTrigger RoutedEvent="Button.Loaded">
+                    <BeginStoryboard>
+                        <Storyboard>
+                            <ColorAnimation
+                                Storyboard.TargetProperty="(Button.BorderBrush).(SolidColorBrush.Color)"
+                                From="White"
+                                To="Red"
+                                AutoReverse="True"
+                                BeginTime="0:0:0"
+                                Duration="0:0:0.5"
+                                RepeatBehavior="Forever">
+
+                            </ColorAnimation>
+                        </Storyboard>
+                    </BeginStoryboard>
+                </EventTrigger>
+            </Button.Triggers>
             <icons:PackIconBoxIcons Kind="RegularStop" />
         </Button>
     </Grid>

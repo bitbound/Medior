@@ -19,6 +19,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Forms;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
@@ -36,6 +37,7 @@ namespace Medior.ViewModels
         bool IsHintTextVisible { get; }
         bool IsRecordingInProgress { get; }
         ICommand RecordCommand { get; }
+        ICommand SaveCommand { get; }
         ICommand ShareCommand { get; }
         ICommand StopVideoCaptureCommand { get; }
     }
@@ -77,6 +79,7 @@ namespace Medior.ViewModels
             CopyViewUrlCommand = new RelayCommand(CopyUrl);
             CopyImageCommand = new RelayCommand(CopyImage);
             StopVideoCaptureCommand = new RelayCommand(StopVideoCapture);
+            SaveCommand = new AsyncRelayCommand(Save);
 
             _messenger.Register<PrintScreenInvokedMessage>(this, HandlePrintScreenInvoked);
             _messenger.Register<StopRecordingRequested>(this, HandleStopRecordingRequested);
@@ -130,6 +133,9 @@ namespace Medior.ViewModels
         public ICommand ShareCommand { get; }
 
         public ICommand StopVideoCaptureCommand { get; }
+
+        public ICommand SaveCommand { get; }
+
 
         private async Task Capture(bool captureCursor)
         {
@@ -212,6 +218,63 @@ namespace Medior.ViewModels
             _currentBitmap = null;
             CurrentImage = null;
             CurrentRecording = null;
+        }
+
+        private async Task Save()
+        {
+            try
+            {
+                if (_currentBitmap is null && CurrentRecording is null)
+                {
+                    await _dialogService.ShowError("Unexpected state.  No image or video to save.");
+                    return;
+                }
+
+                if (_currentBitmap is not null)
+                {
+                    var sfd = new SaveFileDialog()
+                    {
+                        Filter = "Image Files (*.jpg)|*.jpg",
+                        AddExtension = true,
+                        DefaultExt = ".jpg",
+                        InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyPictures)
+                    };
+
+                    _ = sfd.ShowDialog();
+                    if (string.IsNullOrWhiteSpace(sfd.FileName))
+                    {
+                        return;
+                    }
+                    using var fs = new FileStream(sfd.FileName, FileMode.Create);
+                    _currentBitmap.Save(fs, ImageFormat.Jpeg);
+                    _messenger.Send(new ToastMessage("Image saved", ToastType.Success));
+                }
+                else if (CurrentRecording is not null)
+                {
+                    var sfd = new SaveFileDialog()
+                    {
+                        Filter = "Video Files (*.mp4)|*.mp4",
+                        AddExtension = true,
+                        DefaultExt = ".mp4",
+                        InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyVideos)
+                    };
+
+                    _ = sfd.ShowDialog();
+                    if (string.IsNullOrWhiteSpace(sfd.FileName))
+                    {
+                        return;
+                    }
+
+                    File.Copy(CurrentRecording.LocalPath, sfd.FileName, true);
+                    _messenger.Send(new ToastMessage("Video saved", ToastType.Success));
+                    
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error while saving capture.");
+                await _dialogService.ShowError(ex);
+            }
         }
 
         private async Task Share()

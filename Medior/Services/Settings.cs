@@ -33,15 +33,18 @@ namespace Medior.Services
         private readonly SemaphoreSlim _fileLock = new(1, 1);
         private readonly string _filePath = AppConstants.SettingsFilePath;
         private readonly IFileSystem _fileSystem;
+        private readonly IRegistryService _registryService;
         private readonly ILogger<Settings> _logger;
         private SettingsModel _settings = new();
 
         public Settings(
             IFileSystem fileSystem, 
+            IRegistryService registryService,
             IEnvironmentHelper environmentHelper,
             ILogger<Settings> logger)
         {
             _fileSystem = fileSystem;
+            _registryService = registryService;
             _environmentHelper = environmentHelper;
             _logger = logger;
             Load();
@@ -86,8 +89,12 @@ namespace Medior.Services
 
         public bool StartAtLogon
         {
-            get => Get<bool>();
-            set => Set(value);
+            get => Get<bool>() && _registryService.GetStartAtLogon();
+            set
+            {
+                Set(value);
+                _registryService.SetStartAtLogon(value);
+            }
         }
 
         public AppTheme Theme
