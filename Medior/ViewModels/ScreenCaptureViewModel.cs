@@ -3,6 +3,7 @@ using Medior.Views;
 using Microsoft.Extensions.Logging;
 using Microsoft.Toolkit.Mvvm.Input;
 using Microsoft.Toolkit.Mvvm.Messaging;
+using Microsoft.Toolkit.Mvvm.Messaging.Messages;
 using System;
 using System.Collections.Specialized;
 using System.Drawing;
@@ -71,7 +72,7 @@ namespace Medior.ViewModels
             StopVideoCaptureCommand = new RelayCommand(StopVideoCapture);
             SaveCommand = new AsyncRelayCommand(Save);
 
-            _messenger.Register<ScreenCaptureRequest>(this, HandleScreenCaptureRequest);
+            _messenger.Register<GenericMessage<ScreenCaptureRequestKind>>(this, HandleScreenCaptureRequest);
             _messenger.Register<StopRecordingRequested>(this, HandleStopRecordingRequested);
         }
 
@@ -179,14 +180,14 @@ namespace Medior.ViewModels
             _messenger.Send(new ToastMessage("Copied to clipboard", ToastType.Success));
         }
 
-        private async void HandleScreenCaptureRequest(object recipient, ScreenCaptureRequest message)
+        private async void HandleScreenCaptureRequest(object recipient, GenericMessage<ScreenCaptureRequestKind> message)
         {
-            switch (message.Kind)
+            switch (message.Value)
             {
-                case CaptureKind.Snip:
+                case ScreenCaptureRequestKind.Snip:
                     await Capture(true);
                     break;
-                case CaptureKind.Record:
+                case ScreenCaptureRequestKind.Record:
                     await Record();
                     break;
                 default:

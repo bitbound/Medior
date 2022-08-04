@@ -6,6 +6,7 @@ using MahApps.Metro.IconPacks;
 using Medior.Views;
 using Microsoft.Toolkit.Mvvm.Messaging;
 using System.Threading.Tasks;
+using Microsoft.Toolkit.Mvvm.Messaging.Messages;
 
 namespace Medior.ViewModels
 {
@@ -40,7 +41,7 @@ namespace Medior.ViewModels
             AppModules.AddRange(appModules);
             FilteredAppModules.AddRange(appModules);
 
-            _messenger.Register<PrintScreenInvokedMessage>(this, HandlePrintScreenInvoked);
+            _messenger.Register<GenericMessage<HotKeyHookKind>>(this, HandleHotKeyInvocation);
             _messenger.Register<LoaderUpdate>(this, HandleLoaderUpdate);
             _messenger.Register<NavigateRequestMessage>(this, HandleNavigateRequest);
         }
@@ -122,11 +123,20 @@ namespace Medior.ViewModels
             SelectedModule = AppModules.FirstOrDefault(x => x.ControlType == message.ControlType);
             _windowService.ShowMainWindow();
         }
-        private async void HandlePrintScreenInvoked(object recipient, PrintScreenInvokedMessage message)
+        private async void HandleHotKeyInvocation(object recipient, GenericMessage<HotKeyHookKind> message)
         {
-            SelectedModule = AppModules.FirstOrDefault(x => x.ControlType == typeof(ScreenCaptureView));
-            await Task.Delay(10);
-            _messenger.Send(new ScreenCaptureRequest(CaptureKind.Snip));
+            switch (message.Value)
+            {
+                case HotKeyHookKind.PrintScreen:
+                    {
+                        SelectedModule = AppModules.FirstOrDefault(x => x.ControlType == typeof(ScreenCaptureView));
+                        await Task.Delay(10);
+                        _messenger.SendGenericMessage(ScreenCaptureRequestKind.Snip);
+                    }
+                    break;
+                default:
+                    break;
+            }
         }
     }
 }

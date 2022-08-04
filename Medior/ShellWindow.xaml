@@ -61,23 +61,7 @@
     </mah:MetroWindow.Resources>
 
     <mah:MetroWindow.Flyouts>
-        <mah:FlyoutsControl>
-            <mah:Flyout x:Name="VariablesFlyout" IsOpen="False" Position="Right">
-                <StackPanel Margin="20">
-                    <TextBlock Text="Available Variables" Style="{StaticResource MediumTitle}" Margin="0,0,0,10" />
-                    <TextBlock>{year} - Year taken</TextBlock>
-                    <TextBlock>{month} - Month taken</TextBlock>
-                    <TextBlock>{day} - Day taken</TextBlock>
-                    <TextBlock>{hour} - Hour taken</TextBlock>
-                    <TextBlock>{minute} - Minute taken</TextBlock>
-                    <TextBlock>{second} - Second taken</TextBlock>
-                    <TextBlock>{millisecond} - Millisecond taken</TextBlock>
-                    <TextBlock>{filename} - File name without extension</TextBlock>
-                    <TextBlock>{extension} - File extension</TextBlock>
-                    <TextBlock>{camera} - Camera model</TextBlock>
-                </StackPanel>
-            </mah:Flyout>
-        </mah:FlyoutsControl>
+        <controls:FlyoutsHarness />
     </mah:MetroWindow.Flyouts>
     
     <Grid>

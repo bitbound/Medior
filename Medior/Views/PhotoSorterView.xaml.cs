@@ -1,5 +1,7 @@
 ﻿using MahApps.Metro.Controls;
 using Medior.ViewModels;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Toolkit.Mvvm.Messaging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -41,15 +43,8 @@ namespace Medior.Views
 
         private void VariableHelpButton_Click(object sender, RoutedEventArgs e)
         {
-            if (WpfApp.Current.MainWindow is MetroWindow metroWindow)
-            {
-                var variablesFlyout = metroWindow.Flyouts.FindChild<Flyout>("VariablesFlyout");
-                if (variablesFlyout is null)
-                {
-                    return;
-                }
-                variablesFlyout.IsOpen = true;
-            }
+            var messenger = StaticServiceProvider.Instance.GetRequiredService<IMessenger>();
+            messenger.SendGenericMessage(FlyoutRequestKind.PhotoSorterDestinationVariables);
         }
     }
 }

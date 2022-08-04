@@ -1,0 +1,26 @@
+﻿<mah:FlyoutsControl x:Class="Medior.Controls.FlyoutsHarness"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:mah ="http://metro.mahapps.com/winfx/xaml/controls"
+             xmlns:local="clr-namespace:Medior.Controls"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800"
+             Loaded="FlyoutsControl_Loaded">
+    <mah:Flyout x:Name="DestinationVariablesFlyout" IsOpen="False" Position="Right">
+        <StackPanel Margin="20">
+            <TextBlock Text="Available Variables" Style="{StaticResource MediumTitle}" Margin="0,0,0,10" />
+            <TextBlock>{year} - Year taken</TextBlock>
+            <TextBlock>{month} - Month taken</TextBlock>
+            <TextBlock>{day} - Day taken</TextBlock>
+            <TextBlock>{hour} - Hour taken</TextBlock>
+            <TextBlock>{minute} - Minute taken</TextBlock>
+            <TextBlock>{second} - Second taken</TextBlock>
+            <TextBlock>{millisecond} - Millisecond taken</TextBlock>
+            <TextBlock>{filename} - File name without extension</TextBlock>
+            <TextBlock>{extension} - File extension</TextBlock>
+            <TextBlock>{camera} - Camera model</TextBlock>
+        </StackPanel>
+    </mah:Flyout>
+</mah:FlyoutsControl>

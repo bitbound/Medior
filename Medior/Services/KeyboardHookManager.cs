@@ -22,7 +22,7 @@ namespace Medior.Services
         //private const int ScrollLock = 0x91;
         //private const int WH_KEYBOARD_LL = 13;
         private const int WM_KEYDOWN = 0x0100;
-        private readonly ConcurrentDictionary<HookType, IntPtr> _hooks = new();
+        private readonly ConcurrentDictionary<HotKeyHookKind, IntPtr> _hooks = new();
         private readonly User32Ex.LowLevelKeyboardProc _proc = HookCallback;
 
         public KeyboardHookManager()
@@ -36,17 +36,12 @@ namespace Medior.Services
             };
         }
 
-        private enum HookType
-        {
-            PrintScreen
-        }
-
         public void SetPrintScreenHook()
         {
-            if (!_hooks.ContainsKey(HookType.PrintScreen))
+            if (!_hooks.ContainsKey(HotKeyHookKind.PrintScreen))
             {
                 var hookId = SetHook(_proc);
-                _hooks.AddOrUpdate(HookType.PrintScreen, hookId, (k, v) =>
+                _hooks.AddOrUpdate(HotKeyHookKind.PrintScreen, hookId, (k, v) =>
                 {
                     User32Ex.UnhookWindowsHookEx(v);
                     return hookId;
@@ -56,7 +51,7 @@ namespace Medior.Services
 
         public void UnsetPrintScreenHook()
         {
-            if (_hooks.TryRemove(HookType.PrintScreen, out var hookId))
+            if (_hooks.TryRemove(HotKeyHookKind.PrintScreen, out var hookId))
             {
                 User32Ex.UnhookWindowsHookEx(hookId);
             }
@@ -73,7 +68,7 @@ namespace Medior.Services
                     if (settings.HandlePrintScreen)
                     {
                         var messenger = StaticServiceProvider.Instance.GetRequiredService<IMessenger>();
-                        messenger.Send<PrintScreenInvokedMessage>();
+                        messenger.SendGenericMessage(HotKeyHookKind.PrintScreen);
                         return 1;
                     }
                 }
