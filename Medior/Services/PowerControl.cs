@@ -17,10 +17,9 @@ namespace Medior.Services
     {
         private readonly ILogger<PowerControl> _logger;
         private readonly ISystemTime _systemTime;
+        private readonly AutoResetEvent _wakeSignal = new(false);
         private Thread? _keepWakeThread;
         private Timer? _timer;
-        private AutoResetEvent _wakeSignal = new(false);
-
         public PowerControl(ISystemTime systemTime, ILogger<PowerControl> logger)
         {
             _systemTime = systemTime;

@@ -19,7 +19,8 @@
         </Grid.RowDefinitions>
 
         <controls:GridEx Grid.Row="0" ColumnDefinitionsEx="Auto, *">
-            <ComboBox Grid.Column="0" 
+            <StackPanel Grid.Column="0" Orientation="Horizontal">
+                <ComboBox Grid.Column="0" 
                       Text="Select or create a sort job"
                       MinWidth="175"
                       DisplayMemberPath="Name"
@@ -30,7 +31,13 @@
                       SelectedItem="{Binding SelectedJob, Mode=TwoWay}"
                       SelectionChanged="SortJobComboBox_SelectionChanged"
                       VerticalAlignment="Center">
-            </ComboBox>
+                </ComboBox>
+
+                <Button Command="{Binding OpenReportsDirectoryCommand}" Margin="15,0,0,0">
+                    Reports
+                </Button>
+            </StackPanel>
+           
 
             <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right">
                 <Button Command="{Binding CreateNewJobCommand}" Margin="0,0,10,0">
@@ -57,14 +64,15 @@
                 <TextBox Grid.Row="0" Grid.Column="2"
                          Margin="0,0,0,10"
                          mah:TextBoxHelper.Watermark="The source directory to search recursively for photos and videos"
-                         Text="{Binding SelectedJob.SourceDirectory, Mode=TwoWay}" />
+                         Text="{Binding SelectedJob.SourceDirectory, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
 
                 <Label Grid.Row="1" Content="Destination File Path" VerticalAlignment="Center"/>
                 <controls:GridEx Grid.Row="1" Grid.Column="2" ColumnDefinitionsEx="*, Auto, Auto" Margin="0,0,0,10">
                     <TextBox Grid.Column="0" 
                         Margin="0,0,5,0"
                         mah:TextBoxHelper.Watermark="The destination path, after variables are transformed, where each file will be placed."
-                        Text="{Binding SelectedJob.DestinationFile, Mode=TwoWay}" TextChanged="DestinationFileTextBox_TextChanged" />
+                        Text="{Binding SelectedJob.DestinationFile, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
+                        TextChanged="DestinationFileTextBox_TextChanged" />
 
                     <Button Grid.Column="1"
                             Margin="0,0,5,0"
@@ -86,7 +94,7 @@
                           Width="200"
                           HorizontalAlignment="Left"
                           Margin="0,0,0,10"
-                          ItemsSource="{Binding GetSortOperations()}"
+                          ItemsSource="{Binding SortOperations}"
                           SelectedItem="{Binding SelectedJob.Operation, Mode=TwoWay}" />
 
                 <Label Grid.Row="3" Content="Overwrite Action" VerticalAlignment="Center" />
@@ -95,7 +103,7 @@
                           HorizontalAlignment="Left"
                           Width="200"
                           Margin="0,0,0,10"
-                          ItemsSource="{Binding GetOverwriteActions()}"
+                          ItemsSource="{Binding OverwriteActions}"
                           SelectedItem="{Binding SelectedJob.OverwriteAction, Mode=TwoWay}" />
 
                 <Label Grid.Row="4" Content="Include Extensions" VerticalAlignment="Center" />
@@ -103,32 +111,35 @@
                          Grid.Column="2"
                          Margin="0,0,0,10"
                          mah:TextBoxHelper.Watermark="A comma-separted list of extensions to include (e.g. 'jpg, png').  Use '*' for all except excluded extensions."
-                         Text="{Binding IncludedExtensions, Mode=TwoWay}" />
+                         Text="{Binding IncludedExtensions, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
 
                 <Label Grid.Row="5" Content="Exclude Extensions" VerticalAlignment="Center" />
                 <TextBox Grid.Row="5" 
                          Grid.Column="2"
                          Margin="0,0,0,10"
                          mah:TextBoxHelper.Watermark="A comma-separated list of extensions to exclude/skip (e.g. 'mp4, mov')."
-                         Text="{Binding ExcludedExtensions, Mode=TwoWay}" />
+                         Text="{Binding ExcludedExtenions, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
 
                 <Label Grid.Row="6" Content="Missing EXIF Directory" VerticalAlignment="Center" />
                 <TextBox Grid.Row="6" 
                          Grid.Column="2"
                          mah:TextBoxHelper.Watermark="Where to move files that do not contain EXIF data.  Leave blank to leave files in place."
-                         Text="{Binding SelectedJob.NoExifDirectory, Mode=TwoWay}" />
+                         Text="{Binding SelectedJob.NoExifDirectory, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
 
                 <controls:GridEx Grid.Row="8" 
                       Grid.ColumnSpan="3" 
                       ColumnDefinitionsEx="*, Auto" 
+                      Height="55"
                       VerticalAlignment="Bottom">
 
                     <controls:GridEx Grid.Column="0"
-                          RowDefinitionsEx="*, *"
-                          Margin="0,0,10,0"
+                          RowDefinitionsEx="Auto, *"
+                          Margin="10,0,10,0"
                           Visibility="{Binding IsJobRunning, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}">
 
-                        <Label Content="{Binding CurrentJobRunnerTask, Mode=OneWay}" HorizontalAlignment="Center" />
+                        <Label Content="{Binding CurrentJobRunnerTask, Mode=OneWay}" 
+                               VerticalAlignment="Top"
+                               HorizontalAlignment="Center" />
 
                         <ProgressBar Grid.Row="1"
                                      Maximum="100"
@@ -136,18 +147,23 @@
 
                         <TextBlock Grid.Row="1"
                                    FontWeight="Bold"
-                                   HorizontalAlignment="Center" 
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center"
                                    Text="{Binding JobRunnerProgressPercent, Mode=OneWay}" />
                     </controls:GridEx>
 
-                    <StackPanel Grid.Column="1" Orientation="Horizontal">
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Bottom">
                         <CheckBox Content="Dry Run" 
-                                  Margin="0,0,10,0"
+                                  Margin="10,0,10,0"
                                   IsChecked="{Binding IsDryRun, Mode=TwoWay}"
-                                  ToolTipService.ToolTip="Simulate running this job and get a report of what will happen, without actually making changes."/>
+                                  ToolTip="Simulate running this job and get a report of what will happen, without actually making changes."/>
 
-                        <Button Content="Cancel" Command="{Binding CancelJobCommand}" Margin="0,0,10,0" Height="30" />
-                        <Button Content="Start" Command="{Binding StartJobCommand}" Height="30" />
+                        <Button Command="{Binding CancelJobCommand}" Margin="0,0,10,0">
+                            <controls:IconLabel IconText="Cancel" IconKind="RegularX" />
+                        </Button>
+                        <Button Command="{Binding StartJobCommand}" FontSize="14">
+                            <controls:IconLabel IconText="Start" IconKind="SolidBolt" />
+                        </Button>
                     </StackPanel>
                 </controls:GridEx>
             </controls:GridEx>

@@ -342,7 +342,7 @@ namespace Medior.ViewModels
                     });
                 };
 
-                var fileName = $"Medior_Screenshot_{_systemTime.Now:yyyy-MM-dd hh.mm.ss.fff}.mp4";
+                var fileName = $"Medior_Screenshot_{_systemTime.Now:yyyy-MM-dd hh.mm.ss.fff}.jpg";
                 var result = await _apiService.UploadFile(fileStream, fileName);
 
                 if (!result.IsSuccess)

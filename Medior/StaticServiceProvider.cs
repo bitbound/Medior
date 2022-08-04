@@ -47,6 +47,7 @@ namespace Medior
                 services.AddSingleton<IRegistryService, RegistryService>();
                 services.AddSingleton<IPowerControl, PowerControl>();
                 services.AddSingleton<ISystemTime, SystemTime>();
+                services.AddSingleton<IProcessService, ProcessService>();
                 services.AddSingleton<IDialogService, DialogService>();
                 services.AddSingleton<IKeyboardHookManager, KeyboardHookManager>();
                 services.AddSingleton<ITrayService, TrayService>();

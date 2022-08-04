@@ -44,8 +44,8 @@ namespace Medior.Services.PhotoSorter
         }
 
         private string GetLogPath() => Path.Combine(
-            AppConstants.LogsFolderPath,
-            $"Medior_PhotoSorter_Report_{_systemTime.Now:yyyy-MM-dd HH.mm.ss.fff}.log");
+            AppConstants.PhotoSorterReportsDir,
+            $"Report_{_systemTime.Now:yyyy-MM-dd HH.mm.ss.fff}.log");
 
         private async Task WriteReportInternal(JobReport report, string logPath)
         {

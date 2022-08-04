@@ -1,12 +1,15 @@
 ﻿using MahApps.Metro.Controls.Dialogs;
 using Medior.Models.PhotoSorter;
 using Medior.Services.PhotoSorter;
+using Medior.Shared.Helpers;
 using Microsoft.Extensions.Logging;
 using Microsoft.Toolkit.Diagnostics;
 using Microsoft.Toolkit.Mvvm.Input;
 using Microsoft.Toolkit.Mvvm.Messaging;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -17,18 +20,25 @@ namespace Medior.ViewModels
 {
     public interface IPhotoSorterViewModel
     {
+        ICommand CancelJobCommand { get; }
         ICommand CreateNewJobCommand { get; }
         string CurrentJobRunnerTask { get; set; }
         ICommand DeleteJobCommand { get; }
+        string ExcludedExtenions { get; }
+        string IncludedExtensions { get; }
         bool IsDryRun { get; set; }
         bool IsJobRunning { get; set; }
         int JobRunnerProgress { get; set; }
         string JobRunnerProgressPercent { get; }
+        ICommand OpenReportsDirectoryCommand { get; }
+        OverwriteAction[] OverwriteActions { get; }
         ICommand RenameJobCommand { get; }
         ICommand SaveJobCommand { get; }
         SortJob? SelectedJob { get; set; }
         ICommand ShowDestinationTransformCommand { get; }
         ObservableCollectionEx<SortJob> SortJobs { get; }
+        SortOperation[] SortOperations { get; }
+        ICommand StartJobCommand { get; }
         void NotifyCommandsCanExecuteChanged();
     }
 
@@ -40,8 +50,19 @@ namespace Medior.ViewModels
         private readonly ILogger<PhotoSorterViewModel> _logger;
         private readonly IMessenger _messenger;
         private readonly IPathTransformer _pathTransformer;
+        private readonly IProcessService _processService;
         private readonly IReportWriter _reportWriter;
         private readonly ISettings _settings;
+        private RelayCommand? _cancelJobCommand;
+        private AsyncRelayCommand? _createNewJobCommand;
+        private AsyncRelayCommand? _deleteJobCommand;
+        private CancellationToken _jobCancelToken;
+        private CancellationTokenSource? _jobCancelTokenSource;
+        private RelayCommand? _openReportsDirectoryCommand;
+        private AsyncRelayCommand? _renameJobCommand;
+        private RelayCommand? _saveJobCommand;
+        private AsyncRelayCommand? _showDestinationTransformCommand;
+        private AsyncRelayCommand? _startJobCommand;
         public PhotoSorterViewModel(
             IPathTransformer pathTransformer,
             IJobRunner jobRunner,
@@ -50,6 +71,7 @@ namespace Medior.ViewModels
             IDialogService dialogService,
             ISettings settings,
             IMessenger messenger,
+            IProcessService processService,
             ILogger<PhotoSorterViewModel> logger)
         {
             _pathTransformer = pathTransformer;
@@ -59,21 +81,30 @@ namespace Medior.ViewModels
             _dialogService = dialogService;
             _settings = settings;
             _messenger = messenger;
+            _processService = processService;
             _logger = logger;
 
             _jobRunner.ProgressChanged += JobRunner_ProgressChanged;
             _jobRunner.CurrentTaskChanged += JobRunner_CurrentTaskChanged;
 
-            CreateNewJobCommand = new AsyncRelayCommand(CreateNewJob);
-            SaveJobCommand = new RelayCommand(SaveJob);
-            RenameJobCommand = new AsyncRelayCommand(RenameSortJob);
-            DeleteJobCommand = new AsyncRelayCommand(DeleteSortJob);
-            ShowDestinationTransformCommand = new AsyncRelayCommand(ShowDestinationTransform);
-
             LoadSortJobs();
         }
 
-        public ICommand CreateNewJobCommand { get; }
+        public ICommand CancelJobCommand
+        {
+            get
+            {
+                return _cancelJobCommand ??= new RelayCommand(CancelJob, () => IsJobRunning);
+            }
+        }
+
+        public ICommand CreateNewJobCommand
+        {
+            get
+            {
+                return _createNewJobCommand ??= new AsyncRelayCommand(CreateNewJob);
+            }
+        }
 
         public string CurrentJobRunnerTask
         {
@@ -81,7 +112,63 @@ namespace Medior.ViewModels
             set => Set(value);
         }
 
-        public ICommand DeleteJobCommand { get; }
+        public ICommand DeleteJobCommand
+        {
+            get
+            {
+                return _deleteJobCommand ??= new AsyncRelayCommand(DeleteSortJob, () => SelectedJob is not null);
+            }
+        }
+
+        public string ExcludedExtenions
+        {
+            get
+            {
+                if (SelectedJob?.ExcludeExtensions?.Any() != true)
+                {
+                    return string.Empty;
+                }
+
+                return string.Join(",", SelectedJob.ExcludeExtensions);
+            }
+            set
+            {
+                if (SelectedJob is null)
+                {
+                    return;
+                }
+
+                SelectedJob.ExcludeExtensions = value
+                    .Split(",")
+                    .Select(x => x.Trim())
+                    .ToArray();
+            }
+        }
+
+        public string IncludedExtensions
+        {
+            get
+            {
+                if (SelectedJob?.IncludeExtensions?.Any() != true)
+                {
+                    return string.Empty;
+                }
+
+                return string.Join(",", SelectedJob.IncludeExtensions);
+            }
+            set
+            {
+                if (SelectedJob is null)
+                {
+                    return;
+                }
+
+                SelectedJob.IncludeExtensions = value
+                    .Split(",")
+                    .Select(x => x.Trim())
+                    .ToArray();
+            }
+        }
 
         public bool IsDryRun
         {
@@ -110,9 +197,31 @@ namespace Medior.ViewModels
             get => $"{JobRunnerProgress}%";
         }
 
-        public ICommand RenameJobCommand { get; }
+        public ICommand OpenReportsDirectoryCommand
+        {
+            get
+            {
+                return _openReportsDirectoryCommand ??= new RelayCommand(OpenReportsDirectory);
+            }
+        }
 
-        public ICommand SaveJobCommand { get; }
+        public OverwriteAction[] OverwriteActions { get; } = Enum.GetValues<OverwriteAction>();
+
+        public ICommand RenameJobCommand
+        {
+            get
+            {
+                return _renameJobCommand ??= new AsyncRelayCommand(RenameSortJob, () => SelectedJob is not null);
+            }
+        }
+
+        public ICommand SaveJobCommand
+        {
+            get
+            {
+                return _saveJobCommand ??= new RelayCommand(SaveJob, () => SelectedJob is not null);
+            }
+        }
 
         public SortJob? SelectedJob
         {
@@ -120,20 +229,41 @@ namespace Medior.ViewModels
             set
             {
                 Set(value);
-                OnPropertyChanged(nameof(GetIncludeExtensions));
-                OnPropertyChanged(nameof(GetExcludeExtensions));
+                OnPropertyChanged(nameof(IncludedExtensions));
+                OnPropertyChanged(nameof(ExcludedExtenions));
             }
         }
 
-        public ICommand ShowDestinationTransformCommand { get; }
+        public ICommand ShowDestinationTransformCommand
+        {
+            get
+            {
+                return _showDestinationTransformCommand ??=
+                    new AsyncRelayCommand(ShowDestinationTransform, () =>
+                        !string.IsNullOrWhiteSpace(SelectedJob?.DestinationFile));
+            }
+        }
 
         public ObservableCollectionEx<SortJob> SortJobs { get; } = new();
+
+        public SortOperation[] SortOperations { get; } = Enum.GetValues<SortOperation>();
+
+        public ICommand StartJobCommand
+        {
+            get
+            {
+                return _startJobCommand ??= new AsyncRelayCommand(StartJob, () =>
+                    SelectedJob is not null &&
+                    !IsJobRunning);
+            }
+        }
 
         public async Task DeleteSortJob()
         {
             var result = await _dialogService.ShowMessageAsync(
                 "Confirm Delete",
-                "Are you sure you want to delete this sort job?");
+                "Are you sure you want to delete this sort job?",
+                MessageDialogStyle.AffirmativeAndNegative);
 
             if (result != MessageDialogResult.Affirmative)
             {
@@ -163,24 +293,6 @@ namespace Medior.ViewModels
                 "Example Camera");
         }
 
-        public string GetExcludeExtensions()
-        {
-            if (SelectedJob?.ExcludeExtensions is null)
-            {
-                return string.Empty;
-            }
-            return string.Join(", ", SelectedJob.ExcludeExtensions);
-        }
-
-        public string GetIncludeExtensions()
-        {
-            if (SelectedJob?.IncludeExtensions is null)
-            {
-                return string.Empty;
-            }
-            return string.Join(", ", SelectedJob.IncludeExtensions);
-        }
-
         public OverwriteAction[] GetOverwriteActions()
         {
             return Enum.GetValues<OverwriteAction>();
@@ -199,13 +311,22 @@ namespace Medior.ViewModels
             {
                 SortJobs.Add(job);
             }
-            OnPropertyChanged(nameof(GetIncludeExtensions));
-            OnPropertyChanged(nameof(GetExcludeExtensions));
+            OnPropertyChanged(nameof(IncludedExtensions));
+            OnPropertyChanged(nameof(ExcludedExtenions));
         }
 
         public void NotifyCommandsCanExecuteChanged()
         {
-            
+            _dispatcher.Invoke(() =>
+            {
+                _cancelJobCommand?.NotifyCanExecuteChanged();
+                _createNewJobCommand?.NotifyCanExecuteChanged();
+                _deleteJobCommand?.NotifyCanExecuteChanged();
+                _renameJobCommand?.NotifyCanExecuteChanged();
+                _saveJobCommand?.NotifyCanExecuteChanged();
+                _showDestinationTransformCommand?.NotifyCanExecuteChanged();
+                _startJobCommand?.NotifyCanExecuteChanged();
+            });
         }
 
         public async Task RenameSortJob()
@@ -240,32 +361,59 @@ namespace Medior.ViewModels
             _messenger.Send(new ToastMessage("Sort job saved", ToastType.Success));
         }
 
-        public void SetExcludeExtensions(string extensions)
+        public async Task StartJob()
         {
-            if (SelectedJob is null)
-            {
-                return;
-            }
+            JobRunnerProgress = 0;
+            CurrentJobRunnerTask = string.Empty;
+            IsJobRunning = true;
+            NotifyCommandsCanExecuteChanged();
 
-            SelectedJob.ExcludeExtensions = extensions.Split(",", StringSplitOptions.TrimEntries);
+            await Task.Run(async () =>
+            {
+                try
+                {
+                    Guard.IsNotNull(SelectedJob, nameof(SelectedJob));
+
+                    _jobCancelTokenSource?.Cancel();
+                    _jobCancelTokenSource = new CancellationTokenSource();
+                    _jobCancelToken = _jobCancelTokenSource.Token;
+
+                    var report = await _jobRunner.RunJob(SelectedJob, IsDryRun, _jobCancelToken);
+                    report.ReportPath = await _reportWriter.WriteReport(report);
+
+                    IsJobRunning = false;
+
+                    var result = await _dialogService.ShowMessageAsync(
+                        "Job Finished",
+                        "Job run completed.  Would you like to open the report directory?",
+                        MessageDialogStyle.AffirmativeAndNegative,
+                        new MetroDialogSettings() { DefaultButtonFocus = MessageDialogResult.Affirmative });
+
+                    if (result == MessageDialogResult.Affirmative)
+                    {
+                        _processService.Start(new ProcessStartInfo()
+                        {
+                            FileName = Path.GetDirectoryName(report.ReportPath),
+                            UseShellExecute = true
+                        });
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error while running job name {name}.", SelectedJob?.Name);
+                }
+                finally
+                {
+                    IsJobRunning = false;
+                    NotifyCommandsCanExecuteChanged();
+                }
+            });
+        
         }
 
-        public void SetIncludeExtensions(string extensions)
+        private void CancelJob()
         {
-            if (SelectedJob is null)
-            {
-                return;
-            }
-
-            SelectedJob.IncludeExtensions = extensions.Split(",", StringSplitOptions.TrimEntries);
-        }
-
-        public async Task<JobReport> StartJob(CancellationToken cancellationToken)
-        {
-            Guard.IsNotNull(SelectedJob, nameof(SelectedJob));
-            var report = await _jobRunner.RunJob(SelectedJob, IsDryRun, cancellationToken);
-            report.ReportPath = await _reportWriter.WriteReport(report);
-            return report;
+            _jobCancelTokenSource?.Cancel();
         }
 
         private async Task CreateNewJob()
@@ -306,6 +454,14 @@ namespace Medior.ViewModels
             });
         }
 
+        private void OpenReportsDirectory()
+        {
+            _processService.Start(new ProcessStartInfo()
+            {
+                FileName = AppConstants.PhotoSorterReportsDir,
+                UseShellExecute = true
+            });
+        }
         private void Save()
         {
             _settings.SortJobs = SortJobs.ToArray();

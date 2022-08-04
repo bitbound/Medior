@@ -13,7 +13,6 @@
         
         <TextBlock Text="{Binding Path=IconText, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:IconLabel}}"  
                    VerticalAlignment="Center" 
-                   Margin="5,0,0,0" 
-                   Style="{StaticResource ThemeText}"/>
+                   Margin="5,0,0,0" />
     </StackPanel>
 </UserControl>

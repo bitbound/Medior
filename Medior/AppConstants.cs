@@ -17,6 +17,15 @@ namespace Medior
 #endif
             }
         }
+
+        public static string PhotoSorterReportsDir
+        {
+            get
+            {
+                return Directory.CreateDirectory(Path.Combine(LogsFolderPath, "PhotoSorter")).FullName;
+            }
+        }
+
         public static string RecordingsDirectory => Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), "Medior", "Recordings")).FullName;
         public static string SettingsFilePath
         {

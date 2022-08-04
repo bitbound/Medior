@@ -18,16 +18,13 @@ namespace Medior.Web.Server.Services
         private readonly string _appData;
         private readonly AppDb _appDb;
         private readonly IWebHostEnvironment _hostEnv;
-        private readonly ILogger<UploadedFileManager> _logger;
 
         public UploadedFileManager(
             AppDb appDb,
-            IWebHostEnvironment hostEnv,
-            ILogger<UploadedFileManager> logger)
+            IWebHostEnvironment hostEnv)
         {
             _appDb = appDb;
             _hostEnv = hostEnv;
-            _logger = logger;
             _appData = Directory.CreateDirectory(Path.Combine(_hostEnv.ContentRootPath, "App_Data")).FullName;
         }
 
