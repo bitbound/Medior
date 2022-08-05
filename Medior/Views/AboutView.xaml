@@ -51,9 +51,22 @@
                 Screen Capture
             </TextBlock>
             <TextBlock Style="{StaticResource Paragraph}">
-                Capture and share screenshots or recordings.
+                Coming soon(ish).
             </TextBlock>
 
+            <TextBlock Style="{StaticResource MediumTitle}" Margin="0,10,0,8">
+                Photo Sorter
+            </TextBlock>
+            <TextBlock Style="{StaticResource Paragraph}">
+                Coming soon(ish).
+            </TextBlock>
+
+            <TextBlock Style="{StaticResource MediumTitle}"  Margin="0,10,0,8">
+                Keep Awake
+            </TextBlock>
+            <TextBlock Style="{StaticResource Paragraph}">
+                Coming soon(ish).
+            </TextBlock>
         </StackPanel>
     </StackPanel>
 </UserControl>

@@ -38,6 +38,12 @@ namespace Medior.Services
             _timer?.Dispose();
 
             var due = (until - _systemTime.Now).TotalMilliseconds;
+
+            if (due < 0)
+            {
+                return;
+            }
+
             _timer = new Timer(due)
             {
                 AutoReset = false,
@@ -50,6 +56,8 @@ namespace Medior.Services
 
         public void KeepAwake(bool includeDisplay)
         {
+            _wakeSignal.Set();
+            _wakeSignal.Reset();
             _keepWakeThread = new Thread(() =>
             {
                 var state = Kernel32.EXECUTION_STATE.ES_CONTINUOUS | Kernel32.EXECUTION_STATE.ES_SYSTEM_REQUIRED;

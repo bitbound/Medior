@@ -3,12 +3,70 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
              xmlns:local="clr-namespace:Medior.Views"
              xmlns:vm="clr-namespace:Medior.ViewModels"
+             xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
              mc:Ignorable="d" 
+             xmlns:controls="clr-namespace:Medior.Controls"
+             xmlns:models="clr-namespace:Medior.Models"
              d:DesignHeight="450" d:DesignWidth="800"
              DataContext="{x:Static vm:ViewModelLocator.KeepAwakeViewModel}">
-    <Grid>
-            
-    </Grid>
+    <controls:GridEx ColumnDefinitionsEx="Auto, 10, *" RowDefinitionsEx="Auto, 30, Auto">
+        <Label Grid.Column="0" Grid.Row="0">
+            Keep Awake Mode
+        </Label>
+        <StackPanel Margin="0,8,0,0" Grid.Column="2" Grid.Row="0">
+            <RadioButton
+                GroupName="KeepAwakeMode"
+                Content="Off (use system power settings)"
+                HorizontalAlignment="Left"
+                IsChecked="{Binding Mode, Mode=OneWay, Converter={StaticResource ValueEqualsParameterConverter}, ConverterParameter={x:Static vm:KeepAwakeMode.Off}}">
+                <i:Interaction.Triggers>
+                    <i:EventTrigger EventName="Checked">
+                        <i:InvokeCommandAction Command="{Binding SetModeCommand}" CommandParameter="{x:Static vm:KeepAwakeMode.Off}" />
+                    </i:EventTrigger>
+                </i:Interaction.Triggers>
+            </RadioButton>
+            <RadioButton
+                GroupName="KeepAwakeMode"
+                Content="Indefinite (stay on until explicitly turned off)"
+                Margin="0,5,0,0"
+                HorizontalAlignment="Left"
+                IsChecked="{Binding Mode, Mode=OneWay, Converter={StaticResource ValueEqualsParameterConverter}, ConverterParameter={x:Static vm:KeepAwakeMode.Indefinite}}">
+                <i:Interaction.Triggers>
+                    <i:EventTrigger EventName="Checked">
+                        <i:InvokeCommandAction Command="{Binding SetModeCommand}" CommandParameter="{x:Static vm:KeepAwakeMode.Indefinite}" />
+                    </i:EventTrigger>
+                </i:Interaction.Triggers>
+            </RadioButton>
+            <RadioButton
+                GroupName="KeepAwakeMode"
+                Content="Temporary (stay on until specified time)"
+                Margin="0,5,0,0"
+                HorizontalAlignment="Left"
+                IsChecked="{Binding Mode, Mode=OneWay, Converter={StaticResource ValueEqualsParameterConverter}, ConverterParameter={x:Static vm:KeepAwakeMode.Temporary}}">
+                <i:Interaction.Triggers>
+                    <i:EventTrigger EventName="Checked">
+                        <i:InvokeCommandAction Command="{Binding SetModeCommand}" CommandParameter="{x:Static vm:KeepAwakeMode.Temporary}" />
+                    </i:EventTrigger>
+                </i:Interaction.Triggers>
+            </RadioButton>
+
+            <mah:DateTimePicker 
+                Margin="50, 10, 0, 0"
+                HorizontalAlignment="Left"
+                IsEnabled="{Binding Mode, Converter={StaticResource ValueEqualsParameterConverter}, ConverterParameter={x:Static vm:KeepAwakeMode.Temporary}}"
+                Width="200"
+                SelectedDateTime="{Binding KeepAwakeExpiration, Mode=TwoWay}" />
+
+        </StackPanel>
+
+        <Label Grid.Column="0" Grid.Row="2">
+            Include Monitor
+        </Label>
+        <mah:ToggleSwitch 
+             Grid.Column="2" Grid.Row="2"
+            IsOn="{Binding KeepMonitorAwake, Mode=TwoWay}" />
+    </controls:GridEx>
 </UserControl>
