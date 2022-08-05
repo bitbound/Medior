@@ -8,6 +8,7 @@
     <ApplicationIcon>Assets\comet.ico</ApplicationIcon>
     <UseWindowsForms>True</UseWindowsForms>
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
   </PropertyGroup>
 
   <ItemGroup>
