@@ -1,5 +1,4 @@
-﻿using Microsoft.Toolkit.Mvvm.Messaging;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 
 namespace Medior.ViewModels
 {

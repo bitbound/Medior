@@ -1,6 +1,6 @@
-﻿using Medior.Native;
+﻿using CommunityToolkit.Mvvm.Messaging;
+using Medior.Native;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Toolkit.Mvvm.Messaging;
 using PInvoke;
 using System;
 using System.Collections.Concurrent;

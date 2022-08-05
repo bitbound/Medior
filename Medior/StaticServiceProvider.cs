@@ -6,10 +6,10 @@ using System;
 using System.Threading;
 using MahApps.Metro.IconPacks;
 using Medior.Views;
-using Microsoft.Toolkit.Mvvm.Messaging;
 using Medior.Shared.Interfaces;
 using Medior.Shared.Services;
 using Medior.Services.PhotoSorter;
+using CommunityToolkit.Mvvm.Messaging;
 
 namespace Medior
 {

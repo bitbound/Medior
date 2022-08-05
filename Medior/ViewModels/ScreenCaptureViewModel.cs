@@ -1,9 +1,7 @@
-﻿using Medior.Shared.Services;
-using Medior.Views;
+﻿using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
+using Medior.Shared.Services;
 using Microsoft.Extensions.Logging;
-using Microsoft.Toolkit.Mvvm.Input;
-using Microsoft.Toolkit.Mvvm.Messaging;
-using Microsoft.Toolkit.Mvvm.Messaging.Messages;
 using System;
 using System.Collections.Specialized;
 using System.Drawing;

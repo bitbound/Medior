@@ -1,5 +1,4 @@
-﻿using Microsoft.Toolkit.Mvvm.Input;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Reflection;
 using System.Windows.Input;
 

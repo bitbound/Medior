@@ -4,9 +4,7 @@ using System.Linq;
 using Medior.Models;
 using MahApps.Metro.IconPacks;
 using Medior.Views;
-using Microsoft.Toolkit.Mvvm.Messaging;
 using System.Threading.Tasks;
-using Microsoft.Toolkit.Mvvm.Messaging.Messages;
 
 namespace Medior.ViewModels
 {

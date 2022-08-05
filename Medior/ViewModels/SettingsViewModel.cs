@@ -1,5 +1,5 @@
-﻿using Medior.Models;
-using Microsoft.Toolkit.Mvvm.Input;
+﻿using CommunityToolkit.Mvvm.Input;
+using Medior.Models;
 using System.Windows.Input;
 
 namespace Medior.ViewModels
