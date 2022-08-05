@@ -61,6 +61,7 @@ namespace Medior.ViewModels
             }
         }
 
+
         public ICommand SetModeCommand
         {
             get

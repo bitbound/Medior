@@ -25,6 +25,9 @@ namespace Medior.ViewModels
         private readonly ISettings _settings;
         private readonly ISystemTime _systemTime;
         private readonly IWindowService _windowService;
+        [ObservableProperty]
+        private string? _captureViewUrl;
+
         private Bitmap? _currentBitmap;
         private CancellationTokenSource? _recordingCts;
 
@@ -47,31 +50,9 @@ namespace Medior.ViewModels
             _settings = settings;
             _systemTime = systemTime;
 
-            CaptureCommand = new AsyncRelayCommand(() => Capture(false));
-            RecordCommand = new AsyncRelayCommand(Record);
-            ShareCommand = new AsyncRelayCommand(Share);
-            CopyViewUrlCommand = new RelayCommand(CopyUrl);
-            CopyCaptureCommand = new AsyncRelayCommand(CopyCapture);
-            StopVideoCaptureCommand = new RelayCommand(StopVideoCapture);
-            SaveCommand = new AsyncRelayCommand(Save);
-
             _messenger.Register<GenericMessage<ScreenCaptureRequestKind>>(this, HandleScreenCaptureRequest);
             _messenger.Register<StopRecordingRequested>(this, HandleStopRecordingRequested);
         }
-
-
-        public ICommand CaptureCommand { get; }
-
-        public string? CaptureViewUrl
-        {
-            get => Get<string>();
-            set => Set(value);
-        }
-
-        public ICommand CopyCaptureCommand { get; }
-
-        public ICommand CopyViewUrlCommand { get; }
-
         public ImageSource? CurrentImage
         {
             get => Get<ImageSource>();
@@ -103,13 +84,14 @@ namespace Medior.ViewModels
             set => Set(value);
         }
 
-        public ICommand RecordCommand { get; }
 
-        public ICommand SaveCommand { get; }
-        public ICommand ShareCommand { get; }
+        [RelayCommand]
+        private async Task Capture()
+        {
+            await CaptureImpl(false);
+        }
 
-        public ICommand StopVideoCaptureCommand { get; }
-        private async Task Capture(bool captureCursor)
+        private async Task CaptureImpl(bool captureCursor)
         {
             ResetCaptureState();
 
@@ -135,6 +117,7 @@ namespace Medior.ViewModels
             _messenger.Send(new ToastMessage("Copied to clipboard", ToastType.Success));
         }
 
+        [RelayCommand]
         private async Task CopyCapture()
         {
             if (_currentBitmap is not null)
@@ -157,7 +140,8 @@ namespace Medior.ViewModels
             }
         }
 
-        private void CopyUrl()
+        [RelayCommand]
+        private void CopyViewUrl()
         {
             Clipboard.SetText(CaptureViewUrl);
             _messenger.Send(new ToastMessage("Copied to clipboard", ToastType.Success));
@@ -192,7 +176,7 @@ namespace Medior.ViewModels
             switch (message.Value)
             {
                 case ScreenCaptureRequestKind.Snip:
-                    await Capture(true);
+                    await CaptureImpl(true);
                     break;
                 case ScreenCaptureRequestKind.Record:
                     await Record();
@@ -209,6 +193,7 @@ namespace Medior.ViewModels
             _recordingCts?.Cancel();
         }
 
+        [RelayCommand]
         private async Task Record()
         {
             try
@@ -244,6 +229,7 @@ namespace Medior.ViewModels
             CurrentRecording = null;
         }
 
+        [RelayCommand]
         private async Task Save()
         {
             try
@@ -301,6 +287,7 @@ namespace Medior.ViewModels
             }
         }
 
+        [RelayCommand]
         private async Task Share()
         {
             if (_currentBitmap is not null)
@@ -427,6 +414,8 @@ namespace Medior.ViewModels
                 _messenger.Send(new LoaderUpdate());
             }
         }
+
+        [RelayCommand]
         private void StopVideoCapture()
         {
             _recordingCts?.Cancel();
