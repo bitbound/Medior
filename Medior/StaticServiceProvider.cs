@@ -42,6 +42,7 @@ namespace Medior
                 services.AddAppModule<ScreenCaptureViewModel, ScreenCaptureView>("Screen Capture", PackIconBoxIconsKind.RegularCamera);
                 services.AddAppModule<PhotoSorterViewModel, PhotoSorterView>("Photo Sorter", PackIconBoxIconsKind.RegularPhotoAlbum);
                 services.AddAppModule<KeepAwakeViewModel, KeepAwakeView>("Keep Awake", PackIconBoxIconsKind.RegularCoffee);
+                services.AddAppModule<QrCodeGeneratorViewModel, QrCodeGeneratorView>("QR Code", PackIconBoxIconsKind.RegularQr);
 
                 services.AddSingleton<IFileSystem, FileSystem>();
                 services.AddSingleton<IRegistryService, RegistryService>();

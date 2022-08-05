@@ -19,9 +19,14 @@
             <Run Text="{Binding Version, Mode=OneWay}" />
         </TextBlock>
 
-        <TextBlock Text="Copyright (c) Jared Goodwin.  All rights reserved." Style="{StaticResource ThemeText}" />
+        <TextBlock Style="{StaticResource Paragraph}">
+            <Run Text="Web App: " />
+            <Hyperlink NavigateUri="https://medior.app" Click="Hyperlink_Click">
+                https://medior.app
+            </Hyperlink>
+        </TextBlock>
 
-        <Separator Height="10" Opacity="0" />
+        <TextBlock Text="Copyright (c) Jared Goodwin.  All rights reserved." Style="{StaticResource Paragraph}" />
 
         <TextBlock Style="{StaticResource ThemeText}">
                 <Run>Main icon made by</Run>
@@ -42,7 +47,7 @@
 
         <Separator Height="10" Opacity="0" />
 
-        <StackPanel>
+        <StackPanel Visibility="Collapsed">
             <TextBlock Style="{StaticResource MediumTitle}" Foreground="{StaticResource MahApps.Brushes.Accent2}">
                 Module Details
             </TextBlock>

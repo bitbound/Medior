@@ -1,0 +1,44 @@
+﻿<UserControl x:Class="Medior.Views.QrCodeGeneratorView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:c="clr-namespace:Medior.Controls"
+             xmlns:vm="clr-namespace:Medior.ViewModels"
+             xmlns:local="clr-namespace:Medior.Views"
+             xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
+             mc:Ignorable="d" 
+             DataContext="{x:Static vm:ViewModelLocator.QrCodeGeneratorViewModel}"
+             d:DesignHeight="450" d:DesignWidth="800">
+
+    <c:GridEx RowDefinitionsEx="Auto, 20, 1*"
+          ColumnDefinitionsEx="1*, 10, Auto, 10, Auto, 10, Auto">
+
+        <TextBox Grid.Column="0" 
+                 Grid.Row="0"
+                 mah:TextBoxHelper.Watermark="Example: https://www.bing.com/search?q=my+qr+code"
+                 Text="{Binding InputText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+
+        <Button Grid.Column="2"
+                Grid.Row="0"
+                Content="Create"
+                Command="{Binding GenerateCodeCommand}"/>
+
+        <Button Grid.Column="4"
+                Grid.Row="0"
+                Content="Save"
+                Command="{Binding SaveQrCodeImageCommand}"/>
+
+        <Button Grid.Column="6"
+                Grid.Row="0"
+                Content="Clear"
+                Command="{Binding ClearCommand}"/>
+
+        <Image Grid.Column="0"
+               Grid.Row="2"
+               Grid.ColumnSpan="5"
+               HorizontalAlignment="Center"
+               MaxWidth="350"
+               Source="{Binding QrCodeImage}" />
+    </c:GridEx>
+</UserControl>
