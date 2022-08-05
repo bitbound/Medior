@@ -25,10 +25,22 @@ namespace Medior.ViewModels
         private readonly ISettings _settings;
         private readonly ISystemTime _systemTime;
         private readonly IWindowService _windowService;
+
         [ObservableProperty]
         private string? _captureViewUrl;
 
         private Bitmap? _currentBitmap;
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(IsHintTextVisible))]
+        private ImageSource? _currentImage;
+
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(IsHintTextVisible))]
+        private Uri? _currentRecording;
+
+        [ObservableProperty]
+        private bool _isRecordingInProgress;
+
         private CancellationTokenSource? _recordingCts;
 
         public ScreenCaptureViewModel(
@@ -53,36 +65,10 @@ namespace Medior.ViewModels
             _messenger.Register<GenericMessage<ScreenCaptureRequestKind>>(this, HandleScreenCaptureRequest);
             _messenger.Register<StopRecordingRequested>(this, HandleStopRecordingRequested);
         }
-        public ImageSource? CurrentImage
-        {
-            get => Get<ImageSource>();
-            set
-            {
-                Set(value);
-                OnPropertyChanged(nameof(IsHintTextVisible));
-            }
-        }
-
-        public Uri? CurrentRecording
-        {
-            get => Get<Uri?>();
-            set
-            {
-                Set(value);
-                OnPropertyChanged(nameof(IsHintTextVisible));
-            }
-        }
-
         public bool IsHintTextVisible =>
             CurrentImage is null &&
             CurrentRecording is null &&
             !IsRecordingInProgress;
-
-        public bool IsRecordingInProgress
-        {
-            get => Get<bool>();
-            set => Set(value);
-        }
 
 
         [RelayCommand]
