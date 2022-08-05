@@ -47,4 +47,15 @@
     <ProjectReference Include="..\Medior.Shared\Medior.Shared.csproj" />
   </ItemGroup>
 
+	<!-- TODO: Remove when fixed in .NET 6.0.8 -->
+	<Target Name="RemoveDuplicateAnalyzers" BeforeTargets="CoreCompile">
+		<!-- Work around https://github.com/dotnet/wpf/issues/6792 -->
+
+		<ItemGroup>
+			<FilteredAnalyzer Include="@(Analyzer->Distinct())" />
+			<Analyzer Remove="@(Analyzer)" />
+			<Analyzer Include="@(FilteredAnalyzer)" />
+		</ItemGroup>
+	</Target>
+
 </Project>

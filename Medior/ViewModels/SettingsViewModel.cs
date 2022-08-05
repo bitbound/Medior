@@ -4,15 +4,7 @@ using System.Windows.Input;
 
 namespace Medior.ViewModels
 {
-    public interface ISettingsViewModel
-    {
-        bool HandlePrintScreen { get; set; }
-        bool StartAtLogon { get; set; }
-        ICommand SetThemeCommand { get; }
-        AppTheme Theme { get; set; }
-    }
-
-    public class SettingsViewModel : ISettingsViewModel
+    public class SettingsViewModel
     {
         private readonly ISettings _settings;
         private readonly IThemeSetter _themeSetter;

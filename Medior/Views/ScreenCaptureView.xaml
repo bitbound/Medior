@@ -54,6 +54,9 @@
             <Button FontSize="14" Command="{Binding CopyViewUrlCommand}" Margin="10,0,0,0">
                 Copy URL
             </Button>
+            <Button Margin="10,0,0,0" Command="{Binding GenerateQrCodeCommand}">
+                <icons:PackIconBoxIcons Kind="RegularQr" />
+            </Button>
         </StackPanel>
 
         <Image Grid.Row="2"  Source="{Binding CurrentImage}" Margin="10" Visibility="{Binding CurrentImage, Converter={StaticResource NullToVisibilityConverter}}"></Image>

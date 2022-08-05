@@ -10,15 +10,7 @@ namespace Medior.ViewModels
         Indefinite
     }
 
-    public interface IKeepAwakeViewModel
-    {
-        DateTime? KeepAwakeExpiration { get; set; }
-        bool KeepMonitorAwake { get; set; }
-        KeepAwakeMode Mode { get; set; }
-        ICommand SetModeCommand { get; }
-    }
-
-    internal class KeepAwakeViewModel : ObservableObjectEx, IKeepAwakeViewModel
+    internal class KeepAwakeViewModel : ObservableObjectEx
     {
         private readonly IPowerControl _powerControl;
         private readonly ISystemTime _systemTime;

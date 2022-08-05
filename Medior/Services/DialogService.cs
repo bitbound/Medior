@@ -24,8 +24,8 @@ namespace Medior.Services
     public class DialogService : IDialogService
     {
         private readonly IDialogCoordinator _dialogCoordinator;
-        private readonly IShellViewModel _shellWindowVm;
-        public DialogService(IShellViewModel shellWindowVm, IDialogCoordinator dialogCoordinator)
+        private readonly ShellViewModel _shellWindowVm;
+        public DialogService(ShellViewModel shellWindowVm, IDialogCoordinator dialogCoordinator)
         {
             _shellWindowVm = shellWindowVm;
             _dialogCoordinator = dialogCoordinator;

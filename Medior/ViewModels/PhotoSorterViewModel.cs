@@ -15,31 +15,7 @@ using System.Windows.Input;
 
 namespace Medior.ViewModels
 {
-    public interface IPhotoSorterViewModel
-    {
-        ICommand CancelJobCommand { get; }
-        ICommand CreateNewJobCommand { get; }
-        string CurrentJobRunnerTask { get; set; }
-        ICommand DeleteJobCommand { get; }
-        string ExcludedExtenions { get; }
-        string IncludedExtensions { get; }
-        bool IsDryRun { get; set; }
-        bool IsJobRunning { get; set; }
-        int JobRunnerProgress { get; set; }
-        string JobRunnerProgressPercent { get; }
-        ICommand OpenReportsDirectoryCommand { get; }
-        OverwriteAction[] OverwriteActions { get; }
-        ICommand RenameJobCommand { get; }
-        ICommand SaveJobCommand { get; }
-        SortJob? SelectedJob { get; set; }
-        ICommand ShowDestinationTransformCommand { get; }
-        ObservableCollectionEx<SortJob> SortJobs { get; }
-        SortOperation[] SortOperations { get; }
-        ICommand StartJobCommand { get; }
-        void NotifyCommandsCanExecuteChanged();
-    }
-
-    public class PhotoSorterViewModel : ObservableObjectEx, IPhotoSorterViewModel
+    public class PhotoSorterViewModel : ObservableObjectEx
     {
         private readonly IDialogService _dialogService;
         private readonly IUiDispatcher _dispatcher;

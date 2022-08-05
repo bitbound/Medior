@@ -4,13 +4,7 @@ using System.Windows.Input;
 
 namespace Medior.ViewModels
 {
-    public interface IAboutViewModel
-    {
-        string Version { get; }
-        ICommand OpenLogsFolder { get; }
-    }
-
-    public class AboutViewModel : ObservableObjectEx, IAboutViewModel
+    public class AboutViewModel : ObservableObjectEx
     {
         public AboutViewModel()
         {

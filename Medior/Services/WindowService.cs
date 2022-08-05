@@ -1,4 +1,5 @@
-﻿using Medior.Controls.ScreenCapture;
+﻿using Medior.Controls;
+using Medior.Controls.ScreenCapture;
 using Medior.Utilities;
 using System;
 using System.Drawing;
@@ -14,10 +15,20 @@ namespace Medior.Services
         Rectangle ShowCapturePicker();
         void ShowMainWindow();
         IDisposable ShowRecordingFrame(Rectangle selectedArea);
+        void ShowQrCode(string url, string windowTitle);
     }
 
     public class WindowService : IWindowService
     {
+        private readonly IQrCodeGenerator _qrCodeGenerator;
+        private readonly IMessenger _messenger;
+
+        public WindowService(IQrCodeGenerator qrCodeGenerator, IMessenger messenger)
+        {
+            _qrCodeGenerator = qrCodeGenerator;
+            _messenger = messenger;
+        }
+
         public IDisposable HideMainWindow()
         {
             try
@@ -78,6 +89,18 @@ namespace Medior.Services
                 WpfApp.Current.MainWindow.Activate();
             }
             catch { }
+        }
+
+        public void ShowQrCode(string url, string windowTitle)
+        {
+            var result = _qrCodeGenerator.GenerateCode(url);
+            if (!result.IsSuccess)
+            {
+                _messenger.Send(new ToastMessage("Failed to generate QR code", ToastType.Error));
+            }
+
+            var window = new QrCodeWindow(result.Value, windowTitle);
+            window.Show();
         }
 
         public IDisposable ShowRecordingFrame(Rectangle selectedArea)

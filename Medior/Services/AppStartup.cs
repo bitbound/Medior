@@ -15,6 +15,7 @@ namespace Medior.Services
         private readonly ISettings _settings;
         private readonly ITrayService _trayService;
         private readonly IThemeSetter _themeSetter;
+        private readonly IRegistryService _registry;
         private readonly IKeyboardHookManager _keyboardHookManager;
         private readonly IEnumerable<IBackgroundService> _backgroundServices;
         private readonly List<Task> _backgroundTasks = new();
@@ -23,11 +24,13 @@ namespace Medior.Services
             ITrayService trayService,
             IThemeSetter themeSetter,
             IKeyboardHookManager keyboardHookManager,
+            IRegistryService registry,
             IEnumerable<IBackgroundService> backgroundServices)
         {
             _settings = settings;
             _trayService = trayService;
             _themeSetter = themeSetter;
+            _registry = registry;
             _keyboardHookManager = keyboardHookManager;
             _backgroundServices = backgroundServices;
         }
@@ -46,6 +49,8 @@ namespace Medior.Services
             {
                 _keyboardHookManager.SetPrintScreenHook();
             }
+
+            _registry.SetStartAtLogon(_settings.StartAtLogon);
 
             return Task.CompletedTask;
         }

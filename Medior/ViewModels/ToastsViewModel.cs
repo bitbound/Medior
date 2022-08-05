@@ -2,11 +2,7 @@
 
 namespace Medior.ViewModels
 {
-    public interface IToastsViewModel
-    {
-        ObservableCollectionEx<ToastMessage> Toasts { get; }
-    }
-    internal class ToastsViewModel : IToastsViewModel
+    internal class ToastsViewModel
     {
         private readonly IMessenger _messenger;
         private readonly IUiDispatcher _uiDispatcher;

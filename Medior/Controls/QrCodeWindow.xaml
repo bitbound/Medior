@@ -1,0 +1,17 @@
+﻿<mah:MetroWindow x:Class="Medior.Controls.QrCodeWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:controls="clr-namespace:Medior.Controls"
+        xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
+        xmlns:local="clr-namespace:Medior.Controls"
+        mc:Ignorable="d"
+        Height="400" Width="500"
+        Loaded="Window_Loaded">
+    <controls:GridEx RowDefinitionsEx="Auto, 15, *" Margin="10">
+        <TextBlock x:Name="HeaderText" Grid.Row="0" TextAlignment="Center" Style="{StaticResource LargeTitle}" />
+
+        <Image x:Name="QrImage" Grid.Row="2" Stretch="Uniform"></Image>
+    </controls:GridEx>
+</mah:MetroWindow>

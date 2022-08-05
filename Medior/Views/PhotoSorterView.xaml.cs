@@ -12,7 +12,7 @@ namespace Medior.Views
     /// </summary>
     public partial class PhotoSorterView : UserControl
     {
-        private IPhotoSorterViewModel? ViewModel => DataContext as IPhotoSorterViewModel;
+        private PhotoSorterViewModel? ViewModel => DataContext as PhotoSorterViewModel;
 
         public PhotoSorterView()
         {

@@ -15,22 +15,7 @@ using System.Windows.Media;
 
 namespace Medior.ViewModels
 {
-    public interface IScreenCaptureViewModel
-    {
-        ICommand CaptureCommand { get; }
-        string? CaptureViewUrl { get; set; }
-        ICommand CopyCaptureCommand { get; }
-        ICommand CopyViewUrlCommand { get; }
-        ImageSource? CurrentImage { get; }
-        Uri? CurrentRecording { get; }
-        bool IsHintTextVisible { get; }
-        bool IsRecordingInProgress { get; }
-        ICommand RecordCommand { get; }
-        ICommand SaveCommand { get; }
-        ICommand ShareCommand { get; }
-        ICommand StopVideoCaptureCommand { get; }
-    }
-    public class ScreenCaptureViewModel : ObservableObjectEx, IScreenCaptureViewModel
+    public partial class ScreenCaptureViewModel : ObservableObjectEx
     {
         private readonly IApiService _apiService;
         private readonly IDialogService _dialogService;
@@ -176,6 +161,30 @@ namespace Medior.ViewModels
         {
             Clipboard.SetText(CaptureViewUrl);
             _messenger.Send(new ToastMessage("Copied to clipboard", ToastType.Success));
+        }
+
+        [RelayCommand]
+        private void GenerateQrCode()
+        {
+            if (string.IsNullOrWhiteSpace(CaptureViewUrl))
+            {
+                _logger.LogWarning("{captureViewUrl} shouldn't be empty here.", CaptureViewUrl);
+                return;
+            }
+
+            if (CurrentImage is not null)
+            {
+                _windowService.ShowQrCode(CaptureViewUrl, "View Screenshot");
+            }
+            else if (CurrentRecording is not null)
+            {
+                _windowService.ShowQrCode(CaptureViewUrl, "View Recording");
+            }
+            else
+            {
+                _logger.LogWarning("Expected a screenshot or recording.");
+                _messenger.Send(new ToastMessage("Unexpected state", ToastType.Warning));
+            }
         }
 
         private async void HandleScreenCaptureRequest(object recipient, GenericMessage<ScreenCaptureRequestKind> message)

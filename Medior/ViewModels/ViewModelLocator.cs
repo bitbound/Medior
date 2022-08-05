@@ -5,12 +5,12 @@ namespace Medior.ViewModels
 {
     internal static class ViewModelLocator
     {
-        public static IAboutViewModel AboutViewModel => StaticServiceProvider.Instance.GetRequiredService<IAboutViewModel>();
-        public static IKeepAwakeViewModel KeepAwakeViewModel => StaticServiceProvider.Instance.GetRequiredService<IKeepAwakeViewModel>();
-        public static IPhotoSorterViewModel PhotoSorterViewModel => StaticServiceProvider.Instance.GetRequiredService<IPhotoSorterViewModel>();
-        public static IScreenCaptureViewModel ScreenCaptureViewModel => StaticServiceProvider.Instance.GetRequiredService<IScreenCaptureViewModel>();
-        public static ISettingsViewModel SettingsViewModel => StaticServiceProvider.Instance.GetRequiredService<ISettingsViewModel>();
-        public static IShellViewModel ShellWindowViewModel => StaticServiceProvider.Instance.GetRequiredService<IShellViewModel>();
-        public static IToastsViewModel ToastsViewModel => StaticServiceProvider.Instance.GetRequiredService<IToastsViewModel>();
+        public static AboutViewModel AboutViewModel => StaticServiceProvider.Instance.GetRequiredService<AboutViewModel>();
+        public static KeepAwakeViewModel KeepAwakeViewModel => StaticServiceProvider.Instance.GetRequiredService<KeepAwakeViewModel>();
+        public static PhotoSorterViewModel PhotoSorterViewModel => StaticServiceProvider.Instance.GetRequiredService<PhotoSorterViewModel>();
+        public static ScreenCaptureViewModel ScreenCaptureViewModel => StaticServiceProvider.Instance.GetRequiredService<ScreenCaptureViewModel>();
+        public static SettingsViewModel SettingsViewModel => StaticServiceProvider.Instance.GetRequiredService<SettingsViewModel>();
+        public static ShellViewModel ShellWindowViewModel => StaticServiceProvider.Instance.GetRequiredService<ShellViewModel>();
+        public static ToastsViewModel ToastsViewModel => StaticServiceProvider.Instance.GetRequiredService<ToastsViewModel>();
     }
 }

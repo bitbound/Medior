@@ -8,21 +8,7 @@ using System.Threading.Tasks;
 
 namespace Medior.ViewModels
 {
-    public interface IShellViewModel
-    {
-        ObservableCollectionEx<AppModule> AppModules { get; }
-        ObservableCollectionEx<AppModule> FilteredAppModules { get; }
-        bool IsLoaderVisible { get; set; }
-        bool IsNavPaneOpen { get; set; }
-        double LoaderProgress { get; }
-        string LoaderText { get; set; }
-        LoaderType LoaderType { get; set; }
-        List<AppModule> OptionsModules { get; }
-        string SearchText { get; set; }
-        AppModule? SelectedModule { get; set; }
-    }
-
-    public class ShellViewModel : ObservableObjectEx, IShellViewModel
+    public class ShellViewModel : ObservableObjectEx
     {
         private readonly IMessenger _messenger;
         private readonly IWindowService _windowService;

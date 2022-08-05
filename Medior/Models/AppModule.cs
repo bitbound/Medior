@@ -5,24 +5,17 @@ namespace Medior.Models
 {
     public class AppModule
     {
-        public AppModule(string label, PackIconControlBase icon, Type controlType, Type? vmInterface = null, Type? vmImplementation = null)
+        public AppModule(string label, PackIconControlBase icon, Type controlType, Type? viewModelType = null)
         {
             Label = label;
             Icon = icon;
             ControlType = controlType;
-
-            if (vmInterface is not null && vmImplementation is not null)
-            {
-                ViewModelInterfaceType = vmInterface;
-                ViewModelImplementationType = vmImplementation;
-            }
-
+            ViewModelType = viewModelType;
         }
 
         public Type ControlType { get; }
         public PackIconControlBase Icon { get; }
         public string Label { get; }
-        public Type? ViewModelImplementationType { get; }
-        public Type? ViewModelInterfaceType { get; }
+        public Type? ViewModelType { get; }
     }
 }
