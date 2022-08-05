@@ -365,3 +365,5 @@ FodyWeavers.xsd
 /Medior.Web/Server/AppDb.db-shm
 /Medior.Web/Server/AppDb.db-wal
 /Medior.Web/Server/App_Data/*
+/Medior.Web/Server/publish.cmd
+/Medior.Web/Client/wwwroot/downloads

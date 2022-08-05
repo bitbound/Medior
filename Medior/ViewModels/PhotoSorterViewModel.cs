@@ -1,11 +1,10 @@
-﻿using MahApps.Metro.Controls.Dialogs;
+﻿using CommunityToolkit.Diagnostics;
+using MahApps.Metro.Controls.Dialogs;
 using Medior.Models.PhotoSorter;
 using Medior.Services.PhotoSorter;
 using Medior.Shared.Helpers;
 using Microsoft.Extensions.Logging;
-using Microsoft.Toolkit.Diagnostics;
 using Microsoft.Toolkit.Mvvm.Input;
-using Microsoft.Toolkit.Mvvm.Messaging;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;

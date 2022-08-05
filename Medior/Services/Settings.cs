@@ -1,9 +1,9 @@
-﻿using Medior.Models;
+﻿using CommunityToolkit.Diagnostics;
+using Medior.Models;
 using Medior.Models.PhotoSorter;
 using Medior.Shared;
 using Medior.Shared.Interfaces;
 using Microsoft.Extensions.Logging;
-using Microsoft.Toolkit.Diagnostics;
 using System;
 using System.IO;
 using System.Runtime.CompilerServices;
@@ -81,7 +81,15 @@ namespace Medior.Services
                 {
                     return "https://localhost:7162";
                 }
-                return Get<string>()?.TrimEnd('/') ?? "https://medior.app";
+
+                var uri = Get<string>()?.TrimEnd('/');
+
+                if (Uri.TryCreate(uri, UriKind.Absolute, out _))
+                {
+                    return uri;
+                }
+                
+                return "https://medior.app";
             }
             set
             {
