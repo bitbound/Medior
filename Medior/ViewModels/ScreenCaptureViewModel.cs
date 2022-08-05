@@ -7,11 +7,17 @@ using System.Collections.Specialized;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Windows.Input;
 using System.Windows.Media;
+using Windows.ApplicationModel.DataTransfer;
+using Windows.Storage;
+using Windows.Storage.Streams;
+using Windows.System;
+using Clipboard = System.Windows.Forms.Clipboard;
 
 namespace Medior.ViewModels
 {
@@ -23,6 +29,7 @@ namespace Medior.ViewModels
         private readonly IMessenger _messenger;
         private readonly ICapturePicker _picker;
         private readonly ISettings _settings;
+        private readonly IProcessService _processService;
         private readonly ISystemTime _systemTime;
         private readonly IWindowService _windowService;
 
@@ -51,6 +58,7 @@ namespace Medior.ViewModels
             IWindowService windowService,
             ISettings settings,
             ISystemTime systemTime,
+            IProcessService processService,
             ILogger<ScreenCaptureViewModel> logger)
         {
             _picker = picker;
@@ -60,6 +68,7 @@ namespace Medior.ViewModels
             _apiService = apiService;
             _logger = logger;
             _settings = settings;
+            _processService = processService;
             _systemTime = systemTime;
 
             _messenger.Register<GenericMessage<ScreenCaptureRequestKind>>(this, HandleScreenCaptureRequest);
@@ -100,7 +109,7 @@ namespace Medior.ViewModels
             _windowService.ShowMainWindow();
 
             Clipboard.SetImage(_currentBitmap);
-            _messenger.Send(new ToastMessage("Copied to clipboard", ToastType.Success));
+            _messenger.SendToast("Copied to clipboard", ToastType.Success);
         }
 
         [RelayCommand]
@@ -109,7 +118,7 @@ namespace Medior.ViewModels
             if (_currentBitmap is not null)
             {
                 Clipboard.SetImage(_currentBitmap);
-                _messenger.Send(new ToastMessage("Copied to clipboard", ToastType.Success));
+                _messenger.SendToast("Copied to clipboard", ToastType.Success);
             }
             else if (CurrentRecording is not null)
             {
@@ -118,7 +127,7 @@ namespace Medior.ViewModels
                     CurrentRecording.LocalPath
                 };
                 Clipboard.SetFileDropList(collection);
-                _messenger.Send(new ToastMessage("Copied file to clipboard", ToastType.Success));
+                _messenger.SendToast("Copied file to clipboard", ToastType.Success);
             }
             else
             {
@@ -130,7 +139,61 @@ namespace Medior.ViewModels
         private void CopyViewUrl()
         {
             Clipboard.SetText(CaptureViewUrl);
-            _messenger.Send(new ToastMessage("Copied to clipboard", ToastType.Success));
+            _messenger.SendToast("Copied to clipboard", ToastType.Success);
+        }
+
+        [RelayCommand]
+        private async Task EditCapture()
+        {
+            var status = await Launcher.QueryUriSupportAsync(new Uri("ms-screensketch:"), LaunchQuerySupportType.Uri);
+            if (status != LaunchQuerySupportStatus.Available)
+            {
+                _messenger.SendToast("Snipping Tool is required", ToastType.Warning);
+                return;
+            }
+
+            if (_currentBitmap is null)
+            {
+                await _dialogService.ShowError("Unexpected state.  Bitmap is null.");
+                return;
+            }
+
+            var filePath = Path.Combine(AppConstants.ImagesDirectory, $"{Guid.NewGuid()}.jpg");
+            using (var fs = new FileStream(filePath, FileMode.Create))
+            {
+                _currentBitmap.Save(fs, ImageFormat.Jpeg);
+            }
+
+            var storageFile = await StorageFile.GetFileFromPathAsync(filePath);
+            var token = SharedStorageAccessManager.AddFile(storageFile);
+
+            _ = _processService.LaunchUri(new Uri($"ms-screensketch:edit?sharedAccessToken={token}"));
+
+            var roaming = Windows.ApplicationModel.DataTransfer.Clipboard.IsRoamingEnabled();
+            Windows.ApplicationModel.DataTransfer.Clipboard.ContentChanged += async (sender, args) =>
+            {
+                var content = Windows.ApplicationModel.DataTransfer.Clipboard.GetContent();
+
+
+                if (!content.AvailableFormats.Contains("Bitmap"))
+                {
+                    return;
+                }
+
+                var bitmapStreamRef = await content.GetBitmapAsync();
+                using var stream = await bitmapStreamRef.OpenReadAsync();
+
+                _currentBitmap = new Bitmap(stream.AsStream());
+                CurrentImage = _currentBitmap.ToBitmapImage(ImageFormat.Png);
+                //using var ms = new MemoryStream();
+                //bitmap.Save(ms, ImageFormat.Jpeg);
+                //CurrentImageBytes = ms.ToArray();
+
+                //stream.Seek(0);
+                //var image = new BitmapImage();
+                //await image.SetSourceAsync(stream);
+                //CurrentImage = image;
+            };
         }
 
         [RelayCommand]
@@ -153,7 +216,7 @@ namespace Medior.ViewModels
             else
             {
                 _logger.LogWarning("Expected a screenshot or recording.");
-                _messenger.Send(new ToastMessage("Unexpected state", ToastType.Warning));
+                _messenger.SendToast("Unexpected state", ToastType.Warning);
             }
         }
 
@@ -243,7 +306,7 @@ namespace Medior.ViewModels
                     }
                     using var fs = new FileStream(sfd.FileName, FileMode.Create);
                     _currentBitmap.Save(fs, ImageFormat.Jpeg);
-                    _messenger.Send(new ToastMessage("Image saved", ToastType.Success));
+                    _messenger.SendToast("Image saved", ToastType.Success);
                 }
                 else if (CurrentRecording is not null)
                 {
@@ -262,7 +325,7 @@ namespace Medior.ViewModels
                     }
 
                     File.Copy(CurrentRecording.LocalPath, sfd.FileName, true);
-                    _messenger.Send(new ToastMessage("Video saved", ToastType.Success));
+                    _messenger.SendToast("Video saved", ToastType.Success);
                     
                 }
             }

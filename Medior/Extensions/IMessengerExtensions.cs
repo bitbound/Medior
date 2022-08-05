@@ -9,5 +9,10 @@ namespace Medior.Extensions
         {
             messenger.Send(new GenericMessage<T>(value));
         }
+
+        public static void SendToast(this IMessenger messenger, string message, ToastType type)
+        {
+            messenger.Send(new ToastMessage(message, type));
+        }
     }
 }

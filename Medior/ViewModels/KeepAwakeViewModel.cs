@@ -80,6 +80,7 @@ namespace Medior.ViewModels
             {
                 case KeepAwakeMode.Off:
                     _powerControl.DisableKeepAwake();
+                    _messenger.Send(new ToastMessage("Keep-awake mode turned off", ToastType.Success));
                     break;
                 case KeepAwakeMode.Temporary:
                     if (!KeepAwakeExpiration.HasValue)
@@ -88,9 +89,11 @@ namespace Medior.ViewModels
                     }
 
                     _powerControl.KeepAwake(new DateTimeOffset(KeepAwakeExpiration.Value), KeepMonitorAwake);
+                    _messenger.Send(new ToastMessage($"Keep-awake set until {KeepAwakeExpiration.Value}", ToastType.Success));
                     break;
                 case KeepAwakeMode.Indefinite:
                     _powerControl.KeepAwake(KeepMonitorAwake);
+                    _messenger.Send(new ToastMessage($"Keep-awake set until turned off", ToastType.Success));
                     break;
                 default:
                     break;

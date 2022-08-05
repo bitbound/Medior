@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Threading.Tasks;
 
 namespace Medior.Services
 {
     public interface IProcessService
     {
+        Task<bool> LaunchUri(Uri uri);
+
         Process Start(string fileName);
         Process Start(string fileName, string arguments);
         Process? Start(ProcessStartInfo startInfo);
@@ -12,6 +15,11 @@ namespace Medior.Services
 
     public class ProcessService : IProcessService
     {
+        public async Task<bool> LaunchUri(Uri uri)
+        {
+            return await Windows.System.Launcher.LaunchUriAsync(uri);
+        }
+
         public Process Start(string fileName)
         {
             return Process.Start(fileName);

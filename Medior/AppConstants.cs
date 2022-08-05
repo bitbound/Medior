@@ -26,6 +26,7 @@ namespace Medior
             }
         }
 
+        public static string ImagesDirectory => Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), "Medior", "Images")).FullName;
         public static string RecordingsDirectory => Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), "Medior", "Recordings")).FullName;
         public static string SettingsFilePath
         {

@@ -42,6 +42,10 @@
                     <controls:IconLabel IconText="Copy" IconKind="RegularCopy" />
                 </Button>
 
+                <Button FontSize="14" Command="{Binding EditCaptureCommand}" Margin="10,0,0,0">
+                    <controls:IconLabel IconText="Edit" IconKind="RegularEdit" />
+                </Button>
+
                 <Button FontSize="14" Command="{Binding SaveCommand}" Margin="10,0,0,0">
                     <controls:IconLabel IconText="Save" IconKind="RegularSave" />
                 </Button>
