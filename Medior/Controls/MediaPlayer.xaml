@@ -18,7 +18,6 @@
                       x:Name="MediaViewer"
                       Source="{Binding Path=MediaUri, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:MediaPlayer}}"
                       LoadedBehavior="Manual"
-                      Loaded="MediaViewer_Loaded"
                       SourceUpdated="MediaViewer_SourceUpdated"
                       Margin="0,0,0,10" 
                       SnapsToDevicePixels="True"

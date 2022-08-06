@@ -14,7 +14,17 @@ namespace Medior.Controls
     {
         // Using a DependencyProperty as the backing store for MediaUri.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty MediaUriProperty =
-            DependencyProperty.Register("MediaUri", typeof(Uri), typeof(FrameworkElement), new PropertyMetadata());
+            DependencyProperty.Register(
+                "MediaUri", 
+                typeof(Uri), 
+                typeof(FrameworkElement), 
+                new PropertyMetadata((s,e) =>
+                {
+                    if (s is MediaPlayer mediaPlayer)
+                    {
+                        mediaPlayer.IsPlaying = true;
+                    }
+                }));
 
         private bool _isPlaying;
 
@@ -105,11 +115,6 @@ namespace Medior.Controls
         private void TimelineSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
             MediaViewer.Position = new TimeSpan(0, 0, 0, 0, (int)e.NewValue);
-        }
-
-        private void MediaViewer_Loaded(object sender, RoutedEventArgs e)
-        {
-            IsPlaying = true;
         }
     }
 }

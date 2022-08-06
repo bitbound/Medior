@@ -4,6 +4,7 @@ using Medior.Shared.Services;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Specialized;
+using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
@@ -164,36 +165,55 @@ namespace Medior.ViewModels
                 _currentBitmap.Save(fs, ImageFormat.Jpeg);
             }
 
-            var storageFile = await StorageFile.GetFileFromPathAsync(filePath);
-            var token = SharedStorageAccessManager.AddFile(storageFile);
-
-            _ = _processService.LaunchUri(new Uri($"ms-screensketch:edit?sharedAccessToken={token}"));
-
-            var roaming = Windows.ApplicationModel.DataTransfer.Clipboard.IsRoamingEnabled();
-            Windows.ApplicationModel.DataTransfer.Clipboard.ContentChanged += async (sender, args) =>
+            using var fsw = new FileSystemWatcher(AppConstants.ImagesDirectory, "*.jpg");
+            fsw.Changed += (s, e) =>
             {
-                var content = Windows.ApplicationModel.DataTransfer.Clipboard.GetContent();
-
-
-                if (!content.AvailableFormats.Contains("Bitmap"))
+                if (e.FullPath == filePath)
                 {
-                    return;
+
                 }
-
-                var bitmapStreamRef = await content.GetBitmapAsync();
-                using var stream = await bitmapStreamRef.OpenReadAsync();
-
-                _currentBitmap = new Bitmap(stream.AsStream());
-                CurrentImage = _currentBitmap.ToBitmapImage(ImageFormat.Png);
-                //using var ms = new MemoryStream();
-                //bitmap.Save(ms, ImageFormat.Jpeg);
-                //CurrentImageBytes = ms.ToArray();
-
-                //stream.Seek(0);
-                //var image = new BitmapImage();
-                //await image.SetSourceAsync(stream);
-                //CurrentImage = image;
             };
+            fsw.EnableRaisingEvents = true;
+
+
+            var psi = new ProcessStartInfo()
+            {
+                FileName = "mspaint.exe",
+                Arguments = filePath,
+                UseShellExecute = true
+            };
+            var proc = _processService.Start(psi);
+            await proc!.WaitForExitAsync();
+
+            //var storageFile = await StorageFile.GetFileFromPathAsync(filePath);
+            //var token = SharedStorageAccessManager.AddFile(storageFile);
+            //_ = await _processService.LaunchUri(new Uri($"ms-photos:videoedit?InputToken={token}"));
+            //_ = _processService.LaunchUri(new Uri($"ms-screensketch:edit?sharedAccessToken={token}"));
+
+            //Windows.ApplicationModel.DataTransfer.Clipboard.ContentChanged += async (sender, args) =>
+            //{
+            //    var content = Windows.ApplicationModel.DataTransfer.Clipboard.GetContent();
+
+
+            //    if (!content.AvailableFormats.Contains("Bitmap"))
+            //    {
+            //        return;
+            //    }
+
+            //    var bitmapStreamRef = await content.GetBitmapAsync();
+            //    using var stream = await bitmapStreamRef.OpenReadAsync();
+
+            //    _currentBitmap = new Bitmap(stream.AsStream());
+            //    CurrentImage = _currentBitmap.ToBitmapImage(ImageFormat.Png);
+            //    using var ms = new MemoryStream();
+            //    bitmap.Save(ms, ImageFormat.Jpeg);
+            //    CurrentImageBytes = ms.ToArray();
+
+            //    stream.Seek(0);
+            //    var image = new BitmapImage();
+            //    await image.SetSourceAsync(stream);
+            //    CurrentImage = image;
+            //};
         }
 
         [RelayCommand]
