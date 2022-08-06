@@ -1,6 +1,4 @@
 ﻿using CommunityToolkit.Diagnostics;
-using CommunityToolkit.Mvvm.Input;
-using CommunityToolkit.Mvvm.Messaging;
 using MahApps.Metro.Controls.Dialogs;
 using Medior.Models.PhotoSorter;
 using Medior.Services.PhotoSorter;

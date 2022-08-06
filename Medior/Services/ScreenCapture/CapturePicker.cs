@@ -99,7 +99,7 @@ namespace Medior.Services.ScreenCapture
 
             using var _2 = _windowService.ShowRecordingFrame(selectedArea);
 
-            _screenRecorder.CleanupRecordings();
+            _fileSystem.CleanupTempFiles();
             var fileName = $"Medior_Recording_{_systemTime.Now:yyyy-MM-dd hh.mm.ss.fff}.mp4";
             var filePath = Path.Combine(AppConstants.RecordingsDirectory, fileName);
             using var fs = _fileSystem.CreateFileStream(filePath, FileMode.Create);

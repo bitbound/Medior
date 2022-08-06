@@ -9,7 +9,6 @@ using Medior.Views;
 using Medior.Shared.Interfaces;
 using Medior.Shared.Services;
 using Medior.Services.PhotoSorter;
-using CommunityToolkit.Mvvm.Messaging;
 
 namespace Medior
 {

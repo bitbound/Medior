@@ -1,5 +1,4 @@
-﻿using CommunityToolkit.Mvvm.Messaging;
-using Medior.ViewModels;
+﻿using Medior.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Windows;

@@ -1,5 +1,4 @@
-﻿using CommunityToolkit.Mvvm.Messaging;
-using Medior.Native;
+﻿using Medior.Native;
 using Microsoft.Extensions.DependencyInjection;
 using PInvoke;
 using System;

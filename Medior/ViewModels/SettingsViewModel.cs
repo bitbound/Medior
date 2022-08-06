@@ -1,5 +1,4 @@
-﻿using CommunityToolkit.Mvvm.Input;
-using Medior.Models;
+﻿using Medior.Models;
 using System.Windows.Input;
 
 namespace Medior.ViewModels

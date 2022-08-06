@@ -30,7 +30,6 @@ namespace Medior.Services.ScreenCapture
              int frameRate,
              Stream destinationStream,
              CancellationToken cancellationToken);
-        void CleanupRecordings();
     }
 
     public class ScreenRecorder : IScreenRecorder
@@ -60,24 +59,6 @@ namespace Medior.Services.ScreenCapture
 
             var captureArea = new Rectangle(Point.Empty, display.MonitorArea.Size);
             return await CaptureVideoImpl(captureArea, frameRate, destinationStream, cancellationToken);
-        }
-
-        public void CleanupRecordings()
-        {
-            var expiredFiles = Directory
-                .GetFiles(AppConstants.RecordingsDirectory)
-                .Select(x => new FileInfo(x))
-                .OrderByDescending(x => x.CreationTime)
-                .Skip(10);
-
-            foreach (var file in expiredFiles)
-            {
-                try
-                {
-                    file.Delete();
-                }
-                catch { }
-            }
         }
 
         private async Task<Result> CaptureVideoImpl(

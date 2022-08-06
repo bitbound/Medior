@@ -62,7 +62,7 @@
                 <icons:PackIconBoxIcons Kind="RegularQr" />
             </Button>
         </StackPanel>
-
+        
         <Image Grid.Row="2"  Source="{Binding CurrentImage}" Margin="10" Visibility="{Binding CurrentImage, Converter={StaticResource NullToVisibilityConverter}}"></Image>
 
         <controls:MediaPlayer Grid.Row="2"

@@ -1,10 +1,8 @@
-﻿using CommunityToolkit.Mvvm.Input;
-using CommunityToolkit.Mvvm.Messaging;
+﻿using Medior.Shared.Helpers;
 using Medior.Shared.Services;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Specialized;
-using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
@@ -12,11 +10,9 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using System.Windows.Input;
 using System.Windows.Media;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Storage;
-using Windows.Storage.Streams;
 using Windows.System;
 using Clipboard = System.Windows.Forms.Clipboard;
 
@@ -26,11 +22,12 @@ namespace Medior.ViewModels
     {
         private readonly IApiService _apiService;
         private readonly IDialogService _dialogService;
+        private readonly IFileSystem _fileSystem;
         private readonly ILogger<ScreenCaptureViewModel> _logger;
         private readonly IMessenger _messenger;
         private readonly ICapturePicker _picker;
-        private readonly ISettings _settings;
         private readonly IProcessService _processService;
+        private readonly ISettings _settings;
         private readonly ISystemTime _systemTime;
         private readonly IWindowService _windowService;
 
@@ -60,6 +57,7 @@ namespace Medior.ViewModels
             ISettings settings,
             ISystemTime systemTime,
             IProcessService processService,
+            IFileSystem fileSystem,
             ILogger<ScreenCaptureViewModel> logger)
         {
             _picker = picker;
@@ -70,6 +68,7 @@ namespace Medior.ViewModels
             _logger = logger;
             _settings = settings;
             _processService = processService;
+            _fileSystem = fileSystem;
             _systemTime = systemTime;
 
             _messenger.Register<GenericMessage<ScreenCaptureRequestKind>>(this, HandleScreenCaptureRequest);
@@ -146,10 +145,27 @@ namespace Medior.ViewModels
         [RelayCommand]
         private async Task EditCapture()
         {
+            if (CurrentImage is not null)
+            {
+                await EditImage();
+            }
+            else if (CurrentRecording is not null)
+            {
+                await EditRecording();
+            }
+            else
+            {
+                await _dialogService.ShowError("Unexpected state.  Nothing to edit..");
+                return;
+            }
+        }
+
+        private async Task EditImage()
+        {
             var status = await Launcher.QueryUriSupportAsync(new Uri("ms-screensketch:"), LaunchQuerySupportType.Uri);
             if (status != LaunchQuerySupportStatus.Available)
             {
-                _messenger.SendToast("Snipping Tool is required", ToastType.Warning);
+                _messenger.SendToast("Snipping Tool app not found", ToastType.Warning);
                 return;
             }
 
@@ -159,63 +175,54 @@ namespace Medior.ViewModels
                 return;
             }
 
-            var filePath = Path.Combine(AppConstants.ImagesDirectory, $"{Guid.NewGuid()}.jpg");
-            using (var fs = new FileStream(filePath, FileMode.Create))
+            _fileSystem.CleanupTempFiles();
+
+            var filePath = Path.Combine(AppConstants.ImagesDirectory, $"{Guid.NewGuid()}.png");
+            _currentBitmap.Save(filePath, ImageFormat.Png);
+
+            var storageFile = await _fileSystem.GetFileFromPathAsync(filePath);
+            var token = _fileSystem.AddSharedStorageFile(storageFile);
+            var launchResult = await _processService.LaunchUri(new Uri($"ms-screensketch:edit?sharedAccessToken={token}"));
+
+            if (!launchResult ||
+                !await WaitHelper.WaitForAsync(() => IsScreenSketchOpen(), TimeSpan.FromSeconds(10)))
             {
-                _currentBitmap.Save(fs, ImageFormat.Jpeg);
+                _messenger.SendToast("Failed to launch Snipping Tool", ToastType.Warning);
+                return;
             }
 
-            using var fsw = new FileSystemWatcher(AppConstants.ImagesDirectory, "*.jpg");
-            fsw.Changed += (s, e) =>
-            {
-                if (e.FullPath == filePath)
-                {
-
-                }
-            };
-            fsw.EnableRaisingEvents = true;
-
-
-            var psi = new ProcessStartInfo()
-            {
-                FileName = "mspaint.exe",
-                Arguments = filePath,
-                UseShellExecute = true
-            };
-            var proc = _processService.Start(psi);
-            await proc!.WaitForExitAsync();
-
-            //var storageFile = await StorageFile.GetFileFromPathAsync(filePath);
-            //var token = SharedStorageAccessManager.AddFile(storageFile);
-            //_ = await _processService.LaunchUri(new Uri($"ms-photos:videoedit?InputToken={token}"));
-            //_ = _processService.LaunchUri(new Uri($"ms-screensketch:edit?sharedAccessToken={token}"));
-
-            //Windows.ApplicationModel.DataTransfer.Clipboard.ContentChanged += async (sender, args) =>
-            //{
-            //    var content = Windows.ApplicationModel.DataTransfer.Clipboard.GetContent();
-
-
-            //    if (!content.AvailableFormats.Contains("Bitmap"))
-            //    {
-            //        return;
-            //    }
-
-            //    var bitmapStreamRef = await content.GetBitmapAsync();
-            //    using var stream = await bitmapStreamRef.OpenReadAsync();
-
-            //    _currentBitmap = new Bitmap(stream.AsStream());
-            //    CurrentImage = _currentBitmap.ToBitmapImage(ImageFormat.Png);
-            //    using var ms = new MemoryStream();
-            //    bitmap.Save(ms, ImageFormat.Jpeg);
-            //    CurrentImageBytes = ms.ToArray();
-
-            //    stream.Seek(0);
-            //    var image = new BitmapImage();
-            //    await image.SetSourceAsync(stream);
-            //    CurrentImage = image;
-            //};
+            Windows.ApplicationModel.DataTransfer.Clipboard.ContentChanged -= GetClipboardContent;
+            Windows.ApplicationModel.DataTransfer.Clipboard.ContentChanged += GetClipboardContent;
         }
 
+        private async Task EditRecording()
+        {
+            var status = await _processService.QueryUriSupportAsync(new Uri("ms-photos:"), LaunchQuerySupportType.Uri);
+            if (status != LaunchQuerySupportStatus.Available)
+            {
+                _messenger.SendToast("Photos app not found", ToastType.Warning);
+                return;
+            }
+
+            if (CurrentRecording is null)
+            {
+                await _dialogService.ShowError("Unexpected state.  Recording is null.");
+                return;
+            }
+
+            var fileExt = Path.GetExtension(CurrentRecording.LocalPath);
+            var tempFile = $"{Path.GetFileNameWithoutExtension(CurrentRecording.LocalPath)}-Temp{fileExt}";
+            var tempPath = Path.Combine(AppConstants.RecordingsDirectory, tempFile);
+            _fileSystem.CopyFile(CurrentRecording.LocalPath, tempPath, true);
+            var storageFile = await _fileSystem.GetFileFromPathAsync(tempPath);
+            var token = _fileSystem.AddSharedStorageFile(storageFile);
+            var launchResult = await _processService.LaunchUri(new Uri($"ms-photos:videoedit?InputToken={token}&Action=View"));
+
+            if (!launchResult)
+            {
+                _messenger.SendToast("Failed to launch Photos", ToastType.Warning);
+            }
+        }
         [RelayCommand]
         private void GenerateQrCode()
         {
@@ -240,6 +247,36 @@ namespace Medior.ViewModels
             }
         }
 
+        private async void GetClipboardContent(object? sender, object e)
+        {
+            if (!IsScreenSketchOpen())
+            {
+                Windows.ApplicationModel.DataTransfer.Clipboard.ContentChanged -= GetClipboardContent;
+                return;
+            }
+
+            var content = Windows.ApplicationModel.DataTransfer.Clipboard.GetContent();
+
+            if (!content.AvailableFormats.Contains("Bitmap"))
+            {
+                return;
+            }
+
+            var bitmapStreamRef = await content.GetBitmapAsync();
+            using var rtStream = await bitmapStreamRef.OpenReadAsync();
+            using var stream = rtStream.AsStream();
+            using var rgb32Bpp = new Bitmap(stream);
+
+
+
+            _currentBitmap?.Dispose();
+            _currentBitmap = new Bitmap(rgb32Bpp.Width, rgb32Bpp.Height, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+            using var graphics = Graphics.FromImage(_currentBitmap);
+            graphics.DrawImage(rgb32Bpp, Point.Empty);
+
+            CurrentImage = _currentBitmap.ToBitmapImage(ImageFormat.Png);
+        }
+
         private async void HandleScreenCaptureRequest(object recipient, GenericMessage<ScreenCaptureRequestKind> message)
         {
             switch (message.Value)
@@ -256,12 +293,17 @@ namespace Medior.ViewModels
             _windowService.ShowMainWindow();
         }
 
-
         private void HandleStopRecordingRequested(object recipient, StopRecordingRequested message)
         {
             _recordingCts?.Cancel();
         }
 
+        private bool IsScreenSketchOpen()
+        {
+            return _processService
+                .GetProcessesByName("ScreenSketch")
+                .Any();
+        }
         [RelayCommand]
         private async Task Record()
         {

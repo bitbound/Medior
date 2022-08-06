@@ -1,6 +1,7 @@
 ﻿using MahApps.Metro.Controls.Dialogs;
 using Medior.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Linq;
 using System.Threading;
@@ -36,10 +37,14 @@ namespace Medior
         private async void Application_DispatcherUnhandledException(object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e)
         {
             e.Handled = true;
+            var logger = StaticServiceProvider.Instance.GetRequiredService<ILogger<App>>();
+            logger.LogError(e.Exception, "Unhandled exceptions.");
+
             await _dialogCoordinator.ShowMessageAsync(ViewModelLocator.ShellWindowViewModel,
               "Oh darn.  An error.",
               $"Here's what it said:\n\n{e.Exception.Message}",
               MessageDialogStyle.Affirmative);
+
         }
     }
 }

@@ -1,6 +1,4 @@
-﻿using CommunityToolkit.Mvvm.Messaging;
-
-namespace Medior.Extensions
+﻿namespace Medior.Extensions
 {
     internal static class IMessengerExtensions
     {
