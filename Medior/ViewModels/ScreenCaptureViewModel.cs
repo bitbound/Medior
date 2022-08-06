@@ -216,7 +216,7 @@ namespace Medior.ViewModels
             _fileSystem.CopyFile(CurrentRecording.LocalPath, tempPath, true);
             var storageFile = await _fileSystem.GetFileFromPathAsync(tempPath);
             var token = _fileSystem.AddSharedStorageFile(storageFile);
-            var launchResult = await _processService.LaunchUri(new Uri($"ms-photos:videoedit?InputToken={token}&Action=View"));
+            var launchResult = await _processService.LaunchUri(new Uri($"ms-photos:videoedit?InputToken={token}"));
 
             if (!launchResult)
             {
@@ -249,32 +249,37 @@ namespace Medior.ViewModels
 
         private async void GetClipboardContent(object? sender, object e)
         {
-            if (!IsScreenSketchOpen())
+            try
             {
-                Windows.ApplicationModel.DataTransfer.Clipboard.ContentChanged -= GetClipboardContent;
-                return;
+                if (!IsScreenSketchOpen())
+                {
+                    Windows.ApplicationModel.DataTransfer.Clipboard.ContentChanged -= GetClipboardContent;
+                    return;
+                }
+
+                var content = Windows.ApplicationModel.DataTransfer.Clipboard.GetContent();
+
+                if (!content.AvailableFormats.Contains("Bitmap"))
+                {
+                    return;
+                }
+
+                var bitmapStreamRef = await content.GetBitmapAsync();
+                using var rtStream = await bitmapStreamRef.OpenReadAsync();
+                using var stream = rtStream.AsStream();
+                using var rgb32Bpp = new Bitmap(stream);
+
+                _currentBitmap?.Dispose();
+                _currentBitmap = new Bitmap(rgb32Bpp.Width, rgb32Bpp.Height, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+                using var graphics = Graphics.FromImage(_currentBitmap);
+                graphics.DrawImage(rgb32Bpp, Point.Empty);
+
+                CurrentImage = _currentBitmap.ToBitmapImage(ImageFormat.Png);
             }
-
-            var content = Windows.ApplicationModel.DataTransfer.Clipboard.GetContent();
-
-            if (!content.AvailableFormats.Contains("Bitmap"))
+            catch (Exception ex)
             {
-                return;
+                _logger.LogError(ex, "Error getting clipboard content.");
             }
-
-            var bitmapStreamRef = await content.GetBitmapAsync();
-            using var rtStream = await bitmapStreamRef.OpenReadAsync();
-            using var stream = rtStream.AsStream();
-            using var rgb32Bpp = new Bitmap(stream);
-
-
-
-            _currentBitmap?.Dispose();
-            _currentBitmap = new Bitmap(rgb32Bpp.Width, rgb32Bpp.Height, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
-            using var graphics = Graphics.FromImage(_currentBitmap);
-            graphics.DrawImage(rgb32Bpp, Point.Empty);
-
-            CurrentImage = _currentBitmap.ToBitmapImage(ImageFormat.Png);
         }
 
         private async void HandleScreenCaptureRequest(object recipient, GenericMessage<ScreenCaptureRequestKind> message)
