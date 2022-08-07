@@ -9,6 +9,7 @@ using Medior.Views;
 using Medior.Shared.Interfaces;
 using Medior.Shared.Services;
 using Medior.Services.PhotoSorter;
+using Views;
 
 namespace Medior
 {
@@ -42,6 +43,7 @@ namespace Medior
                 services.AddAppModule<PhotoSorterViewModel, PhotoSorterView>("Photo Sorter", PackIconBoxIconsKind.RegularPhotoAlbum);
                 services.AddAppModule<KeepAwakeViewModel, KeepAwakeView>("Keep Awake", PackIconBoxIconsKind.RegularCoffee);
                 services.AddAppModule<QrCodeGeneratorViewModel, QrCodeGeneratorView>("QR Code", PackIconBoxIconsKind.RegularQr);
+                services.AddAppModule<FileSharingViewModel, FileSharingView>("File Sharing", PackIconBoxIconsKind.RegularShare);
 
                 services.AddSingleton<IFileSystem, FileSystem>();
                 services.AddSingleton<IRegistryService, RegistryService>();

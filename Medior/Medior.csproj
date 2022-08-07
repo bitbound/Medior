@@ -33,6 +33,7 @@
     <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="6.0.0" />
     <PackageReference Include="Microsoft.Extensions.Http" Version="6.0.0" />
     <PackageReference Include="Microsoft.IO.RecyclableMemoryStream" Version="2.2.0" />
+    <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.1264.42" />
     <PackageReference Include="PInvoke.DwmApi" Version="0.7.124" />
     <PackageReference Include="PInvoke.Gdi32" Version="0.7.124" />
     <PackageReference Include="PInvoke.Kernel32" Version="0.7.124" />
@@ -52,7 +53,7 @@
 		<!-- Work around https://github.com/dotnet/wpf/issues/6792 -->
 
 		<ItemGroup>
-			<FilteredAnalyzer Include="@(Analyzer->Distinct())" />
+			<FilteredAnalyzer Include="@(Analyzer-&gt;Distinct())" />
 			<Analyzer Remove="@(Analyzer)" />
 			<Analyzer Include="@(FilteredAnalyzer)" />
 		</ItemGroup>

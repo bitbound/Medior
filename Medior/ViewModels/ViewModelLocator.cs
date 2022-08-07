@@ -6,6 +6,7 @@ namespace Medior.ViewModels
     internal static class ViewModelLocator
     {
         public static AboutViewModel AboutViewModel => StaticServiceProvider.Instance.GetRequiredService<AboutViewModel>();
+        public static FileSharingViewModel FileSharingViewModel = StaticServiceProvider.Instance.GetRequiredService<FileSharingViewModel>();
         public static KeepAwakeViewModel KeepAwakeViewModel => StaticServiceProvider.Instance.GetRequiredService<KeepAwakeViewModel>();
         public static PhotoSorterViewModel PhotoSorterViewModel => StaticServiceProvider.Instance.GetRequiredService<PhotoSorterViewModel>();
         public static QrCodeGeneratorViewModel QrCodeGeneratorViewModel => StaticServiceProvider.Instance.GetRequiredService<QrCodeGeneratorViewModel>();
