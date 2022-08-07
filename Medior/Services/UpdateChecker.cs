@@ -18,18 +18,19 @@ namespace Medior.Services
     public interface IUpdateChecker
     {
         bool IsNewVersionAvailable { get; }
+
+        Task CheckForUpdates(bool promptToDownload);
     }
     public class UpdateChecker : IUpdateChecker, IBackgroundService
     {
         private readonly IApiService _api;
-        private readonly IMessenger _messenger;
+        private readonly TimeSpan _checkInterval = TimeSpan.FromHours(6);
         private readonly IDialogService _dialogs;
-        private readonly IServerUriProvider _serverUri;
-        private readonly IProcessService _processes;
         private readonly IEnvironmentHelper _environment;
         private readonly ILogger<UpdateChecker> _logger;
-        private readonly TimeSpan _checkInterval = TimeSpan.FromHours(6);
-
+        private readonly IMessenger _messenger;
+        private readonly IProcessService _processes;
+        private readonly IServerUriProvider _serverUri;
         public UpdateChecker(
             IApiService apiService, 
             IMessenger messenger,
@@ -50,6 +51,36 @@ namespace Medior.Services
 
         public bool IsNewVersionAvailable { get; private set; }
 
+        public async Task CheckForUpdates(bool promptToDownload)
+        {
+            try
+            {
+                var result = await _api.GetDesktopVersion();
+
+                if (!result.IsSuccess)
+                {
+                    throw result.Exception!;
+                }
+
+                var localVersion = Assembly.GetExecutingAssembly().GetName().Version;
+                var remoteVersion = result.Value;
+
+                if (localVersion != remoteVersion)
+                {
+                    IsNewVersionAvailable = true;
+
+                    if (promptToDownload)
+                    {
+                        await PromptToUpdate();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error while checking for updates.");
+            }
+        }
+
         public async Task Start(CancellationToken cancellationToken)
         {
             if (_environment.IsDebug)
@@ -61,21 +92,7 @@ namespace Medior.Services
             {
                 try
                 {
-                    var result = await _api.GetDesktopVersion();
-
-                    if (!result.IsSuccess)
-                    {
-                        throw result.Exception!;
-                    }
-
-                    var localVersion = Assembly.GetExecutingAssembly().GetName().Version;
-                    var remoteVersion = result.Value;
-
-                    if (localVersion != remoteVersion)
-                    {
-                        IsNewVersionAvailable = true;
-                        await PromptToUpdate();
-                    }
+                    await CheckForUpdates(true);
                 }
                 catch (Exception ex)
                 {

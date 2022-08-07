@@ -1,5 +1,6 @@
 ﻿using Medior.Shared.Interfaces;
 using Medior.Shared.Services;
+using System;
 using System.Diagnostics;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -13,9 +14,7 @@ namespace Medior.ViewModels
         private readonly IApiService _api;
         private readonly IMessenger _messenger;
         private readonly IProcessService _processService;
-
-        [ObservableProperty]
-        private string _downloadUrl;
+        private readonly IUpdateChecker _updateChecker;
 
         [ObservableProperty]
         private bool _isNewVersionAvailable;
@@ -24,14 +23,18 @@ namespace Medior.ViewModels
             IProcessService processService, 
             IUpdateChecker updateChecker, 
             IMessenger messenger,
-            IApiService api,
-            IServerUriProvider serverUriProvider)
+            IApiService api)
         {
             _processService = processService;
-            _isNewVersionAvailable = updateChecker.IsNewVersionAvailable;
+            _updateChecker = updateChecker;
             _messenger = messenger;
             _api = api;
-            _downloadUrl = $"{serverUriProvider.ServerUri}/downloads/MediorSetup.exe";
+        }
+
+        public async Task RefreshUpdateStatus()
+        {
+            await _updateChecker.CheckForUpdates(false);
+            IsNewVersionAvailable = _updateChecker.IsNewVersionAvailable;
         }
 
         public string Version { get; } = $"{Assembly.GetExecutingAssembly().GetName().Version}";

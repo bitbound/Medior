@@ -10,4 +10,5 @@
     <converters:NotNullToBoolConverter x:Key="NotNullToBoolConverter" />
     <converters:IsEmptyToVisibilityConverter x:Key="IsEmptyToVisibilityConverter" />
     <converters:ReverseIsEmptyToVisibilityConverter x:Key="ReverseIsEmptyToVisibilityConverter" />
+    <converters:ReverseBooleanToVisibilityConverter x:Key="ReverseBooleanToVisibilityConverter" />
 </ResourceDictionary>

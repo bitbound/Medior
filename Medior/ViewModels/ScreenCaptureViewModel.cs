@@ -117,7 +117,7 @@ namespace Medior.ViewModels
             _currentBitmap = null;
             CurrentImage = null;
             CurrentRecording = null;
-            _captureViewUrl = null;
+            CaptureViewUrl = null;
         }
 
         [RelayCommand]
