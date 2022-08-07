@@ -14,10 +14,12 @@
 
 @if (FileId is null)
 {
-    <div class="row mt-5 mb-5">
-        <FileUploadButton Multiple="false" OnFilesChanged="HandleFilesChanged" ClassNames="btn btn-lg btn-primary">
-            Upload
-        </FileUploadButton>
+    <div class="row mt-5">
+        <div class="col-6">
+            <FileUploadButton Multiple="false" OnFilesChanged="HandleFilesChanged" ClassNames="btn btn-lg btn-primary">
+                Upload
+            </FileUploadButton>
+        </div>
     </div>
 }
 else
