@@ -19,13 +19,13 @@ namespace Medior.Web.Server.Api
         [HttpGet("desktop")]
         public ActionResult<string> GetDesktopVersion()
         {
-            var filePath = Path.Combine(_downloadsDir, "Medior.exe");
+            var filePath = Path.Combine(_downloadsDir, "Medior.dll");
             if (!FileIO.Exists(filePath))
             {
                 return NotFound();
             }
 
-            var version = FileVersionInfo.GetVersionInfo(Path.Combine(_downloadsDir, "Medior.exe"));
+            var version = FileVersionInfo.GetVersionInfo(filePath);
 
             if (version.FileVersion is null)
             {
