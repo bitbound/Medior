@@ -11,8 +11,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Windows.Media;
-using Windows.ApplicationModel.DataTransfer;
-using Windows.Storage;
 using Windows.System;
 using Clipboard = System.Windows.Forms.Clipboard;
 
@@ -110,6 +108,16 @@ namespace Medior.ViewModels
 
             Clipboard.SetImage(_currentBitmap);
             _messenger.SendToast("Copied to clipboard", ToastType.Success);
+        }
+
+        [RelayCommand]
+        private void Clear()
+        {
+            _currentBitmap?.Dispose();
+            _currentBitmap = null;
+            CurrentImage = null;
+            CurrentRecording = null;
+            _captureViewUrl = null;
         }
 
         [RelayCommand]
@@ -429,7 +437,7 @@ namespace Medior.ViewModels
                     return;
                 }
 
-                _messenger.Send(new LoaderUpdate()
+                _messenger.Send(new LoaderUpdateMessage()
                 {
                     IsShown = true,
                     Text = "Uploading image",
@@ -444,7 +452,7 @@ namespace Medior.ViewModels
 
                 fileStream.TotalBytesReadChanged += (sender, read) =>
                 {
-                    _messenger.Send(new LoaderUpdate()
+                    _messenger.Send(new LoaderUpdateMessage()
                     {
                         IsShown = true,
                         Text = "Uploading image",
@@ -462,6 +470,10 @@ namespace Medior.ViewModels
                     return;
                 }
 
+                _settings.FileUploads = _settings.FileUploads
+                    .Concat(new[] { result.Value! })
+                    .ToArray();
+
                 CaptureViewUrl = $"{_settings.ServerUri}/file-sharing/{result.Value!.Id}";
             }
             catch (Exception ex)
@@ -471,7 +483,7 @@ namespace Medior.ViewModels
             }
             finally
             {
-                _messenger.Send(new LoaderUpdate());
+                _messenger.Send(new LoaderUpdateMessage());
             }
         }
 
@@ -484,7 +496,7 @@ namespace Medior.ViewModels
                     return;
                 }
 
-                _messenger.Send(new LoaderUpdate()
+                _messenger.Send(new LoaderUpdateMessage()
                 {
                     IsShown = true,
                     Text = "Uploading video",
@@ -500,7 +512,7 @@ namespace Medior.ViewModels
 
                 reactiveStream.TotalBytesReadChanged += (sender, read) =>
                 {
-                    _messenger.Send(new LoaderUpdate()
+                    _messenger.Send(new LoaderUpdateMessage()
                     {
                         IsShown = true,
                         Text = "Uploading video",
@@ -518,6 +530,9 @@ namespace Medior.ViewModels
                     return;
                 }
 
+                _settings.FileUploads = _settings.FileUploads
+                    .Concat(new[] { result.Value! })
+                    .ToArray();
                 CaptureViewUrl = $"{_settings.ServerUri}/file-sharing/{result.Value!.Id}";
             }
             catch (Exception ex)
@@ -527,7 +542,7 @@ namespace Medior.ViewModels
             }
             finally
             {
-                _messenger.Send(new LoaderUpdate());
+                _messenger.Send(new LoaderUpdateMessage());
             }
         }
 

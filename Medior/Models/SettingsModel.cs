@@ -1,4 +1,5 @@
 ﻿using Medior.Models.PhotoSorter;
+using Medior.Shared.Entities;
 using System;
 
 namespace Medior.Models
@@ -11,5 +12,6 @@ namespace Medior.Models
         public bool StartAtLogon { get; set; } = true;
         public AppTheme Theme { get; set; } = AppTheme.Dark;
         public SortJob[] SortJobs { get; set; } = Array.Empty<SortJob>();
+        public UploadedFile[] FileUploads { get; set; } = Array.Empty<UploadedFile>();
     }
 }

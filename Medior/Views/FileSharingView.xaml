@@ -3,13 +3,82 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             xmlns:wv2="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf"
              xmlns:vm ="clr-namespace:Medior.ViewModels"
              xmlns:local="clr-namespace:Views"
+             xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
+             xmlns:icons="http://metro.mahapps.com/winfx/xaml/iconpacks"
+             xmlns:c="clr-namespace:Medior.Controls" 
              mc:Ignorable="d" 
-             DataContext="{x:Static vm:ViewModelLocator.FileSharingViewModel}"
-             d:DesignHeight="450" d:DesignWidth="800">
-    <Grid>
-        <wv2:WebView2 Name="FileSharingWebView" Source="{Binding WebViewUrl}" />
-    </Grid>
+             d:DesignHeight="450" d:DesignWidth="800"
+             Loaded="UserControl_Loaded"
+             DataContext="{x:Static vm:ViewModelLocator.FileSharingViewModel}">
+
+    <c:GridEx RowDefinitionsEx="Auto, *">
+        <StackPanel Grid.Row="0" Orientation="Horizontal">
+            <Button HorizontalAlignment="Left" Click="UploadButton_Click">
+                <c:IconLabel IconText="Upload" IconKind="RegularUpload" />
+            </Button>
+            
+            <Separator Style="{StaticResource {x:Static ToolBar.SeparatorStyleKey}}" Margin="20,0" />
+
+            <Button HorizontalAlignment="Left" Command="{Binding ClearCommand}">
+                <c:IconLabel IconText="Clear" IconKind="RegularTrash" />
+            </Button>
+        </StackPanel>
+
+        <Grid x:Name="UploadsGrid" Grid.Row="1" 
+              Margin="0,15,0,0" 
+              AllowDrop="True" 
+              DragOver="UploadsGrid_DragOver" 
+              Drop="UploadsGrid_Drop" 
+              Background="#02000000">
+
+            <DataGrid ItemsSource="{Binding FileUploads}" AutoGenerateColumns="False" CanUserAddRows="False" CanUserDeleteRows="True">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="File Name" Binding="{Binding FileName}" />
+                    <DataGridTextColumn Header="File Size" Binding="{Binding FileSize, StringFormat=\{0:N0\}}" />
+                    <DataGridTextColumn Header="Uploaded At" Binding="{Binding UploadedAt}" />
+
+                    <DataGridTemplateColumn Header="Actions">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                    <Button ToolTip="Copy Link" 
+                                            Command="{Binding ViewModel.CopyLinkCommand, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:FileSharingView}}"
+                                            CommandParameter="{Binding}">
+                                        <icons:PackIconBoxIcons Kind="RegularLink" />
+                                    </Button>
+                                    <Button ToolTip="Open Link"
+                                            Command="{Binding ViewModel.OpenLinkCommand, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:FileSharingView}}"
+                                            CommandParameter="{Binding}"
+                                            Margin="5,0,0,0">
+                                        <icons:PackIconBoxIcons Kind="RegularLinkExternal" />
+                                    </Button>
+                                    <Button ToolTip="Get QR Code"
+                                            Command="{Binding ViewModel.GetQrCodeCommand, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:FileSharingView}}"
+                                            CommandParameter="{Binding}"
+                                            Margin="5,0,0,0">
+                                        <icons:PackIconBoxIcons Kind="RegularQr" />
+                                    </Button>
+                                    <Button ToolTip="Delete File"
+                                            Command="{Binding ViewModel.DeleteFileCommand, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:FileSharingView}}"
+                                            CommandParameter="{Binding}"
+                                            Margin="5,0,0,0">
+                                        <icons:PackIconBoxIcons Kind="RegularTrash" />
+                                    </Button>
+                                </StackPanel>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                </DataGrid.Columns>
+            </DataGrid>
+
+            <TextBlock Text="Click the Upload button or drop files here."
+                       Style="{StaticResource LargeTitle}"
+                       VerticalAlignment="Center"
+                       HorizontalAlignment="Center"
+                       Visibility="{Binding FileUploads, Converter={StaticResource ReverseIsEmptyToVisibilityConverter}}"/>
+
+        </Grid>
+    </c:GridEx>
 </UserControl>

@@ -2,6 +2,7 @@
 using Medior.Shared.Entities;
 using Medior.Web.Server.Data;
 using Medior.Web.Server.Models;
+using Remotely.Shared.Utilities;
 
 namespace Medior.Web.Server.Services
 {
@@ -65,30 +66,38 @@ namespace Medior.Web.Server.Services
             {
                 return Result.Fail<UploadedFile>("File not found.");
             }
+
+            uploadedFile.LastAccessed = DateTimeOffset.Now;
+            await _appDb.SaveChangesAsync();
+
             return Result.Ok(uploadedFile);
         }
+
         public async Task<RetrievedFile> Load(Guid fileId)
         {
-            var savedFile = await _appDb.UploadedFiles.FindAsync(fileId);
+            var uploadedFile = await _appDb.UploadedFiles.FindAsync(fileId);
 
-            if (savedFile is null)
+            if (uploadedFile is null)
             {
                 return RetrievedFile.Empty;
             }
 
-            var filePath = Path.Combine(_appData, $"{savedFile.Id}{Path.GetExtension(savedFile.FileName)}");
+            var filePath = Path.Combine(_appData, $"{uploadedFile.Id}{Path.GetExtension(uploadedFile.FileName)}");
 
             if (!File.Exists(filePath))
             {
                 return RetrievedFile.Empty;
             }
 
+            uploadedFile.LastAccessed = DateTimeOffset.Now;
+            await _appDb.SaveChangesAsync();
+
             var fs = new FileStream(filePath, FileMode.Open);
 
             return new()
             {
                 FileStream = fs,
-                UploadedFile = savedFile,
+                UploadedFile = uploadedFile,
                 Found = true
             };
         }
@@ -99,8 +108,11 @@ namespace Medior.Web.Server.Services
             {
                 FileName = uploadedFile.FileName,
                 UploadedAt = DateTimeOffset.Now,
+                LastAccessed = DateTimeOffset.Now,
                 ContentDisposition = uploadedFile.ContentDisposition,
-                FileSize = uploadedFile.Length
+                FileSize = uploadedFile.Length,
+                AccessTokenEdit = RandomGenerator.GenerateString(32),
+                AccessTokenView = RandomGenerator.GenerateString(32)
             };
 
             _appDb.UploadedFiles.Add(uploadEntity);

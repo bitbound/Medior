@@ -7,31 +7,17 @@
 @inject IToastService ToastService
 @inject ILoaderService LoaderService
 @inject IServerUriProvider ServerUriProvider
+@inject NavigationManager NavManager
+@inject IJsInterop JsInterop
 
 <h3>File Sharing</h3>
 
 @if (FileId is null)
 {
-    <div class="row mt-5">
-        <div class="mb-5">
-            <FileUploadButton Multiple="false" OnFilesChanged="HandleFilesChanged" ClassNames="btn btn-lg btn-primary">
-                Upload
-            </FileUploadButton>
-        </div>
-
-        <div class="col-md-8 col-lg-6">
-            <div class="input-group mb-2">
-                <input type="text" class="form-control" placeholder="Enter a file ID to view it"
-                   @bind="_inputFileId"
-                   @bind:event="oninput"
-                   @onkeydown="EvaluateFileIdInputKeyDown">
-                <div class="input-group-append">
-                    <button class="btn btn-primary" @onclick="NavigateToFileId">Go</button>
-                </div>
-            </div>
-
-
-        </div>
+    <div class="row mt-5 mb-5">
+        <FileUploadButton Multiple="false" OnFilesChanged="HandleFilesChanged" ClassNames="btn btn-lg btn-primary">
+            Upload
+        </FileUploadButton>
     </div>
 }
 else
@@ -44,15 +30,26 @@ else
             }
             else
             {
-                <div class="mb-5">
+                <div class="mb-3">
                     <a class="btn btn-primary"
-                        target="_blank" 
-                        href="@(ServerUriProvider.ServerUri)/api/file/@FileId">
+                           target="_blank"
+                           href="@(ServerUriProvider.ServerUri)/api/file/@(FileId)?accessToken=@(AccessToken)">
                         Download
                     </a>
                     <FileUploadButton Multiple="false" OnFilesChanged="HandleFilesChanged" ClassNames="btn btn-secondary ms-3">
                         Upload
                     </FileUploadButton>
+                </div>
+                <div>
+                    <label class="form-label">
+                        <strong>Sharing URL:</strong>
+                    </label>
+                </div>
+                <div class="mb-4 input-group">
+                    <input type="text" class="form-control" readonly value="@(NavManager.Uri)" />
+                    <div class="input-group-append">
+                        <button class="btn btn-primary" @onclick="CopyUrl">Copy</button>
+                    </div>
                 </div>
                 <div>
                     <label class="form-label">
@@ -71,11 +68,11 @@ else
             }
             else if (_viewType == ViewType.Image)
             {
-                <img class="img-fluid border border-light border-2" src="/api/file/@FileId" />
+                <img class="img-fluid border border-light border-2" src="/api/file/@(FileId)?accessToken=@(AccessToken)" />
             }
             else if (_viewType == ViewType.Video)
             {
-                <video class="img-fluid border border-light border-2" src="/api/file/@FileId" controls autoplay />
+                <video class="img-fluid border border-light border-2" src="/api/file/@(FileId)?accessToken=@(AccessToken)" controls autoplay />
             }
         </div>
     </div>
@@ -89,6 +86,10 @@ else
     [Parameter]
     public string? FileId { get; set; }
 
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public string? AccessToken { get; set; }
+
     protected override async Task OnInitializedAsync()
     {
         await TryLoadFile();
@@ -96,12 +97,10 @@ else
         await base.OnInitializedAsync();
     }
 
-    private void EvaluateFileIdInputKeyDown(KeyboardEventArgs args)
+    private async Task CopyUrl()
     {
-        if (args.Key.Equals("Enter", StringComparison.OrdinalIgnoreCase))
-        {
-            NavigateToFileId(_inputFileId ?? string.Empty);
-        }
+        await JsInterop.SetClipboard(NavManager.Uri);
+        ToastService.Show("Copied to clipboard", ToastType.Success);
     }
 
     private async Task HandleFilesChanged(InputFileChangeEventArgs args)
@@ -118,9 +117,11 @@ else
                 return;
             }
 
-            FileId = $"{result.Value}";
+            FileId = $"{result.Value?.Id}";
+            AccessToken = $"{result.Value?.AccessTokenView}";
+
             ToastService.Show("Upload succeeded", ToastType.Success);
-            NavigateToFileId($"{result.Value?.Id}");
+            NavigateToFileId($"{result.Value?.Id}", $"{result.Value?.AccessTokenView}");
             await TryLoadFile();
         }
         catch (Exception ex)
@@ -129,14 +130,9 @@ else
         }
     }
 
-    private void NavigateToFileId()
+    private void NavigateToFileId(string fileId, string accessToken)
     {
-        NavigateToFileId(_inputFileId ?? string.Empty);
-    }
-
-    private void NavigateToFileId(string fileId)
-    {
-        NavManager.NavigateTo($"/file-sharing/{fileId}");
+        NavManager.NavigateTo($"/file-sharing/{fileId}?accessToken={accessToken}");
     }
 
     private async Task TryLoadFile()
@@ -148,7 +144,7 @@ else
                 return;
             }
 
-            using var response = await ApiService.GetFileHeaders(FileId);
+            using var response = await ApiService.GetFileHeaders(FileId, AccessToken);
 
             if (!response.IsSuccessStatusCode)
             {

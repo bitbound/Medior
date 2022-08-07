@@ -19,7 +19,7 @@ namespace Medior.Web.Server.Api
         }
 
         [HttpGet("{id}")]
-        public async Task<IActionResult> Get(Guid id)
+        public async Task<IActionResult> Get(Guid id, [FromQuery]string accessToken)
         {
             if (id == Guid.Empty)
             {
@@ -31,6 +31,11 @@ namespace Medior.Web.Server.Api
             if (!result.Found)
             {
                 return NotFound("The file does not exist.");
+            }
+
+            if (result.UploadedFile!.AccessTokenView != accessToken)
+            {
+                return Unauthorized();
             }
 
             var mimeType = "application/octet-stream";
@@ -56,20 +61,37 @@ namespace Medior.Web.Server.Api
         }
 
         [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete(Guid id)
-        {
-            await _fileManager.Delete(id);
-            return NoContent();
-        }
-
-        [HttpHead("{id}")]
-        public async Task<IActionResult> Head(Guid id)
+        public async Task<IActionResult> Delete(Guid id, [FromQuery]string accessToken)
         {
             var result = await _fileManager.GetData(id);
 
             if (!result.IsSuccess)
             {
-                return NotFound("The file does not exist.");
+                return NotFound();
+            }
+
+            if (result.Value!.AccessTokenEdit != accessToken)
+            {
+                return Unauthorized();
+            }
+
+            await _fileManager.Delete(id);
+            return NoContent();
+        }
+
+        [HttpHead("{id}")]
+        public async Task<IActionResult> Head(Guid id, [FromQuery]string accessToken)
+        {
+            var result = await _fileManager.GetData(id);
+
+            if (!result.IsSuccess)
+            {
+                return NotFound();
+            }
+
+            if (result.Value!.AccessTokenView != accessToken)
+            {
+                return Unauthorized();
             }
 
             var mimeType = "application/octet-stream";

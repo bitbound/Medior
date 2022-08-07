@@ -26,7 +26,7 @@ namespace Medior.ViewModels
             FilteredAppModules.AddRange(appModules);
 
             _messenger.Register<GenericMessage<HotKeyHookKind>>(this, HandleHotKeyInvocation);
-            _messenger.Register<LoaderUpdate>(this, HandleLoaderUpdate);
+            _messenger.Register<LoaderUpdateMessage>(this, HandleLoaderUpdate);
             _messenger.Register<NavigateRequestMessage>(this, HandleNavigateRequest);
         }
 
@@ -94,7 +94,7 @@ namespace Medior.ViewModels
             get => Get<AppModule>() ?? AppModules.FirstOrDefault();
             set => Set(value);
         }
-        private void HandleLoaderUpdate(object recipient, LoaderUpdate message)
+        private void HandleLoaderUpdate(object recipient, LoaderUpdateMessage message)
         {
             IsLoaderVisible = message.IsShown;
             LoaderText = message.Text;

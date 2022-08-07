@@ -8,4 +8,6 @@
     <converters:MultiBoolAllToVisibilityConverter x:Key="MultiBoolAllToVisibilityConverter" />
     <converters:MultiBoolAnyToVisibilityConverter x:Key="MultiBoolAnyToVisibilityConverter" />
     <converters:NotNullToBoolConverter x:Key="NotNullToBoolConverter" />
+    <converters:IsEmptyToVisibilityConverter x:Key="IsEmptyToVisibilityConverter" />
+    <converters:ReverseIsEmptyToVisibilityConverter x:Key="ReverseIsEmptyToVisibilityConverter" />
 </ResourceDictionary>

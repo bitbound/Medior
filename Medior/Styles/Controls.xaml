@@ -10,4 +10,12 @@
         <Setter Property="controls:ControlsHelper.ContentCharacterCasing" Value="Normal" />
     </Style>
 
+    <Style TargetType="{x:Type DataGridColumnHeader}" BasedOn="{StaticResource MahApps.Styles.DataGridColumnHeader}">
+        <Setter Property="controls:ControlsHelper.ContentCharacterCasing" Value="Normal" />
+    </Style>
+
+    <Style TargetType="{x:Type controls:MetroWindow}">
+        <Setter Property="TitleCharacterCasing" Value="Normal" />
+    </Style>
+
 </ResourceDictionary>

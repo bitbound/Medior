@@ -4,22 +4,27 @@ using System.Windows.Input;
 
 namespace Medior.ViewModels
 {
-    public class AboutViewModel : ObservableObjectEx
+    [ObservableObject]
+    public partial class AboutViewModel
     {
-        public AboutViewModel()
+        private readonly IProcessService _processService;
+
+        public AboutViewModel(IProcessService processService)
         {
-            OpenLogsFolder = new RelayCommand(() =>
-            {
-                var psi = new ProcessStartInfo()
-                {
-                    FileName = "explorer.exe",
-                    Arguments = AppConstants.LogsFolderPath
-                };
-                Process.Start(psi);
-            });
+            _processService = processService;
         }
+
         public string Version { get; } = $"{Assembly.GetExecutingAssembly().GetName().Version}";
 
-        public ICommand OpenLogsFolder { get; }
+        [RelayCommand]
+        private void OpenLogsFolder()
+        {
+            var psi = new ProcessStartInfo()
+            {
+                FileName = "explorer.exe",
+                Arguments = AppConstants.LogsFolderPath
+            };
+            _processService.Start(psi);
+        }
     }
 }

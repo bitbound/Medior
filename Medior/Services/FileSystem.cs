@@ -27,6 +27,10 @@ namespace Medior.Services
         Task<StorageFile> GetFileFromPathAsync(string filePath);
 
         void MoveFile(string sourceFile, string destinationFile, bool overwrite);
+        FileStream OpenFileStream(string path, FileMode mode, FileAccess access);
+
+        Task<byte[]> ReadAllBytesAsync(string path);
+
         string ReadAllText(string filePath);
         Task<string> ReadAllTextAsync(string path);
         void WriteAllText(string filePath, string contents);
@@ -107,6 +111,16 @@ namespace Medior.Services
         public void MoveFile(string sourceFile, string destinationFile, bool overwrite)
         {
             File.Move(sourceFile, destinationFile, overwrite);
+        }
+
+        public FileStream OpenFileStream(string path, FileMode mode, FileAccess access)
+        {
+            return File.Open(path, mode, access);
+        }
+
+        public async Task<byte[]> ReadAllBytesAsync(string path)
+        {
+            return await File.ReadAllBytesAsync(path);
         }
 
         public string ReadAllText(string filePath)

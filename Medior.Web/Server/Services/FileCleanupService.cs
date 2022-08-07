@@ -53,7 +53,7 @@ namespace Medior.Web.Server.Services
 
                 var expirationDate = DateTimeOffset.Now - TimeSpan.FromDays(appSettings.FileRetentionDays);
 
-                var expiredFiles = appDb.UploadedFiles.Where(x => x.UploadedAt < expirationDate);
+                var expiredFiles = appDb.UploadedFiles.Where(x => x.LastAccessed < expirationDate);
                 appDb.UploadedFiles.RemoveRange(expiredFiles);
                 appDb.SaveChanges();
 

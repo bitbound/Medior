@@ -17,7 +17,8 @@ namespace Medior.Shared.Services
     {
         Task<Result<UploadedFile>> UploadFile(byte[] fileBytes, string fileName);
         Task<Result<UploadedFile>> UploadFile(Stream fileStream, string fileName);
-        Task<HttpResponseMessage> GetFileHeaders(string fileId);
+        Task<HttpResponseMessage> GetFileHeaders(string fileId, string accessToken);
+        Task<Result> DeleteFile(UploadedFile file);
     }
     public class ApiService : IApiService
     {
@@ -35,10 +36,32 @@ namespace Medior.Shared.Services
             _logger = logger;
         }
 
-        public async Task<HttpResponseMessage> GetFileHeaders(string fileId)
+        public async Task<Result> DeleteFile(UploadedFile file)
+        {
+            try
+            {
+                using var client = _clientFactory.CreateClient();
+                var serverUri = _uriProvider.ServerUri;
+
+                var response = await client.DeleteAsync($"{_uriProvider.ServerUri}/api/file/{file.Id}?accessToken={file.AccessTokenEdit}");
+                response.EnsureSuccessStatusCode();
+                return Result.Ok();
+            }
+            catch (HttpRequestException exception) when (exception.StatusCode == System.Net.HttpStatusCode.NotFound)
+            {
+                return Result.Ok();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error while deleting file.");
+                return Result.Fail(ex);
+            }
+        }
+
+        public async Task<HttpResponseMessage> GetFileHeaders(string fileId, string accessToken)
         {
             using var client = _clientFactory.CreateClient();
-            using var request = new HttpRequestMessage(HttpMethod.Head, $"{_uriProvider.ServerUri}/api/file/{fileId}");
+            using var request = new HttpRequestMessage(HttpMethod.Head, $"{_uriProvider.ServerUri}/api/file/{fileId}?accessToken={accessToken}");
             return await client.SendAsync(request);
         }
 

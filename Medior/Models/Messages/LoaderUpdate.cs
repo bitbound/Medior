@@ -1,6 +1,6 @@
 ﻿namespace Medior.Models.Messages
 {
-    public class LoaderUpdate
+    public class LoaderUpdateMessage
     {
         public bool IsShown { get; init; }
         public string Text { get; init; } = string.Empty;

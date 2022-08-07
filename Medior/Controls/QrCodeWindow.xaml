@@ -9,6 +9,7 @@
         mc:Ignorable="d"
         Height="400" Width="500"
         WindowStartupLocation="CenterScreen"
+        TitleCharacterCasing="Normal"
         Loaded="Window_Loaded">
     <controls:GridEx RowDefinitionsEx="Auto, 15, *" Margin="10">
         <TextBlock x:Name="HeaderText" Grid.Row="0" TextAlignment="Center" Style="{StaticResource LargeTitle}" />

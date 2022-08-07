@@ -2,6 +2,7 @@
 using Medior.Models;
 using Medior.Models.PhotoSorter;
 using Medior.Shared;
+using Medior.Shared.Entities;
 using Medior.Shared.Interfaces;
 using Microsoft.Extensions.Logging;
 using System;
@@ -15,21 +16,21 @@ namespace Medior.Services
 {
     public interface ISettings: IServerUriProvider
     {
+        UploadedFile[] FileUploads { get; set; }
         bool HandlePrintScreen { get; set; }
         bool IsNavPaneOpen { get; set; }
+        SortJob[] SortJobs { get; set; }
         bool StartAtLogon { get; set; }
         AppTheme Theme { get; set; }
-        SortJob[] SortJobs { get; set; }
-
         Task Save();
     }
     public class Settings : ISettings
     {
         private readonly IEnvironmentHelper _environmentHelper;
-        private readonly IKeyboardHookManager _keyboardHookManager;
         private readonly SemaphoreSlim _fileLock = new(1, 1);
         private readonly string _filePath = AppConstants.SettingsFilePath;
         private readonly IFileSystem _fileSystem;
+        private readonly IKeyboardHookManager _keyboardHookManager;
         private readonly ILogger<Settings> _logger;
         private readonly IRegistryService _registryService;
         private readonly JsonSerializerOptions _serializerOptions = new() { WriteIndented = true };
@@ -48,6 +49,12 @@ namespace Medior.Services
             _keyboardHookManager = keyboardHookManager;
             _logger = logger;
             Load();
+        }
+
+        public UploadedFile[] FileUploads
+        {
+            get => Get<UploadedFile[]>() ?? Array.Empty<UploadedFile>();
+            set => Set(value);
         }
 
         public bool HandlePrintScreen
@@ -101,6 +108,12 @@ namespace Medior.Services
             }
         }
 
+        public SortJob[] SortJobs
+        {
+            get => Get<SortJob[]>() ?? Array.Empty<SortJob>();
+            set => Set(value);
+        }
+
         public bool StartAtLogon
         {
             get => Get<bool>() && _registryService.GetStartAtLogon();
@@ -116,12 +129,6 @@ namespace Medior.Services
             get => Get<AppTheme>();
             set => Set(value);
         }
-        public SortJob[] SortJobs
-        {
-            get => Get<SortJob[]>() ?? Array.Empty<SortJob>();
-            set => Set(value);
-        }
-
         public async Task Save()
         {
             if (!await _fileLock.WaitAsync(0))

@@ -7,6 +7,10 @@ export function addClassName (element, className) {
     element.classList.add(className);
 }
 
+export async function getClipboard() {
+    return await navigator.clipboard.readText();
+}
+
 export function getSelectionStart (element) {
     return element.selectionStart;
 }
@@ -52,6 +56,11 @@ export function scrollToElement(element) {
     }, 200);
 
 }
+
+export function setClipboard(content) {
+    navigator.clipboard.writeText(content);
+}
+
 export function setStyleProperty(element, propertyName, value) {
     element.style[propertyName] = value;
 }

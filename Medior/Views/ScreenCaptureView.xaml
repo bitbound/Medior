@@ -18,41 +18,52 @@
             <RowDefinition />
         </Grid.RowDefinitions>
 
-        <StackPanel Grid.Row="0" Orientation="Horizontal">
-            <Button FontSize="14" Command="{Binding CaptureCommand}" Margin="0,0,10,0">
-                <controls:IconLabel IconKind="SolidCamera" IconText="Capture" />
-            </Button>
-            <Button FontSize="14" Command="{Binding RecordCommand}">
-                <controls:IconLabel IconKind="SolidVideo" IconText="Record" />
-            </Button>
-            <StackPanel Margin="10,0,0,0" Orientation="Horizontal">
-                <StackPanel.Visibility>
-                    <MultiBinding Converter="{StaticResource MultiBoolAnyToVisibilityConverter}">
-                        <Binding Path="CurrentImage" Converter="{StaticResource NotNullToBoolConverter}" />
-                        <Binding Path="CurrentRecording" Converter="{StaticResource NotNullToBoolConverter}"  />
-                    </MultiBinding>
-                </StackPanel.Visibility>
-                <Separator Style="{StaticResource {x:Static ToolBar.SeparatorStyleKey}}" />
-
-                <Button FontSize="14" Command="{Binding ShareCommand}" Margin="10,0,0,0">
-                    <controls:IconLabel IconText="Share" IconKind="RegularShare" />
+        <ScrollViewer Grid.Row="0" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Hidden">
+            <StackPanel Orientation="Horizontal">
+                <Button FontSize="14" Command="{Binding CaptureCommand}" Margin="0,0,10,0">
+                    <controls:IconLabel IconKind="SolidCamera" IconText="Capture" />
                 </Button>
-
-                <Button FontSize="14" Command="{Binding CopyCaptureCommand}" Margin="10,0,0,0">
-                    <controls:IconLabel IconText="Copy" IconKind="RegularCopy" />
+                
+                <Button FontSize="14" Command="{Binding RecordCommand}">
+                    <controls:IconLabel IconKind="SolidVideo" IconText="Record" />
                 </Button>
+                <StackPanel Orientation="Horizontal">
+                    <StackPanel.Visibility>
+                        <MultiBinding Converter="{StaticResource MultiBoolAnyToVisibilityConverter}">
+                            <Binding Path="CurrentImage" Converter="{StaticResource NotNullToBoolConverter}" />
+                            <Binding Path="CurrentRecording" Converter="{StaticResource NotNullToBoolConverter}"  />
+                        </MultiBinding>
+                    </StackPanel.Visibility>
 
-                <Button FontSize="14" Command="{Binding EditCaptureCommand}" Margin="10,0,0,0">
-                    <controls:IconLabel IconText="Edit" IconKind="RegularEdit" />
-                </Button>
+                    <Separator Style="{StaticResource {x:Static ToolBar.SeparatorStyleKey}}" Margin="10,0" />
 
-                <Button FontSize="14" Command="{Binding SaveCommand}" Margin="10,0,0,0">
-                    <controls:IconLabel IconText="Save" IconKind="RegularSave" />
-                </Button>
+                    <Button FontSize="14" Command="{Binding ShareCommand}">
+                        <controls:IconLabel IconText="Share" IconKind="RegularShare" />
+                    </Button>
+
+                    <Button FontSize="14" Command="{Binding CopyCaptureCommand}" Margin="10,0,0,0">
+                        <controls:IconLabel IconText="Copy" IconKind="RegularCopy" />
+                    </Button>
+
+                    <Button FontSize="14" Command="{Binding EditCaptureCommand}" Margin="10,0,0,0">
+                        <controls:IconLabel IconText="Edit" IconKind="RegularEdit" />
+                    </Button>
+
+                    <Button FontSize="14" Command="{Binding SaveCommand}" Margin="10,0,0,0">
+                        <controls:IconLabel IconText="Save" IconKind="RegularSave" />
+                    </Button>
+
+                    <Separator Style="{StaticResource {x:Static ToolBar.SeparatorStyleKey}}" Margin="10,0" />
+
+                    <Button FontSize="14" Command="{Binding ClearCommand}">
+                        <controls:IconLabel IconText="Clear" IconKind="RegularTrash" />
+                    </Button>
+                </StackPanel>
+
             </StackPanel>
 
-        </StackPanel>
-
+        </ScrollViewer>
+     
         <StackPanel Grid.Row="1" Margin="0,10,0,0" Orientation="Horizontal" Visibility="{Binding CaptureViewUrl, Converter={StaticResource NullToVisibilityConverter}}">
             <TextBox IsReadOnly="True" Text="{Binding CaptureViewUrl}" />
             <Button FontSize="14" Command="{Binding CopyViewUrlCommand}" Margin="10,0,0,0">

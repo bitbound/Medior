@@ -16,6 +16,8 @@ namespace Medior.Web.Client.Services
         ValueTask PreventTabOut(ElementReference terminalInput);
         ValueTask<string> Prompt(string message);
         ValueTask Reload();
+        ValueTask<string> GetClipboard();
+        ValueTask SetClipboard(string content);
         ValueTask ScrollToElement(ElementReference element);
         ValueTask ScrollToEnd(ElementReference element);
         ValueTask SetStyleProperty(ElementReference element, string propertyName, string value);
@@ -122,6 +124,18 @@ namespace Medior.Web.Client.Services
         {
             var module = await _moduleTask.Value;
             await module.InvokeVoidAsync("startDraggingY", element, clientY);
+        }
+
+        public async ValueTask<string> GetClipboard()
+        {
+            var module = await _moduleTask.Value;
+            return await module.InvokeAsync<string>("getClipboard");
+        }
+
+        public async ValueTask SetClipboard(string content)
+        {
+            var module = await _moduleTask.Value;
+            await module.InvokeVoidAsync("setClipboard", content);
         }
     }
 }
