@@ -19,6 +19,8 @@ namespace Medior.Shared.Services
         Task<Result<UploadedFile>> UploadFile(Stream fileStream, string fileName);
         Task<HttpResponseMessage> GetFileHeaders(string fileId, string accessToken);
         Task<Result> DeleteFile(UploadedFile file);
+        Task<Result<Version>> GetDesktopVersion();
+        Task<Result<string>> DownloadDesktopSetup();
     }
     public class ApiService : IApiService
     {
@@ -41,7 +43,6 @@ namespace Medior.Shared.Services
             try
             {
                 using var client = _clientFactory.CreateClient();
-                var serverUri = _uriProvider.ServerUri;
 
                 var response = await client.DeleteAsync($"{_uriProvider.ServerUri}/api/file/{file.Id}?accessToken={file.AccessTokenEdit}");
                 response.EnsureSuccessStatusCode();
@@ -55,6 +56,47 @@ namespace Medior.Shared.Services
             {
                 _logger.LogError(ex, "Error while deleting file.");
                 return Result.Fail(ex);
+            }
+        }
+
+        public async Task<Result<string>> DownloadDesktopSetup()
+        {
+            try
+            {
+                var tempPath = Path.Combine(Path.GetTempPath(), $"MediorSetup-{Guid.NewGuid()}.exe");
+                using var client = _clientFactory.CreateClient();
+                using var netStream = await client.GetStreamAsync($"{_uriProvider.ServerUri}/downloads/MediorSetup.exe");
+                using var fs = File.Open(tempPath, FileMode.Create);
+                await netStream.CopyToAsync(fs);
+                return Result.Ok(tempPath);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error while downloading update.");
+                return Result.Fail<string>(ex);
+            }
+        }
+
+        public async Task<Result<Version>> GetDesktopVersion()
+        {
+            try
+            {
+                using var client = _clientFactory.CreateClient();
+                var response = await client.GetAsync($"{_uriProvider.ServerUri}/api/version/desktop");
+                response.EnsureSuccessStatusCode();
+
+                var stringContent = await response.Content.ReadAsStringAsync();
+                if (!Version.TryParse(stringContent, out var result))
+                {
+                    return Result.Fail<Version>("Failed to parse version data.");
+                }
+
+                return Result.Ok(result);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error while checking desktop version.");
+                return Result.Fail<Version>(ex);
             }
         }
 

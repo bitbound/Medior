@@ -82,7 +82,6 @@ else
 
 @code {
     private string? _downloadFileName;
-    private string? _inputFileId;
     private ViewType _viewType;
 
     [Parameter]
@@ -141,7 +140,8 @@ else
     {
         try
         {
-            if (string.IsNullOrWhiteSpace(FileId))
+            if (string.IsNullOrWhiteSpace(FileId) ||
+                string.IsNullOrWhiteSpace(AccessToken))
             {
                 return;
             }

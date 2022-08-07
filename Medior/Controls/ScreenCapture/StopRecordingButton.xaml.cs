@@ -35,7 +35,7 @@ namespace Medior.Controls.ScreenCapture
 
         private void StopCaptureButton_Click(object sender, RoutedEventArgs e)
         {
-            WeakReferenceMessenger.Default.Send(new StopRecordingRequested());
+            WeakReferenceMessenger.Default.Send(new GenericMessage<ParameterlessMessageKind>(ParameterlessMessageKind.StopRecordingRequested));
         }
     }
 }

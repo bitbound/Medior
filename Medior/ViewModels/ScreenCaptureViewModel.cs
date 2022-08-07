@@ -70,7 +70,7 @@ namespace Medior.ViewModels
             _systemTime = systemTime;
 
             _messenger.Register<GenericMessage<ScreenCaptureRequestKind>>(this, HandleScreenCaptureRequest);
-            _messenger.Register<StopRecordingRequested>(this, HandleStopRecordingRequested);
+            _messenger.Register<GenericMessage<ParameterlessMessageKind>>(this, HandleStopRecordingRequested);
         }
         public bool IsHintTextVisible =>
             CurrentImage is null &&
@@ -306,9 +306,12 @@ namespace Medior.ViewModels
             _windowService.ShowMainWindow();
         }
 
-        private void HandleStopRecordingRequested(object recipient, StopRecordingRequested message)
+        private void HandleStopRecordingRequested(object recipient, GenericMessage<ParameterlessMessageKind> message)
         {
-            _recordingCts?.Cancel();
+            if (message.Value == ParameterlessMessageKind.StopRecordingRequested)
+            {
+                _recordingCts?.Cancel();
+            }
         }
 
         private bool IsScreenSketchOpen()

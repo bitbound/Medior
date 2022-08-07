@@ -17,6 +17,12 @@
         <TextBlock Style="{StaticResource Paragraph}">
             <Run Text="Version: " />
             <Run Text="{Binding Version, Mode=OneWay}" />
+            
+            <TextBlock Margin="10,0,0,0" Visibility="{Binding IsNewVersionAvailable, Converter={StaticResource BooleanToVisibilityConverter}}">
+                <Hyperlink Command="{Binding DownloadUpdateCommand}">
+                    (Update Available)
+                </Hyperlink>
+            </TextBlock>
         </TextBlock>
 
         <TextBlock Style="{StaticResource Paragraph}">

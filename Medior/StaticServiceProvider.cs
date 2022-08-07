@@ -10,6 +10,7 @@ using Medior.Shared.Interfaces;
 using Medior.Shared.Services;
 using Medior.Services.PhotoSorter;
 using Views;
+using Medior.Interfaces;
 
 namespace Medior
 {
@@ -71,6 +72,9 @@ namespace Medior
                 services.AddScoped<IReportWriter, ReportWriter>();
                 services.AddScoped<IPathTransformer, PathTransformer>();
                 services.AddScoped<IQrCodeGenerator, QrCodeGenerator>();
+
+                services.AddSingleton<IUpdateChecker, UpdateChecker>();
+                services.AddSingleton(services => (IBackgroundService)services.GetRequiredService<IUpdateChecker>());
                 
                 services.AddHttpClient();
                 services.AddLogging(builder => builder.AddProvider(new FileLoggerProvider()));

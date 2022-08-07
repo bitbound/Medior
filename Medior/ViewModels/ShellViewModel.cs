@@ -5,14 +5,17 @@ using Medior.Models;
 using MahApps.Metro.IconPacks;
 using Medior.Views;
 using System.Threading.Tasks;
+using MahApps.Metro.Controls.Dialogs;
+using Medior.Shared.Interfaces;
+using System.Diagnostics;
 
 namespace Medior.ViewModels
 {
     public class ShellViewModel : ObservableObjectEx
     {
         private readonly IMessenger _messenger;
-        private readonly IWindowService _windowService;
         private readonly ISettings _settings;
+        private readonly IWindowService _windowService;
         public ShellViewModel(
             IMessenger messeger,
             ISettings settings,
@@ -94,19 +97,7 @@ namespace Medior.ViewModels
             get => Get<AppModule>() ?? AppModules.FirstOrDefault();
             set => Set(value);
         }
-        private void HandleLoaderUpdate(object recipient, LoaderUpdateMessage message)
-        {
-            IsLoaderVisible = message.IsShown;
-            LoaderText = message.Text;
-            LoaderProgress = message.LoaderProgress;
-            LoaderType = message.Type;
-        }
 
-        private void HandleNavigateRequest(object recipient, NavigateRequestMessage message)
-        {
-            SelectedModule = AppModules.FirstOrDefault(x => x.ControlType == message.ControlType);
-            _windowService.ShowMainWindow();
-        }
         private async void HandleHotKeyInvocation(object recipient, GenericMessage<HotKeyHookKind> message)
         {
             switch (message.Value)
@@ -121,6 +112,20 @@ namespace Medior.ViewModels
                 default:
                     break;
             }
+        }
+
+        private void HandleLoaderUpdate(object recipient, LoaderUpdateMessage message)
+        {
+            IsLoaderVisible = message.IsShown;
+            LoaderText = message.Text;
+            LoaderProgress = message.LoaderProgress;
+            LoaderType = message.Type;
+        }
+
+        private void HandleNavigateRequest(object recipient, NavigateRequestMessage message)
+        {
+            SelectedModule = AppModules.FirstOrDefault(x => x.ControlType == message.ControlType);
+            _windowService.ShowMainWindow();
         }
     }
 }
