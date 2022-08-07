@@ -1,18 +1,24 @@
-﻿@page "/media-viewer/{fileId?}"
+﻿@page "/file-sharing/{fileId?}"
 @using Medior.Shared.Interfaces
 @inject NavigationManager NavManager
 @inject HttpClient HttpClient
-@inject ILogger<MediaViewer> Logger
+@inject ILogger<FileSharing> Logger
 @inject IApiService ApiService
 @inject IToastService ToastService
 @inject ILoaderService LoaderService
 @inject IServerUriProvider ServerUriProvider
 
-<h3>Media Viewer</h3>
+<h3>File Sharing</h3>
 
 @if (FileId is null)
 {
     <div class="row mt-5">
+        <div class="mb-5">
+            <FileUploadButton Multiple="false" OnFilesChanged="HandleFilesChanged" ClassNames="btn btn-lg btn-primary">
+                Upload
+            </FileUploadButton>
+        </div>
+
         <div class="col-md-8 col-lg-6">
             <div class="input-group mb-2">
                 <input type="text" class="form-control" placeholder="Enter a file ID to view it"
@@ -24,15 +30,7 @@
                 </div>
             </div>
 
-            <div class="mt-5">
-                <label class="form-label">
-                    Upload New Media
-                </label>
-                <br />
-                <FileUploadButton Multiple="false" OnFilesChanged="HandleFilesChanged" ClassNames="btn btn-primary">
-                    Upload
-                </FileUploadButton>
-            </div>
+
         </div>
     </div>
 }
@@ -42,17 +40,34 @@ else
         <div class="col-12">
             @if (_viewType == ViewType.NotFound)
             {
-                <h3>File not found.</h3>
+                <h5>File not found.</h5>
             }
-            else if (_viewType == ViewType.InvalidFileType)
+            else
             {
-                <h3>
-                    Unsupported file type.
-                </h3>
-                <p>
-                    You can download it 
-                    <a target="_blank" href="@(ServerUriProvider.ServerUri)/api/file/@FileId">here</a>.
-                </p>
+                <div class="mb-5">
+                    <a class="btn btn-primary"
+                        target="_blank" 
+                        href="@(ServerUriProvider.ServerUri)/api/file/@FileId">
+                        Download
+                    </a>
+                    <FileUploadButton Multiple="false" OnFilesChanged="HandleFilesChanged" ClassNames="btn btn-secondary ms-3">
+                        Upload
+                    </FileUploadButton>
+                </div>
+                <div>
+                    <label class="form-label">
+                        <strong>File Name:</strong>
+                        <br />
+                        @_downloadFileName
+                    </label>
+                </div>
+            }
+
+            @if (_viewType == ViewType.PreviewUnsupported)
+            {
+                <h4>
+                    Preview unavailable for this file type.
+                </h4>
             }
             else if (_viewType == ViewType.Image)
             {
@@ -67,6 +82,7 @@ else
 }
 
 @code {
+    private string? _downloadFileName;
     private string? _inputFileId;
     private ViewType _viewType;
 
@@ -120,7 +136,7 @@ else
 
     private void NavigateToFileId(string fileId)
     {
-        NavManager.NavigateTo($"/media-viewer/{fileId}");
+        NavManager.NavigateTo($"/file-sharing/{fileId}");
     }
 
     private async Task TryLoadFile()
@@ -132,8 +148,6 @@ else
                 return;
             }
 
-            _viewType = ViewType.NotFound;
-
             using var response = await ApiService.GetFileHeaders(FileId);
 
             if (!response.IsSuccessStatusCode)
@@ -142,20 +156,9 @@ else
                 _viewType = ViewType.NotFound;
                 return;
             }
-            if (!response.Content.Headers.TryGetValues("Content-Type", out var contentTypes))
-            {
-                Logger.LogWarning("Content-Type header was not found.");
-                _viewType = ViewType.NotFound;
-                return;
-            }
 
-            var contentType = contentTypes.FirstOrDefault();
-            if (string.IsNullOrWhiteSpace(contentType))
-            {
-                Logger.LogWarning("Content-Type was empty.");
-                _viewType = ViewType.NotFound;
-                return;
-            }
+            _downloadFileName = response.Content.Headers.ContentDisposition?.FileName?.Trim('"') ?? string.Empty;
+            var contentType = response.Content.Headers.ContentType?.MediaType ?? string.Empty;
 
             Logger.LogInformation("Found content type {type}.", contentType);
 
@@ -171,7 +174,7 @@ else
                 return;
             }
 
-            _viewType = ViewType.InvalidFileType;
+            _viewType = ViewType.PreviewUnsupported;
         }
         catch (Exception ex)
         {
@@ -184,7 +187,7 @@ else
     {
         Unknown,
         NotFound,
-        InvalidFileType,
+        PreviewUnsupported,
         Image,
         Video
     }

@@ -1,4 +1,6 @@
 ﻿using Medior.Interfaces;
+using Microsoft.Extensions.Logging;
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -16,7 +18,9 @@ namespace Medior.Services
         private readonly ITrayService _trayService;
         private readonly IThemeSetter _themeSetter;
         private readonly IRegistryService _registry;
+        private readonly IProcessService _processService;
         private readonly IKeyboardHookManager _keyboardHookManager;
+        private readonly ILogger<AppStartup> _logger;
         private readonly IEnumerable<IBackgroundService> _backgroundServices;
         private readonly List<Task> _backgroundTasks = new();
         public AppStartup(
@@ -25,18 +29,23 @@ namespace Medior.Services
             IThemeSetter themeSetter,
             IKeyboardHookManager keyboardHookManager,
             IRegistryService registry,
+            IProcessService processService,
+            ILogger<AppStartup> logger,
             IEnumerable<IBackgroundService> backgroundServices)
         {
             _settings = settings;
             _trayService = trayService;
             _themeSetter = themeSetter;
             _registry = registry;
+            _processService = processService;
             _keyboardHookManager = keyboardHookManager;
+            _logger = logger;
             _backgroundServices = backgroundServices;
         }
 
         public Task Initialize(CancellationToken cancellationToken)
         {
+            StopOtherInstances();
             foreach (var backgroundService in _backgroundServices)
             {
                 _backgroundTasks.Add(backgroundService.Start(cancellationToken));
@@ -53,6 +62,21 @@ namespace Medior.Services
             _registry.SetStartAtLogon(_settings.StartAtLogon);
 
             return Task.CompletedTask;
+        }
+
+        private void StopOtherInstances()
+        {
+            foreach (var proc in _processService.GetProcessesByName("Medior"))
+            {
+                try
+                {
+                    proc.Kill(true);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error while stopping other Medior process.");
+                }
+            }
         }
     }
 }

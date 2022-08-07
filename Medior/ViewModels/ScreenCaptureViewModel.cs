@@ -462,7 +462,7 @@ namespace Medior.ViewModels
                     return;
                 }
 
-                CaptureViewUrl = $"{_settings.ServerUri}/media-viewer/{result.Value!.Id}";
+                CaptureViewUrl = $"{_settings.ServerUri}/file-sharing/{result.Value!.Id}";
             }
             catch (Exception ex)
             {
@@ -518,7 +518,7 @@ namespace Medior.ViewModels
                     return;
                 }
 
-                CaptureViewUrl = $"{_settings.ServerUri}/media-viewer/{result.Value!.Id}";
+                CaptureViewUrl = $"{_settings.ServerUri}/file-sharing/{result.Value!.Id}";
             }
             catch (Exception ex)
             {
