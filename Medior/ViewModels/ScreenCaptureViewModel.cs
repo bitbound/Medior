@@ -477,7 +477,7 @@ namespace Medior.ViewModels
                     .Concat(new[] { result.Value! })
                     .ToArray();
 
-                CaptureViewUrl = $"{_settings.ServerUri}/file-sharing/{result.Value!.Id}";
+                CaptureViewUrl = $"{_settings.ServerUri}/file-sharing/{result.Value!.Id}?accessToken={result.Value!.AccessTokenView}";
             }
             catch (Exception ex)
             {
@@ -536,7 +536,8 @@ namespace Medior.ViewModels
                 _settings.FileUploads = _settings.FileUploads
                     .Concat(new[] { result.Value! })
                     .ToArray();
-                CaptureViewUrl = $"{_settings.ServerUri}/file-sharing/{result.Value!.Id}";
+
+                CaptureViewUrl = $"{_settings.ServerUri}/file-sharing/{result.Value!.Id}?accessToken={result.Value!.AccessTokenView}";
             }
             catch (Exception ex)
             {

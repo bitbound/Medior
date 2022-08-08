@@ -12,7 +12,7 @@
 
 <h3>File Sharing</h3>
 
-@if (FileId is null)
+@if (string.IsNullOrWhiteSpace(FileId))
 {
     <div class="row mt-5">
         <div class="col-6">
@@ -22,7 +22,11 @@
         </div>
     </div>
 }
-else
+else if (string.IsNullOrWhiteSpace(AccessToken))
+{
+       <h5 class="mt-5">Access token required.</h5>
+}
+else 
 {
     <div class="row mt-5">
         <div class="col-12">

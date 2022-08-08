@@ -3,8 +3,8 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:c="clr-namespace:Medior.Controls"
              xmlns:local="clr-namespace:Medior.Views"
-             xmlns:controls="clr-namespace:Medior.Controls"
              xmlns:icons="http://metro.mahapps.com/winfx/xaml/iconpacks"
              mc:Ignorable="d" 
              xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
@@ -14,74 +14,75 @@
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
             <RowDefinition />
         </Grid.RowDefinitions>
 
-        <ScrollViewer Grid.Row="0" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Hidden">
-            <StackPanel Orientation="Horizontal">
-                <Button FontSize="14" Command="{Binding CaptureCommand}" Margin="0,0,10,0">
-                    <controls:IconLabel IconKind="SolidCamera" IconText="Capture" />
-                </Button>
-                
-                <Button FontSize="14" Command="{Binding RecordCommand}">
-                    <controls:IconLabel IconKind="SolidVideo" IconText="Record" />
-                </Button>
+        <ScrollViewer Grid.Row="0" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Hidden" Margin="0,0,0,10">
+            <c:GridEx RowDefinitionsEx="Auto, Auto">
                 <StackPanel Orientation="Horizontal">
-                    <StackPanel.Visibility>
-                        <MultiBinding Converter="{StaticResource MultiBoolAnyToVisibilityConverter}">
-                            <Binding Path="CurrentImage" Converter="{StaticResource NotNullToBoolConverter}" />
-                            <Binding Path="CurrentRecording" Converter="{StaticResource NotNullToBoolConverter}"  />
-                        </MultiBinding>
-                    </StackPanel.Visibility>
+                        <Button FontSize="14" Command="{Binding CaptureCommand}" Margin="0,0,10,0">
+                            <c:IconLabel IconKind="SolidCamera" IconText="Capture" />
+                        </Button>
 
-                    <Separator Style="{StaticResource {x:Static ToolBar.SeparatorStyleKey}}" Margin="10,0" />
+                        <Button FontSize="14" Command="{Binding RecordCommand}">
+                            <c:IconLabel IconKind="SolidVideo" IconText="Record" />
+                        </Button>
+                        <StackPanel Orientation="Horizontal">
+                            <StackPanel.Visibility>
+                                <MultiBinding Converter="{StaticResource MultiBoolAnyToVisibilityConverter}">
+                                    <Binding Path="CurrentImage" Converter="{StaticResource NotNullToBoolConverter}" />
+                                    <Binding Path="CurrentRecording" Converter="{StaticResource NotNullToBoolConverter}"  />
+                                </MultiBinding>
+                            </StackPanel.Visibility>
 
-                    <Button FontSize="14" Command="{Binding ShareCommand}">
-                        <controls:IconLabel IconText="Share" IconKind="RegularShare" />
+                            <Separator Style="{StaticResource {x:Static ToolBar.SeparatorStyleKey}}" Margin="10,0" />
+
+                            <Button FontSize="14" Command="{Binding ShareCommand}">
+                                <c:IconLabel IconText="Share" IconKind="RegularShare" />
+                            </Button>
+
+                            <Button FontSize="14" Command="{Binding CopyCaptureCommand}" Margin="10,0,0,0">
+                                <c:IconLabel IconText="Copy" IconKind="RegularCopy" />
+                            </Button>
+
+                            <Button FontSize="14" Command="{Binding EditCaptureCommand}" Margin="10,0,0,0">
+                                <c:IconLabel IconText="Edit" IconKind="RegularEdit" />
+                            </Button>
+
+                            <Button FontSize="14" Command="{Binding SaveCommand}" Margin="10,0,0,0">
+                                <c:IconLabel IconText="Save" IconKind="RegularSave" />
+                            </Button>
+
+                            <Separator Style="{StaticResource {x:Static ToolBar.SeparatorStyleKey}}" Margin="10,0" />
+
+                            <Button FontSize="14" Command="{Binding ClearCommand}">
+                                <c:IconLabel IconText="Clear" IconKind="RegularTrash" />
+                            </Button>
+                        </StackPanel>
+                    </StackPanel>
+
+                <StackPanel Grid.Row="1" Margin="0,10,0,0" Orientation="Horizontal" 
+                                Visibility="{Binding CaptureViewUrl, Converter={StaticResource NullToVisibilityConverter}}">
+                    <TextBox IsReadOnly="True" Text="{Binding CaptureViewUrl}" MaxWidth="400" />
+                    <Button FontSize="14" Command="{Binding CopyViewUrlCommand}" Margin="10,0,0,0">
+                        <c:IconLabel IconText="Copy" IconKind="RegularCopy" />
                     </Button>
-
-                    <Button FontSize="14" Command="{Binding CopyCaptureCommand}" Margin="10,0,0,0">
-                        <controls:IconLabel IconText="Copy" IconKind="RegularCopy" />
-                    </Button>
-
-                    <Button FontSize="14" Command="{Binding EditCaptureCommand}" Margin="10,0,0,0">
-                        <controls:IconLabel IconText="Edit" IconKind="RegularEdit" />
-                    </Button>
-
-                    <Button FontSize="14" Command="{Binding SaveCommand}" Margin="10,0,0,0">
-                        <controls:IconLabel IconText="Save" IconKind="RegularSave" />
-                    </Button>
-
-                    <Separator Style="{StaticResource {x:Static ToolBar.SeparatorStyleKey}}" Margin="10,0" />
-
-                    <Button FontSize="14" Command="{Binding ClearCommand}">
-                        <controls:IconLabel IconText="Clear" IconKind="RegularTrash" />
+                    <Button Margin="10,0,0,0" Command="{Binding GenerateQrCodeCommand}">
+                        <icons:PackIconBoxIcons Kind="RegularQr" />
                     </Button>
                 </StackPanel>
-
-            </StackPanel>
-
+            </c:GridEx>
         </ScrollViewer>
      
-        <StackPanel Grid.Row="1" Margin="0,10,0,0" Orientation="Horizontal" Visibility="{Binding CaptureViewUrl, Converter={StaticResource NullToVisibilityConverter}}">
-            <TextBox IsReadOnly="True" Text="{Binding CaptureViewUrl}" />
-            <Button FontSize="14" Command="{Binding CopyViewUrlCommand}" Margin="10,0,0,0">
-                Copy URL
-            </Button>
-            <Button Margin="10,0,0,0" Command="{Binding GenerateQrCodeCommand}">
-                <icons:PackIconBoxIcons Kind="RegularQr" />
-            </Button>
-        </StackPanel>
         
-        <Image Grid.Row="2"  Source="{Binding CurrentImage}" Margin="10" Visibility="{Binding CurrentImage, Converter={StaticResource NullToVisibilityConverter}}"></Image>
+        <Image Grid.Row="1"  Source="{Binding CurrentImage}" Margin="10" Visibility="{Binding CurrentImage, Converter={StaticResource NullToVisibilityConverter}}"></Image>
 
-        <controls:MediaPlayer Grid.Row="2"
+        <c:MediaPlayer Grid.Row="1"
                               MediaUri="{Binding CurrentRecording}"
                               Margin="10"
                               Visibility="{Binding CurrentRecording, Converter={StaticResource NullToVisibilityConverter}}" />
 
-        <TextBlock Grid.Row="2" 
+        <TextBlock Grid.Row="1" 
                    VerticalAlignment="Center" 
                    HorizontalAlignment="Center" 
                    Style="{StaticResource MediumTitle}"
@@ -89,7 +90,7 @@
             Capture an image or video to start.
         </TextBlock>
 
-        <StackPanel Grid.Row="2" 
+        <StackPanel Grid.Row="1" 
                     VerticalAlignment="Center"
                     Visibility="{Binding IsRecordingInProgress, Converter={StaticResource BooleanToVisibilityConverter}}">
             <TextBlock Text="Recording in progress" HorizontalAlignment="Center" Style="{StaticResource MediumTitle}" Margin="0,0,0,10" />
