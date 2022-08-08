@@ -45,6 +45,7 @@ namespace Medior
                 services.AddAppModule<KeepAwakeViewModel, KeepAwakeView>("Keep Awake", PackIconBoxIconsKind.RegularCoffee);
                 services.AddAppModule<QrCodeGeneratorViewModel, QrCodeGeneratorView>("QR Code", PackIconBoxIconsKind.RegularQr);
                 services.AddAppModule<FileSharingViewModel, FileSharingView>("File Sharing", PackIconBoxIconsKind.RegularShare);
+                services.AddAppModule<ClipboardSyncViewModel, ClipboardSyncView>("Clipboard Sync", PackIconBoxIconsKind.RegularSync);
 
                 services.AddSingleton<IFileSystem, FileSystem>();
                 services.AddSingleton<IRegistryService, RegistryService>();

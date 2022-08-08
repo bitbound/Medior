@@ -31,6 +31,10 @@ namespace Medior.ViewModels
             get => Get<DateTime?>();
             set
             {
+                if (value == KeepAwakeExpiration)
+                {
+                    return;
+                }
                 if (value < _systemTime.Now)
                 {
                     _messenger.Send(new ToastMessage("Time must be in the future", ToastType.Warning));
@@ -46,6 +50,10 @@ namespace Medior.ViewModels
             get => Get<bool>();
             set
             {
+                if (value == KeepMonitorAwake)
+                {
+                    return;
+                }
                 Set(value);
                 SetPowerControl();
             }
@@ -56,6 +64,10 @@ namespace Medior.ViewModels
             get => Get<KeepAwakeMode>();
             set
             {
+                if (value == Mode)
+                {
+                    return;
+                }
                 Set(value);
                 SetPowerControl();
             }
@@ -80,20 +92,22 @@ namespace Medior.ViewModels
             {
                 case KeepAwakeMode.Off:
                     _powerControl.DisableKeepAwake();
-                    _messenger.Send(new ToastMessage("Keep-awake mode turned off", ToastType.Success));
+                    _messenger.SendToast("Keep-awake mode turned off", ToastType.Success);
                     break;
                 case KeepAwakeMode.Temporary:
                     if (!KeepAwakeExpiration.HasValue)
                     {
+                        _powerControl.DisableKeepAwake();
+                        _messenger.SendToast("Expiration time required", ToastType.Warning);
                         return;
                     }
 
                     _powerControl.KeepAwake(new DateTimeOffset(KeepAwakeExpiration.Value), KeepMonitorAwake);
-                    _messenger.Send(new ToastMessage($"Keep-awake set until {KeepAwakeExpiration.Value}", ToastType.Success));
+                    _messenger.SendToast($"Keep-awake set until {KeepAwakeExpiration.Value}", ToastType.Success);
                     break;
                 case KeepAwakeMode.Indefinite:
                     _powerControl.KeepAwake(KeepMonitorAwake);
-                    _messenger.Send(new ToastMessage($"Keep-awake set until turned off", ToastType.Success));
+                    _messenger.SendToast($"Keep-awake turned on", ToastType.Success);
                     break;
                 default:
                     break;

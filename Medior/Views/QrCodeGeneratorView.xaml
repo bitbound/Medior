@@ -12,7 +12,8 @@
              d:DesignHeight="450" d:DesignWidth="800">
 
     <c:GridEx RowDefinitionsEx="Auto, 20, 1*"
-          ColumnDefinitionsEx="1*, 10, Auto, 10, Auto, 10, Auto">
+              ColumnDefinitionsEx="1*, 10, Auto, 10, Auto, 10, Auto"
+              Margin="0,10,0,0">
 
         <TextBox Grid.Column="0" 
                  Grid.Row="0"
@@ -21,16 +22,19 @@
 
         <Button Grid.Column="2"
                 Grid.Row="0"
+                FontSize="14"
                 Content="Create"
                 Command="{Binding GenerateCodeCommand}"/>
 
         <Button Grid.Column="4"
                 Grid.Row="0"
+                FontSize="14"
                 Content="Save"
                 Command="{Binding SaveQrCodeImageCommand}"/>
 
         <Button Grid.Column="6"
                 Grid.Row="0"
+                FontSize="14"
                 Content="Clear"
                 Command="{Binding ClearCommand}"/>
 
