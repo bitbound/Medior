@@ -21,5 +21,17 @@ namespace Medior.ViewModels
         {
 
         }
+
+        [RelayCommand]
+        private async Task Send()
+        {
+
+        }
+
+        [RelayCommand]
+        private async Task Receive()
+        {
+
+        }
     }
 }

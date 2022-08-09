@@ -1,4 +1,5 @@
 using Medior.Web.Server.Data;
+using Medior.Web.Server.Hubs;
 using Medior.Web.Server.Services;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.EntityFrameworkCore;
@@ -12,6 +13,12 @@ builder.Services.AddDbContext<AppDb>(options =>
 
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
+builder.Services.AddSignalR(options =>
+    {
+        options.MaximumParallelInvocationsPerClient = 5;
+    })
+    .AddMessagePackProtocol();
+
 builder.Services.AddHostedService<FileCleanupService>();
 
 builder.Services.AddSingleton<IAppSettings, AppSettings>();
@@ -41,6 +48,11 @@ app.UseRouting();
 
 app.MapRazorPages();
 app.MapControllers();
+
+app.UseEndpoints(config =>
+{
+    config.MapHub<DesktopHub>("/hubs/desktop");
+});
 
 app.MapWhen(
     context =>

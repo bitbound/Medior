@@ -94,7 +94,11 @@ namespace Medior.Services
                         $"[{categoryName}]\t"
                 ) +
                 $"Message: {state}\t" +
-                $"Exception: {exMessage}{Environment.NewLine}";
+                (
+                    !string.IsNullOrWhiteSpace(exMessage) ?
+                        $"Exception: {exMessage}{Environment.NewLine}" :
+                        Environment.NewLine
+                );
         }
 
         private async void SinkTimer_Elapsed(object? sender, System.Timers.ElapsedEventArgs e)

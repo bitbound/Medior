@@ -49,6 +49,8 @@ namespace Medior.ViewModels
             _dialogs = dialogs;
             _logger = logger;
 
+            RefreshUploads();
+
             FileUploads.CollectionChanged += FileUploads_CollectionChanged;
         }
 

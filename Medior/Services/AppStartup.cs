@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -66,7 +67,11 @@ namespace Medior.Services
 
         private void StopOtherInstances()
         {
-            foreach (var proc in _processService.GetProcessesByName("Medior"))
+            var procs = _processService
+                .GetProcessesByName("Medior")
+                .Where(x => x.Id != Environment.ProcessId);
+
+            foreach (var proc in procs)
             {
                 try
                 {
