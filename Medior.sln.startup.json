@@ -58,7 +58,6 @@
           "StartProject": true
         },
         "Medior.Web.Server": {
-          "StartProject": true,
           "ProfileName":  "Kestrel"
         }
       }

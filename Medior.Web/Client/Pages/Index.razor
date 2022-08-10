@@ -1,4 +1,5 @@
 ﻿@page "/"
+@inject IJsInterop JsInterop
 
 <PageTitle>Home</PageTitle>
 
@@ -12,8 +13,15 @@
     </div>
 
     <div class="mt-5">
-        <a class="btn btn-lg btn-primary" href="/downloads/MediorSetup.exe">
+        <button type="button" class="btn btn-lg btn-primary" @onclick="DownloadSetup">
             Download
-        </a>
+        </button>
     </div>
 </div>
+
+@code {
+    private async Task DownloadSetup()
+    {
+        await JsInterop.DownloadFile("/downloads/MediorSetup.exe", "MediorSetup.exe");
+    }
+}

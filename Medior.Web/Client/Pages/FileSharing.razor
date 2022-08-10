@@ -37,11 +37,12 @@ else
             else
             {
                 <div class="mb-3">
-                    <a class="btn btn-primary"
-                           target="_blank"
-                           href="@(ServerUriProvider.ServerUri)/api/file/@(FileId)?accessToken=@(AccessToken)">
+                    <button type="button" 
+                            class="btn btn-primary"
+                            target="_blank"
+                            @onclick="DownloadFile">
                         Download
-                    </a>
+                    </button>
                     <FileUploadButton Multiple="false" OnFilesChanged="HandleFilesChanged" ClassNames="btn btn-secondary ms-3">
                         Upload
                     </FileUploadButton>
@@ -106,6 +107,11 @@ else
     {
         await JsInterop.SetClipboard(NavManager.Uri);
         ToastService.Show("Copied to clipboard", ToastType.Success);
+    }
+
+    private async Task DownloadFile()
+    {
+        await JsInterop.DownloadFile($"/api/file/{FileId}?accessToken={AccessToken}", _downloadFileName ?? string.Empty);
     }
 
     private async Task HandleFilesChanged(InputFileChangeEventArgs args)

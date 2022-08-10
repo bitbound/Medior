@@ -7,6 +7,14 @@ export function addClassName (element, className) {
     element.classList.add(className);
 }
 
+export function downloadFile(url, fileName) {
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = fileName ?? '';
+    link.click();
+    link.remove();
+}
+
 export async function getClipboard() {
     return await navigator.clipboard.readText();
 }

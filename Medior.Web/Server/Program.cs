@@ -25,6 +25,7 @@ builder.Services.AddHostedService<FileCleanupService>();
 
 builder.Services.AddSingleton<IAppSettings, AppSettings>();
 builder.Services.AddScoped<IUploadedFileManager, UploadedFileManager>();
+builder.Host.UseSystemd();
 
 var app = builder.Build();
 
@@ -39,6 +40,7 @@ else
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
+
 
 app.UseHttpsRedirection();
 
