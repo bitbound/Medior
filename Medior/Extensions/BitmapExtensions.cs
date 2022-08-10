@@ -27,5 +27,25 @@ namespace Medior.Extensions
             var bitmapImage = bitmap.ToBitmapImage(imageFormat);
             return new ImageBrush(bitmapImage);
         }
+
+        public static Bitmap ToBitmap(this ImageSource imageSource)
+        {
+            using var ms = _streamManager.GetStream();
+            var encoder = new BmpBitmapEncoder();
+            encoder.Frames.Add(BitmapFrame.Create((BitmapSource)imageSource));
+            encoder.Save(ms);
+            ms.Flush();
+            return new Bitmap(ms);
+        }
+
+        public static byte[] ToBuffer(this ImageSource imageSource)
+        {
+            using var ms = _streamManager.GetStream();
+            var encoder = new BmpBitmapEncoder();
+            encoder.Frames.Add(BitmapFrame.Create((BitmapSource)imageSource));
+            encoder.Save(ms);
+            ms.Flush();
+            return ms.ToArray();
+        }
     }
 }

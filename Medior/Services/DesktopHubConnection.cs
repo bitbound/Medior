@@ -12,7 +12,13 @@ using System.Threading.Tasks;
 
 namespace Medior.Services
 {
-    internal class DesktopHubConnection : HubConnectionBase, IBackgroundService, IDesktopHubClient
+    public interface IDesktopHubConnection
+    {
+        Task<string> GetClipboardReceiveUrl();
+        Task<string> GetClipboardSendUrl();
+    }
+
+    internal class DesktopHubConnection : HubConnectionBase, IDesktopHubConnection, IBackgroundService
     {
         private readonly IServerUriProvider _serverUri;
         private readonly ILogger<DesktopHubConnection> _logger;
@@ -20,11 +26,22 @@ namespace Medior.Services
         public DesktopHubConnection(
             IHubConnectionBuilder builder,
             IServerUriProvider serverUri,
+            IDtoHandler dtoHandler,
             ILogger<DesktopHubConnection> logger) 
-            : base(builder, logger)
+            : base(builder, dtoHandler, logger)
         {
             _serverUri = serverUri;
             _logger = logger;
+        }
+
+        public Task<string> GetClipboardReceiveUrl()
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<string> GetClipboardSendUrl()
+        {
+            throw new NotImplementedException();
         }
 
         public async Task Start(CancellationToken cancellationToken)

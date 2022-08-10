@@ -24,5 +24,6 @@ namespace Medior.Views
         {
             InitializeComponent();
         }
+
     }
 }

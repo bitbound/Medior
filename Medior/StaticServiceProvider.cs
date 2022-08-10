@@ -74,12 +74,13 @@ namespace Medior
                 services.AddScoped<IReportWriter, ReportWriter>();
                 services.AddScoped<IPathTransformer, PathTransformer>();
                 services.AddScoped<IQrCodeGenerator, QrCodeGenerator>();
+                services.AddScoped<IDtoHandler, DtoHandler>();
                 services.AddTransient<IHubConnectionBuilder, HubConnectionBuilder>();
 
                 services.AddSingleton<IUpdateChecker, UpdateChecker>();
                 services.AddSingleton(services => (IBackgroundService)services.GetRequiredService<IUpdateChecker>());
-                services.AddSingleton<IDesktopHubClient, DesktopHubConnection>();
-                services.AddSingleton(services => (IBackgroundService)services.GetRequiredService<IDesktopHubClient>());
+                services.AddSingleton<IDesktopHubConnection, DesktopHubConnection>();
+                services.AddSingleton(services => (IBackgroundService)services.GetRequiredService<IDesktopHubConnection>());
 
                 services.AddHttpClient();
                 services.AddLogging(builder => builder.AddProvider(new FileLoggerProvider()));

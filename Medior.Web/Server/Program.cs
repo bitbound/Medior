@@ -2,7 +2,9 @@ using Medior.Web.Server.Data;
 using Medior.Web.Server.Hubs;
 using Medior.Web.Server.Services;
 using Microsoft.AspNetCore.ResponseCompression;
+using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.FileProviders;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -45,7 +47,6 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
-
 app.MapRazorPages();
 app.MapControllers();
 
@@ -54,25 +55,19 @@ app.UseEndpoints(config =>
     config.MapHub<DesktopHub>("/hubs/desktop");
 });
 
-app.MapWhen(
-    context =>
+app.MapFallbackToFile("index.html", new StaticFileOptions()
+{
+    OnPrepareResponse = context =>
     {
-        return context.Request.Path.StartsWithSegments("/api/");
-    },
-    config =>
-    {
-        app.MapFallbackToFile("index.html", new StaticFileOptions()
-        {
-            OnPrepareResponse = context =>
-            {
-                context.Context.Response.Headers.TryAdd("Cache-Control", "no-store");
-            }
-        });
-    });
+        context.Context.Response.Headers.TryAdd("Cache-Control", "no-store");
+    }
+});
+
 
 using (var scope = app.Services.CreateScope())
 {
     using var appDb = scope.ServiceProvider.GetRequiredService<AppDb>();
     await appDb.Database.MigrateAsync();
 }
+
 app.Run();

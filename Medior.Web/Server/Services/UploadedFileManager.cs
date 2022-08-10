@@ -1,8 +1,8 @@
 ﻿using Medior.Shared;
 using Medior.Shared.Entities;
+using Medior.Shared.Helpers;
 using Medior.Web.Server.Data;
 using Medior.Web.Server.Models;
-using Remotely.Shared.Utilities;
 
 namespace Medior.Web.Server.Services
 {
@@ -111,8 +111,8 @@ namespace Medior.Web.Server.Services
                 LastAccessed = DateTimeOffset.Now,
                 ContentDisposition = uploadedFile.ContentDisposition,
                 FileSize = uploadedFile.Length,
-                AccessTokenEdit = RandomGenerator.GenerateString(64),
-                AccessTokenView = RandomGenerator.GenerateString(64)
+                AccessTokenEdit = RandomGenerator.GenerateString(32),
+                AccessTokenView = RandomGenerator.GenerateString(32)
             };
 
             _appDb.UploadedFiles.Add(uploadEntity);
