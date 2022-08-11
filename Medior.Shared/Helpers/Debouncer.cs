@@ -21,7 +21,20 @@ namespace Medior.Shared.Helpers
                 AutoReset = false
             };
 
-            timer.Elapsed += (s, e) => action();
+            timer.Elapsed += (s, e) =>
+            {
+                try
+                {
+                    action();
+                }
+                finally
+                {
+                    if (_timers.TryGetValue(key, out var result))
+                    {
+                        result?.Dispose();
+                    }
+                }
+            };
             _timers.TryAdd(key, timer);
             timer.Start();
         }

@@ -1,5 +1,7 @@
-﻿using System;
+﻿using Medior.Shared;
+using System;
 using System.Diagnostics;
+using System.Threading;
 using System.Threading.Tasks;
 using Windows.Foundation;
 using Windows.System;
@@ -14,12 +16,15 @@ namespace Medior.Services
 
         Process[] GetProcessesByName(string processName);
 
+        Task<Result<string>> GetProcessOutput(string command, string arguments, int timeoutMs = 10_000);
+
         Task<bool> LaunchUri(Uri uri);
+
+        Task<LaunchQuerySupportStatus> QueryUriSupportAsync(Uri uri, LaunchQuerySupportType supportType);
 
         Process Start(string fileName);
         Process Start(string fileName, string arguments);
         Process? Start(ProcessStartInfo startInfo);
-        Task<LaunchQuerySupportStatus> QueryUriSupportAsync(Uri uri, LaunchQuerySupportType supportType);
     }
 
     public class ProcessService : IProcessService
@@ -37,6 +42,36 @@ namespace Medior.Services
         public Process[] GetProcessesByName(string processName)
         {
             return Process.GetProcessesByName(processName);
+        }
+
+        public async Task<Result<string>> GetProcessOutput(string command, string arguments, int timeoutMs = 10_000)
+        {
+            try
+            {
+                var psi = new ProcessStartInfo(command, arguments)
+                {
+                    WindowStyle = ProcessWindowStyle.Hidden,
+                    UseShellExecute = false,
+                    RedirectStandardOutput = true
+                };
+
+                var proc = Process.Start(psi);
+
+                using var cts = new CancellationTokenSource(timeoutMs);
+                await proc!.WaitForExitAsync(cts.Token);
+
+                var output = await proc.StandardOutput.ReadToEndAsync();
+                return Result.Ok(output);
+            }
+            catch (OperationCanceledException)
+            {
+                return Result.Fail<string>($"Timed out while waiting for command to finish.  " +
+                    $"Command: {command}.  Arguments: {arguments}");
+            }
+            catch (Exception ex)
+            {
+                return Result.Fail<string>(ex);
+            }
         }
 
         public async Task<bool> LaunchUri(Uri uri)

@@ -1,5 +1,6 @@
 ﻿using Medior.Shared.Helpers;
 using Medior.Shared.Services;
+using Medior.Shared.Services.Http;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Specialized;
@@ -18,7 +19,7 @@ namespace Medior.ViewModels
 {
     public partial class ScreenCaptureViewModel : ObservableObjectEx
     {
-        private readonly IApiService _apiService;
+        private readonly IFileApi _fileApi;
         private readonly IDialogService _dialogService;
         private readonly IFileSystem _fileSystem;
         private readonly ILogger<ScreenCaptureViewModel> _logger;
@@ -50,7 +51,7 @@ namespace Medior.ViewModels
             ICapturePicker picker,
             IDialogService dialogService,
             IMessenger messenger,
-            IApiService apiService,
+            IFileApi fileApi,
             IWindowService windowService,
             ISettings settings,
             ISystemTime systemTime,
@@ -62,7 +63,7 @@ namespace Medior.ViewModels
             _dialogService = dialogService;
             _messenger = messenger;
             _windowService = windowService;
-            _apiService = apiService;
+            _fileApi = fileApi;
             _logger = logger;
             _settings = settings;
             _processService = processService;
@@ -465,7 +466,7 @@ namespace Medior.ViewModels
                 };
 
                 var fileName = $"Medior_Screenshot_{_systemTime.Now:yyyy-MM-dd hh.mm.ss.fff}.jpg";
-                var result = await _apiService.UploadFile(fileStream, fileName);
+                var result = await _fileApi.UploadFile(fileStream, fileName);
 
                 if (!result.IsSuccess)
                 {
@@ -525,7 +526,7 @@ namespace Medior.ViewModels
                 };
 
                 var fileName = $"Medior_Recording_{_systemTime.Now:yyyy-MM-dd hh.mm.ss.fff}.mp4";
-                var result = await _apiService.UploadFile(reactiveStream, fileName);
+                var result = await _fileApi.UploadFile(reactiveStream, fileName);
 
                 if (!result.IsSuccess)
                 {

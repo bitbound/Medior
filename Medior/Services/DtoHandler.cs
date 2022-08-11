@@ -1,4 +1,4 @@
-﻿using Medior.Shared.Dtos;
+﻿using Medior.Shared.Dtos.Wrapped;
 using Medior.Shared.Interfaces;
 using System;
 using System.Collections.Generic;

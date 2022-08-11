@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Medior.Shared.Dtos;
+using Medior.Shared.Dtos.Wrapped;
 using Medior.Shared.Helpers;
 using Medior.Shared.Interfaces;
 using MessagePack;
@@ -32,10 +32,24 @@ namespace Medior.Shared.SignalR
             _baseLogger = logger;
         }
 
-        protected HubConnection? Connection => _connection;
+        protected async Task<Result<HubConnection>> GetConnection()
+        {
+            var result = await WaitHelper.WaitForAsync(() => _connection?.State == HubConnectionState.Connected, TimeSpan.FromSeconds(3));
+            if (!result)
+            {
+                return Result.Fail<HubConnection>("Unable to establish a connection with the server.");
+            }
+            return Result.Ok(_connection!);
+        }
+
 
         public async Task Connect(string hubUrl, Action<HubConnection> configure, CancellationToken cancellationToken)
         {
+            if (_connection is not null)
+            {
+                return;
+            }
+
             _connection = _builder
                 .WithUrl(hubUrl)
                 .AddMessagePackProtocol()

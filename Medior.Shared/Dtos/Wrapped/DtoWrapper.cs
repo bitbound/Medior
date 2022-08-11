@@ -5,7 +5,7 @@ using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Medior.Shared.Dtos
+namespace Medior.Shared.Dtos.Wrapped
 {
     [DataContract]
     public class DtoWrapper

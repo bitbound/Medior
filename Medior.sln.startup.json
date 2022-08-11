@@ -58,7 +58,17 @@
           "StartProject": true
         },
         "Medior.Web.Server": {
-          "ProfileName":  "Kestrel"
+          "ProfileName": "Kestrel"
+        }
+      }
+    },
+    "Desktop + Server (Debug)": {
+      "Projects": {
+        "Medior": {
+          "StartProject": true
+        },
+        "Medior.Web.Server": {
+          "ProfileName": "Kestrel (Debug)"
         }
       }
     }

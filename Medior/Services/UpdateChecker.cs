@@ -2,6 +2,7 @@
 using Medior.Interfaces;
 using Medior.Shared.Interfaces;
 using Medior.Shared.Services;
+using Medior.Shared.Services.Http;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -23,27 +24,25 @@ namespace Medior.Services
     }
     public class UpdateChecker : IUpdateChecker, IBackgroundService
     {
-        private readonly IApiService _api;
+        private readonly IFileApi _fileApi;
         private readonly TimeSpan _checkInterval = TimeSpan.FromHours(6);
         private readonly IDialogService _dialogs;
         private readonly IEnvironmentHelper _environment;
         private readonly ILogger<UpdateChecker> _logger;
         private readonly IMessenger _messenger;
         private readonly IProcessService _processes;
-        private readonly IServerUriProvider _serverUri;
+
         public UpdateChecker(
-            IApiService apiService, 
+            IFileApi fileApi, 
             IMessenger messenger,
-            IServerUriProvider serverUriProvider,
             IDialogService dialogs,
             IEnvironmentHelper environmentHelper,
             IProcessService processes,
             ILogger<UpdateChecker> logger)
         {
-            _api = apiService;
+            _fileApi = fileApi;
             _messenger = messenger;
             _dialogs = dialogs;
-            _serverUri = serverUriProvider;
             _processes = processes;
             _environment = environmentHelper;
             _logger = logger;
@@ -55,7 +54,7 @@ namespace Medior.Services
         {
             try
             {
-                var result = await _api.GetDesktopVersion();
+                var result = await _fileApi.GetDesktopVersion();
 
                 if (!result.IsSuccess)
                 {
@@ -117,7 +116,7 @@ namespace Medior.Services
             }
 
 
-            var downloadResult = await _api.DownloadDesktopSetup();
+            var downloadResult = await _fileApi.DownloadDesktopSetup();
 
             if (!downloadResult.IsSuccess)
             {

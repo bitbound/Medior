@@ -1,5 +1,6 @@
 ﻿using Medior.Controls;
 using Medior.Controls.ScreenCapture;
+using Medior.Shared.Helpers;
 using Medior.Utilities;
 using System;
 using System.Drawing;

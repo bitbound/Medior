@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace Medior.Shared
 {
+    [DataContract]
     public class Result
     {
         public static Result<T> Empty<T>()
@@ -65,15 +67,19 @@ namespace Medior.Shared
             }
         }
 
+        [DataMember]
         public bool IsSuccess { get; init; }
 
+        [DataMember]
         public string? Error { get; init; }
 
+        [DataMember]
         public Exception? Exception { get; init; }
 
 
     }
 
+    [DataContract]
     public class Result<T>
     {
         public Result(bool isSuccess, T? value, string? error = null, Exception? exception = null)
@@ -100,12 +106,16 @@ namespace Medior.Shared
         }
 
 
+        [DataMember]
         public bool IsSuccess { get; init; }
 
+        [DataMember]
         public string? Error { get; init; }
 
+        [DataMember]
         public Exception? Exception { get; init; }
 
+        [DataMember]
         public T? Value { get; init; }
     }
 }

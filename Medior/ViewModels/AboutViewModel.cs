@@ -1,5 +1,6 @@
 ﻿using Medior.Shared.Interfaces;
 using Medior.Shared.Services;
+using Medior.Shared.Services.Http;
 using System;
 using System.Diagnostics;
 using System.Reflection;
@@ -11,7 +12,7 @@ namespace Medior.ViewModels
     [ObservableObject]
     public partial class AboutViewModel
     {
-        private readonly IApiService _api;
+        private readonly IFileApi _api;
         private readonly IMessenger _messenger;
         private readonly IProcessService _processService;
         private readonly IUpdateChecker _updateChecker;
@@ -23,7 +24,7 @@ namespace Medior.ViewModels
             IProcessService processService, 
             IUpdateChecker updateChecker, 
             IMessenger messenger,
-            IApiService api)
+            IFileApi api)
         {
             _processService = processService;
             _updateChecker = updateChecker;

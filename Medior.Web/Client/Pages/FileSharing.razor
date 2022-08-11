@@ -3,12 +3,14 @@
 @inject NavigationManager NavManager
 @inject HttpClient HttpClient
 @inject ILogger<FileSharing> Logger
-@inject IApiService ApiService
+@inject IFileApi FileApi
 @inject IToastService ToastService
 @inject ILoaderService LoaderService
 @inject IServerUriProvider ServerUriProvider
 @inject NavigationManager NavManager
 @inject IJsInterop JsInterop
+
+<PageTitle>File Sharing</PageTitle>
 
 <h3>File Sharing</h3>
 
@@ -121,7 +123,7 @@ else
             using var _ = LoaderService.Show("Uploading file");
 
             using var stream = args.File.OpenReadStream(100_000_000);
-            var result = await ApiService.UploadFile(stream, args.File.Name);
+            var result = await FileApi.UploadFile(stream, args.File.Name);
             if (!result.IsSuccess)
             {
                 ToastService.Show("Upload failed", ToastType.Error);
@@ -156,7 +158,7 @@ else
                 return;
             }
 
-            using var response = await ApiService.GetFileHeaders(FileId, AccessToken);
+            using var response = await FileApi.GetFileHeaders(FileId, AccessToken);
 
             if (!response.IsSuccessStatusCode)
             {

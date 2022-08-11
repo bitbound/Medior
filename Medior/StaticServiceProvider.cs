@@ -12,6 +12,7 @@ using Medior.Services.PhotoSorter;
 using Views;
 using Medior.Interfaces;
 using Microsoft.AspNetCore.SignalR.Client;
+using Medior.Shared.Services.Http;
 
 namespace Medior
 {
@@ -56,7 +57,8 @@ namespace Medior
                 services.AddSingleton<IDialogService, DialogService>();
                 services.AddSingleton<IKeyboardHookManager, KeyboardHookManager>();
                 services.AddSingleton<ITrayService, TrayService>();
-                services.AddSingleton<IApiService, ApiService>();
+                services.AddSingleton<IFileApi, FileApi>();
+                services.AddSingleton<IClipboardApi, ClipboardApi>();
                 services.AddSingleton<IUiDispatcher, UiDispatcher>();
                 services.AddSingleton<IEnvironmentHelper, EnvironmentHelper>();
                 services.AddSingleton(services => DialogCoordinator.Instance);

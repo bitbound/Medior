@@ -1,0 +1,92 @@
+﻿@page "/clipboard-sync"
+@using Medior.Shared.Dtos.Enums
+@using Medior.Shared.Interfaces
+@using System.Text
+@inject NavigationManager NavManager
+@inject HttpClient HttpClient
+@inject ILogger<FileSharing> Logger
+@inject IClipboardApi ClipboardApi
+@inject IToastService ToastService
+@inject ILoaderService LoaderService
+@inject IServerUriProvider ServerUriProvider
+@inject NavigationManager NavManager
+@inject IJsInterop JsInterop
+
+<PageTitle>Clipboard Sync</PageTitle>
+
+<h3>Clipboard Sync</h3>
+
+<div class="row mt-5">
+    @if (!string.IsNullOrWhiteSpace(_clipboardText))
+    {
+        <div class="col-12">
+            <textarea readonly class="w-100">
+                @_clipboardText
+            </textarea>
+        </div>
+    }
+    else if (!string.IsNullOrWhiteSpace(_base64Image))
+    {
+        <div class="col-12">
+            <img class="img-fluid border border-light border-2" src="@(_base64Image)" />
+        </div>
+    }
+    else
+    {
+        <div class="col-6">
+            <button class="btn btn-lg btn-primary me-3">
+                Send
+            </button>
+
+                <button class="btn btn-lg btn-primary">
+                Receive
+            </button>
+        </div>
+    }
+</div>
+
+@code {
+    private string _base64Image = string.Empty;
+    private string _clipboardText = string.Empty;
+
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public string? AccessToken { get; set; }
+
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public string? RequesterId { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+
+        if (!string.IsNullOrWhiteSpace(AccessToken))
+        {
+            var result = await ClipboardApi.GetClipboardContent(AccessToken);
+            if (!result.IsSuccess)
+            {
+                ToastService.Show("Failed to get clipboard content", ToastType.Error);
+                return;
+            }
+
+            switch (result.Value!.Type)
+            {
+                case ClipboardContentType.Bitmap:
+                    var base64 = Convert.ToBase64String(result.Value!.Content);
+                    _base64Image = $"data:image/png;base64,{base64}";
+                    break;
+                case ClipboardContentType.Text:
+                    _clipboardText = Encoding.UTF8.GetString(result.Value!.Content);
+                    break;
+                default:
+                    ToastService.Show("Unknown content type", ToastType.Warning);
+                    return;
+            }
+        }
+        else if (!string.IsNullOrWhiteSpace(RequesterId))
+        {
+    
+        }
+    }
+}

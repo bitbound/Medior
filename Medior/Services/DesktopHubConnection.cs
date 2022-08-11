@@ -1,4 +1,7 @@
 ﻿using Medior.Interfaces;
+using Medior.Shared;
+using Medior.Shared.Dtos;
+using Medior.Shared.Dtos.Enums;
 using Medior.Shared.Interfaces;
 using Medior.Shared.SignalR;
 using Microsoft.AspNetCore.SignalR.Client;
@@ -14,35 +17,36 @@ namespace Medior.Services
 {
     public interface IDesktopHubConnection
     {
-        Task<string> GetClipboardReceiveUrl();
-        Task<string> GetClipboardSendUrl();
+        Task<Result<string>> GetClipboardReceiveUrl();
     }
 
     internal class DesktopHubConnection : HubConnectionBase, IDesktopHubConnection, IBackgroundService
     {
         private readonly IServerUriProvider _serverUri;
+        private readonly IMessenger _messenger;
         private readonly ILogger<DesktopHubConnection> _logger;
 
         public DesktopHubConnection(
             IHubConnectionBuilder builder,
             IServerUriProvider serverUri,
             IDtoHandler dtoHandler,
+            IMessenger messenger,
             ILogger<DesktopHubConnection> logger) 
             : base(builder, dtoHandler, logger)
         {
             _serverUri = serverUri;
+            _messenger = messenger;
             _logger = logger;
         }
 
-        public Task<string> GetClipboardReceiveUrl()
+        public async Task<Result<string>> GetClipboardReceiveUrl()
         {
-            throw new NotImplementedException();
+            return await TryInvoke(async (hubConnection) =>
+            {
+                return await hubConnection.InvokeAsync<Result<string>>(nameof(GetClipboardReceiveUrl));
+            });
         }
 
-        public Task<string> GetClipboardSendUrl()
-        {
-            throw new NotImplementedException();
-        }
 
         public async Task Start(CancellationToken cancellationToken)
         {
@@ -52,6 +56,19 @@ namespace Medior.Services
         private void ConfigureConnection(HubConnection connection)
         {
             
+        }
+
+
+        private async Task<Result<T>> TryInvoke<T>(Func<HubConnection, Task<Result<T>>> hubInvocation)
+        {
+            var getConnectionResult = await GetConnection();
+            if (!getConnectionResult.IsSuccess)
+            {
+                _messenger.SendToast(getConnectionResult.Error!, ToastType.Warning);
+                return Result.Fail<T>(getConnectionResult.Exception!);
+            }
+
+            return await hubInvocation(getConnectionResult.Value!);
         }
     }
 }

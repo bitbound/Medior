@@ -111,8 +111,8 @@ namespace Medior.Web.Server.Services
                 LastAccessed = DateTimeOffset.Now,
                 ContentDisposition = uploadedFile.ContentDisposition,
                 FileSize = uploadedFile.Length,
-                AccessTokenEdit = RandomGenerator.GenerateString(32),
-                AccessTokenView = RandomGenerator.GenerateString(32)
+                AccessTokenEdit = RandomGenerator.GenerateAccessKey(),
+                AccessTokenView = RandomGenerator.GenerateAccessKey()
             };
 
             _appDb.UploadedFiles.Add(uploadEntity);

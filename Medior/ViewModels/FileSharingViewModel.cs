@@ -4,6 +4,7 @@ using Medior.Shared.Entities;
 using Medior.Shared.Helpers;
 using Medior.Shared.Interfaces;
 using Medior.Shared.Services;
+using Medior.Shared.Services.Http;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -19,7 +20,7 @@ namespace Medior.ViewModels
     [ObservableObject]
     public partial class FileSharingViewModel
     {
-        private readonly IApiService _api;
+        private readonly IFileApi _fileApi;
         private readonly IFileSystem _fileSystem;
         private readonly ILogger<FileSharingViewModel> _logger;
         private readonly IMessenger _messenger;
@@ -29,7 +30,7 @@ namespace Medior.ViewModels
         private readonly IServerUriProvider _serverUri;
         private readonly ISettings _settings;
         public FileSharingViewModel(
-            IApiService apiService,
+            IFileApi fileApi,
             IFileSystem fileSystem,
             IMessenger messenger,
             IServerUriProvider serverUriProvider,
@@ -39,7 +40,7 @@ namespace Medior.ViewModels
             IDialogService dialogs,
             ILogger<FileSharingViewModel> logger)
         {
-            _api = apiService;
+            _fileApi = fileApi;
             _fileSystem = fileSystem;
             _messenger = messenger;
             _serverUri = serverUriProvider;
@@ -79,7 +80,7 @@ namespace Medior.ViewModels
                     });
 
                     using var fs = _fileSystem.OpenFileStream(file, FileMode.Open, FileAccess.Read);
-                    var result = await _api.UploadFile(fs, Path.GetFileName(file));
+                    var result = await _fileApi.UploadFile(fs, Path.GetFileName(file));
                     if (!result.IsSuccess)
                     {
                         _messenger.SendToast($"Failed to upload {Path.GetFileName(file)}", ToastType.Error);
@@ -125,7 +126,7 @@ namespace Medior.ViewModels
 
             foreach (var file in FileUploads)
             {
-                await _api.DeleteFile(file);
+                await _fileApi.DeleteFile(file);
             }
 
             FileUploads.Clear();
@@ -168,7 +169,7 @@ namespace Medior.ViewModels
         [RelayCommand]
         private async Task DeleteFile(UploadedFile file)
         {
-            var result = await _api.DeleteFile(file);
+            var result = await _fileApi.DeleteFile(file);
 
             if (result.IsSuccess)
             {

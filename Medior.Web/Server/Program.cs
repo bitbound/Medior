@@ -24,6 +24,7 @@ builder.Services.AddSignalR(options =>
 builder.Services.AddHostedService<FileCleanupService>();
 
 builder.Services.AddSingleton<IAppSettings, AppSettings>();
+builder.Services.AddSingleton<IClipboardSyncService, ClipboardSyncService>();
 builder.Services.AddScoped<IUploadedFileManager, UploadedFileManager>();
 builder.Host.UseSystemd();
 

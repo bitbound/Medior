@@ -33,6 +33,8 @@ namespace Medior.Services
 
         string ReadAllText(string filePath);
         Task<string> ReadAllTextAsync(string path);
+        Task ReplaceLineInFile(string filePath, string matchPattern, string replaceLineWith, int maxMatches = -1);
+
         void WriteAllText(string filePath, string contents);
         Task WriteAllTextAsync(string path, string content);
     }
@@ -133,6 +135,24 @@ namespace Medior.Services
             return File.ReadAllTextAsync(path);
         }
 
+        public async Task ReplaceLineInFile(string filePath, string matchPattern, string replaceLineWith, int maxMatches = -1)
+        {
+            var lines = await File.ReadAllLinesAsync(filePath);
+            var matchCount = 0;
+            for (var i = 0; i < lines.Length; i++)
+            {
+                if (lines[i].Contains(matchPattern, StringComparison.OrdinalIgnoreCase))
+                {
+                    lines[i] = replaceLineWith;
+                    matchCount++;
+                }
+                if (maxMatches > -1 && matchCount >= maxMatches)
+                {
+                    break;
+                }
+            }
+            await File.WriteAllLinesAsync(filePath, lines);
+        }
         public void WriteAllText(string filePath, string contents)
         {
             File.WriteAllText(filePath, contents);
