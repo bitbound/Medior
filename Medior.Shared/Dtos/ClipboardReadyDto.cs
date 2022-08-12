@@ -5,12 +5,12 @@ using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Medior.Shared.Dtos.Wrapped
+namespace Medior.Shared.Dtos
 {
     [DataContract]
-    public enum DtoType
+    public class ClipboardReadyDto
     {
-        Unknown,
-
+        [DataMember]
+        public string AccessKey { get; init; } = string.Empty;
     }
 }

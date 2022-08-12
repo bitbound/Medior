@@ -15,8 +15,34 @@ export function downloadFile(url, fileName) {
     link.remove();
 }
 
-export async function getClipboard() {
-    return await navigator.clipboard.readText();
+export async function getClipboardText() {
+    try {
+        return await navigator.clipboard.readText();
+    }
+    catch (ex) {
+        console.error(ex);
+        return "";
+    }
+}
+
+export async function getClipboardImage() {
+    try {
+        let items = await navigator.clipboard.read();
+
+        for (let i = 0; i < items.length; i++) {
+            let item = items[i];
+            if (!item.types.some(x => x == "image/png")) {
+                continue;
+            }
+
+            let blob = await item.getType("image/png");
+            return await blobToBase64(blob);
+        }
+    }
+    catch (ex) {
+        console.error(ex);
+    }
+    return "";
 }
 
 export function getSelectionStart (element) {
@@ -105,4 +131,17 @@ export function startDraggingY(element, clientY) {
 
 export function openWindow(url, target) {
     window.open(url, target);
+}
+
+function blobToBase64(blob) {
+    return new Promise((resolve, _) => {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+            var result = reader.result;
+            console.log(result);
+            var base64 = result.substr(result.indexOf(',') + 1);
+            resolve(base64);
+        };
+        reader.readAsDataURL(blob);
+    });
 }

@@ -1,4 +1,5 @@
 ﻿@page "/clipboard-sync"
+@using Medior.Shared
 @using Medior.Shared.Dtos.Enums
 @using Medior.Shared.Interfaces
 @using System.Text
@@ -17,37 +18,54 @@
 <h3>Clipboard Sync</h3>
 
 <div class="row mt-5">
-    @if (!string.IsNullOrWhiteSpace(_clipboardText))
+    <div class="col-6">
+        <button class="btn btn-lg btn-primary me-3" @onclick="SendClipboard">
+            Send
+        </button>
+
+        <button class="btn btn-lg btn-primary">
+            Receive
+        </button>
+    </div>
+</div>
+
+<div class="row mt-5">
+    @if (!string.IsNullOrWhiteSpace(_receivedText))
     {
-        <div class="col-12">
-            <textarea readonly class="w-100">
-                @_clipboardText
+        <div class="col-md-10 col-lg-8">
+            <textarea readonly class="w-100" style="min-height: 300px;">
+                @_receivedText
             </textarea>
         </div>
     }
-    else if (!string.IsNullOrWhiteSpace(_base64Image))
+    else if (!string.IsNullOrWhiteSpace(_receivedBase64Image))
     {
         <div class="col-12">
-            <img class="img-fluid border border-light border-2" src="@(_base64Image)" />
+            <img class="img-fluid border border-light border-2" src="@(_receivedBase64Image)" />
         </div>
     }
-    else
+    else if (!string.IsNullOrWhiteSpace(_syncUrl))
     {
-        <div class="col-6">
-            <button class="btn btn-lg btn-primary me-3">
-                Send
-            </button>
-
-                <button class="btn btn-lg btn-primary">
-                Receive
-            </button>
+        <div class="col-md-10 col-lg-8">
+            <div style="display: grid; grid-template-columns: 1fr auto">
+                <div>
+                    <input value="@_syncUrl" readonly class="form-control" />
+                </div>
+                <div>
+                    <button class="btn btn-secondary ms-1" @onclick="CopySyncUrl">
+                        Copy
+                    </button>
+                </div>
+            </div>
         </div>
     }
 </div>
 
 @code {
-    private string _base64Image = string.Empty;
-    private string _clipboardText = string.Empty;
+    private string _receivedBase64Image = string.Empty;
+    private string _receivedText = string.Empty;
+    private string _syncUrl = string.Empty;
+
 
     [Parameter]
     [SupplyParameterFromQuery]
@@ -55,17 +73,23 @@
 
     [Parameter]
     [SupplyParameterFromQuery]
-    public string? RequesterId { get; set; }
+    public string? ReceiptToken { get; set; }
+
 
     protected override async Task OnInitializedAsync()
     {
-        await base.OnInitializedAsync();
-
         if (!string.IsNullOrWhiteSpace(AccessToken))
         {
             var result = await ClipboardApi.GetClipboardContent(AccessToken);
             if (!result.IsSuccess)
             {
+                if (result.Exception is HttpRequestException httpException &&
+                    httpException.StatusCode == System.Net.HttpStatusCode.NotFound)
+                {
+                    ToastService.Show("Link is invalid or expired", ToastType.Warning);
+                    return;
+                }
+
                 ToastService.Show("Failed to get clipboard content", ToastType.Error);
                 return;
             }
@@ -74,19 +98,103 @@
             {
                 case ClipboardContentType.Bitmap:
                     var base64 = Convert.ToBase64String(result.Value!.Content);
-                    _base64Image = $"data:image/png;base64,{base64}";
+                    _receivedBase64Image = $"data:image/png;base64,{base64}";
                     break;
                 case ClipboardContentType.Text:
-                    _clipboardText = Encoding.UTF8.GetString(result.Value!.Content);
+                    _receivedText = Encoding.UTF8.GetString(result.Value!.Content);
                     break;
                 default:
                     ToastService.Show("Unknown content type", ToastType.Warning);
                     return;
             }
         }
-        else if (!string.IsNullOrWhiteSpace(RequesterId))
+        else if (!string.IsNullOrWhiteSpace(ReceiptToken))
         {
-    
+            var contentResult = await GetClipboardContent();
+
+            if (!contentResult.IsSuccess)
+            {
+                return;
+            }
+
+            var result = await ClipboardApi.SendToReceiver(ReceiptToken, contentResult.Value!);
+            if (!result.IsSuccess)
+            {
+                ToastService.Show("Failed to send clipboard", ToastType.Error);
+                return;
+            }
+
+            ToastService.Show("Clipboard sent", ToastType.Success);
         }
+
+        await base.OnInitializedAsync();
     }
+
+    private async Task CopySyncUrl()
+    {
+        await JsInterop.SetClipboard(_syncUrl);
+        ToastService.Show("Copied to clipboard", ToastType.Success);
+    }
+
+    private async Task<Result<ClipboardContentDto>> GetClipboardContent()
+    {
+        var imageContent = await JsInterop.GetClipboardImage();
+
+        ClipboardContentDto? content;
+
+        if (imageContent.Any())
+        {
+            content = new ClipboardContentDto()
+                {
+                    Content = imageContent,
+                    Type = ClipboardContentType.Bitmap
+                };
+        }
+        else
+        {
+            var textContent = await JsInterop.GetClipboardText();
+
+            if (string.IsNullOrWhiteSpace(textContent))
+            {
+                ToastService.Show("Failed to get clipboard", ToastType.Error);
+                return Result.Fail<ClipboardContentDto>("Failed to get clipboard");
+            }
+
+            content = new ClipboardContentDto()
+                {
+                    Content = Encoding.UTF8.GetBytes(textContent),
+                    Type = ClipboardContentType.Text
+                };
+
+        }
+
+        return Result.Ok(content);
+    }
+
+    private async Task SendClipboard()
+    {
+        _receivedBase64Image = string.Empty;
+        _receivedText = string.Empty;
+        _syncUrl = string.Empty;
+
+        var contentResult = await GetClipboardContent();
+
+        if (!contentResult.IsSuccess)
+        {
+            return;
+        }
+
+        var result = await ClipboardApi.SetClipboardContent(contentResult.Value!);
+
+        if (!result.IsSuccess)
+        {
+            ToastService.Show("Failed to send clipboard", ToastType.Error);
+            return;
+        }
+
+        _syncUrl = result.Value!;
+
+        ToastService.Show("Clipboard sent", ToastType.Success);
+    }
+
 }

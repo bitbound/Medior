@@ -19,9 +19,9 @@ namespace Medior.Web.Server.Hubs
             return base.OnConnectedAsync();
         }
 
-        public string GetClipboardReceiveUrl()
+        public string GetClipboardReceiptToken()
         {
-            return string.Empty;
+            return _clipboardSync.RegisterReceiver(Context.ConnectionId);
         }
     }
 }

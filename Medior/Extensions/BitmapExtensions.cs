@@ -35,7 +35,11 @@ namespace Medior.Extensions
             encoder.Frames.Add(BitmapFrame.Create((BitmapSource)imageSource));
             encoder.Save(ms);
             ms.Flush();
-            return new Bitmap(ms);
+            using var rgb32Bpp = new Bitmap(ms);
+            var bitmap = new Bitmap((int)imageSource.Width, (int)imageSource.Height, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+            using var graphics = Graphics.FromImage(bitmap);
+            graphics.DrawImage(rgb32Bpp, Point.Empty);
+            return bitmap;
         }
     }
 }

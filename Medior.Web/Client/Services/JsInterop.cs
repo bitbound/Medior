@@ -11,7 +11,8 @@ namespace Medior.Web.Client.Services
         ValueTask<bool> Confirm(string message);
         ValueTask DisposeAsync();
         ValueTask DownloadFile(string url, string fileName);
-        ValueTask<string> GetClipboard();
+        ValueTask<string> GetClipboardText();
+        ValueTask<byte[]> GetClipboardImage();
 
         ValueTask<int> GetCursorIndex(ElementReference inputElement);
         ValueTask InvokeClick(string elementId);
@@ -77,10 +78,21 @@ namespace Medior.Web.Client.Services
             await module.InvokeVoidAsync("downloadFile", url, fileName);
         }
 
-        public async ValueTask<string> GetClipboard()
+        public async ValueTask<byte[]> GetClipboardImage()
         {
             var module = await _moduleTask.Value;
-            return await module.InvokeAsync<string>("getClipboard");
+            var base64 = await module.InvokeAsync<string>("getClipboardImage");
+            if (string.IsNullOrWhiteSpace(base64))
+            {
+                return Array.Empty<byte>();
+            }
+            return Convert.FromBase64String(base64);
+        }
+
+        public async ValueTask<string> GetClipboardText()
+        {
+            var module = await _moduleTask.Value;
+            return await module.InvokeAsync<string>("getClipboardText");
         }
 
         public async ValueTask<int> GetCursorIndex(ElementReference inputElement)

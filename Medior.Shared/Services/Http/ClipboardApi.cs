@@ -14,6 +14,7 @@ namespace Medior.Shared.Services.Http
     {
         Task<Result<string>> SetClipboardContent(ClipboardContentDto content);
         Task<Result<ClipboardContentDto>> GetClipboardContent(string accessToken);
+        Task<Result> SendToReceiver(string receiptToken, ClipboardContentDto content);
     }
     public class ClipboardApi : IClipboardApi
     {
@@ -44,6 +45,25 @@ namespace Medior.Shared.Services.Http
             {
                 _logger.LogError(ex, "Error while getting clipboard content.");
                 return Result.Fail<ClipboardContentDto>(ex);
+            }
+        }
+
+
+        public async Task<Result> SendToReceiver(string receiptToken, ClipboardContentDto content)
+        {
+            try
+            {
+                using var client = _clientFactory.CreateClient();
+                var serializedDto = MessagePackSerializer.Serialize(content);
+                var httpContent = new ByteArrayContent(serializedDto);
+                var response = await client.PostAsync($"{_uri.ServerUri}/api/clipboard/{receiptToken}", httpContent);
+                response.EnsureSuccessStatusCode();
+                return Result.Ok();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error while sending clipboard content.");
+                return Result.Fail(ex);
             }
         }
 

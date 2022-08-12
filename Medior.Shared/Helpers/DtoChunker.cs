@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Medior.Shared.Dtos.Wrapped;
+using Medior.Shared.Dtos;
 
 namespace Medior.Shared.Helpers
 {

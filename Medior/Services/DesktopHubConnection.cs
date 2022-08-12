@@ -17,10 +17,10 @@ namespace Medior.Services
 {
     public interface IDesktopHubConnection
     {
-        Task<Result<string>> GetClipboardReceiveUrl();
+        Task<Result<string>> GetClipboardReceiptToken();
     }
 
-    internal class DesktopHubConnection : HubConnectionBase, IDesktopHubConnection, IBackgroundService
+    internal class DesktopHubConnection : HubConnectionBase, IDesktopHubClient, IDesktopHubConnection, IBackgroundService
     {
         private readonly IServerUriProvider _serverUri;
         private readonly IMessenger _messenger;
@@ -39,11 +39,12 @@ namespace Medior.Services
             _logger = logger;
         }
 
-        public async Task<Result<string>> GetClipboardReceiveUrl()
+        public async Task<Result<string>> GetClipboardReceiptToken()
         {
             return await TryInvoke(async (hubConnection) =>
             {
-                return await hubConnection.InvokeAsync<Result<string>>(nameof(GetClipboardReceiveUrl));
+                var receiptToken = await hubConnection.InvokeAsync<string>(nameof(GetClipboardReceiptToken));
+                return Result.Ok(receiptToken);
             });
         }
 

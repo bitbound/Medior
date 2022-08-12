@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Medior.Shared.Dtos.Wrapped;
+using Medior.Shared.Dtos;
 using Medior.Shared.Helpers;
 using Medior.Shared.Interfaces;
 using MessagePack;
@@ -14,7 +14,12 @@ using Microsoft.Extensions.Logging;
 
 namespace Medior.Shared.SignalR
 {
-    public abstract class HubConnectionBase
+    public interface IHubConnectionBase
+    {
+        Task ReceiveDto(DtoWrapper dto);
+    }
+
+    public abstract class HubConnectionBase : IHubConnectionBase
     {
         private static readonly ConcurrentDictionary<Guid, byte[]> _dtoChunks = new();
         private readonly ILogger<HubConnectionBase> _baseLogger;
@@ -94,7 +99,7 @@ namespace Medior.Shared.SignalR
             }
         }
 
-        private async Task ReceiveDto(DtoWrapper dto)
+        public async Task ReceiveDto(DtoWrapper dto)
         {
             await _dtoHandler.ReceiveDto(dto);
         }

@@ -2,6 +2,7 @@
 {
     public class LoaderUpdateMessage
     {
+        public static LoaderUpdateMessage Empty { get; } = new();
         public bool IsShown { get; init; }
         public string Text { get; init; } = string.Empty;
         public double LoaderProgress { get; init; }
