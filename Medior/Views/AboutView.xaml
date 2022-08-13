@@ -10,12 +10,13 @@
              Loaded="UserControl_Loaded"
              d:DesignHeight="450" d:DesignWidth="800">
     
-    <StackPanel>
-        <TextBlock Style="{StaticResource LargeTitle}">
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel>
+            <TextBlock Style="{StaticResource LargeTitle}">
             About
-        </TextBlock>
+            </TextBlock>
 
-        <TextBlock Style="{StaticResource Paragraph}">
+            <TextBlock Style="{StaticResource Paragraph}">
             <Run Text="Version: " />
             <Run Text="{Binding Version, Mode=OneWay}" />
             
@@ -30,16 +31,16 @@
             </TextBlock>
         </TextBlock>
 
-        <TextBlock Style="{StaticResource Paragraph}">
+            <TextBlock Style="{StaticResource Paragraph}">
             <Run Text="Web App: " />
             <Hyperlink NavigateUri="https://medior.app" Click="Hyperlink_Click">
                 https://medior.app
             </Hyperlink>
-        </TextBlock>
+            </TextBlock>
 
-        <TextBlock Text="Copyright (c) Jared Goodwin.  All rights reserved." Style="{StaticResource Paragraph}" />
+            <TextBlock Text="Copyright (c) Jared Goodwin.  All rights reserved." Style="{StaticResource Paragraph}" />
 
-        <TextBlock Style="{StaticResource ThemeText}">
+            <TextBlock Style="{StaticResource ThemeText}">
                 <Run>Main icon made by</Run>
                 <Hyperlink NavigateUri="https://www.flaticon.com/authors/nikita-golubev" Click="Hyperlink_Click">
                     Nikita Golubev
@@ -48,72 +49,82 @@
                 <Hyperlink NavigateUri="https://www.flaticon.com/" Click="Hyperlink_Click">
                     www.flaticon.com
                 </Hyperlink>
-        </TextBlock>
+            </TextBlock>
 
-        <Button Content="Show Logs"
-                Margin="0,10,0,0"
+            <Button Content="Show Logs"
+                Margin="0,20,0,0"
                 HorizontalAlignment="Left"
                 Command="{Binding OpenLogsFolderCommand}" />
 
-        <StackPanel Visibility="Collapsed" Margin="0,10,0,0">
-            <TextBlock Style="{StaticResource MediumTitle}" Foreground="{StaticResource MahApps.Brushes.Accent2}">
+            <StackPanel Visibility="Collapsed" Margin="0,20,0,0">
+                <TextBlock Style="{StaticResource MediumTitle}" Foreground="{StaticResource MahApps.Brushes.Accent2}">
                 Module Details
-            </TextBlock>
-            
-            <TextBlock Style="{StaticResource MediumTitle}">
+                </TextBlock>
+
+                <TextBlock Style="{StaticResource MediumTitle}">
                 Screen Capture
-            </TextBlock>
-            <TextBlock Style="{StaticResource Paragraph}">
+                </TextBlock>
+                <TextBlock Style="{StaticResource Paragraph}">
                 Coming soon(ish).
-            </TextBlock>
+                </TextBlock>
 
-            <TextBlock Style="{StaticResource MediumTitle}" Margin="0,10,0,8">
+                <TextBlock Style="{StaticResource MediumTitle}" Margin="0,10,0,8">
                 Photo Sorter
-            </TextBlock>
-            <TextBlock Style="{StaticResource Paragraph}">
+                </TextBlock>
+                <TextBlock Style="{StaticResource Paragraph}">
                 Coming soon(ish).
-            </TextBlock>
+                </TextBlock>
 
-            <TextBlock Style="{StaticResource MediumTitle}"  Margin="0,10,0,8">
+                <TextBlock Style="{StaticResource MediumTitle}"  Margin="0,10,0,8">
                 Keep Awake
-            </TextBlock>
-            <TextBlock Style="{StaticResource Paragraph}">
+                </TextBlock>
+                <TextBlock Style="{StaticResource Paragraph}">
                 Coming soon(ish).
-            </TextBlock>
-        </StackPanel>
+                </TextBlock>
+            </StackPanel>
 
-        <TextBlock Text="Open-Source Libraries" Style="{StaticResource MediumTitle}" Margin="0,8,0,8" />
-        <TextBlock Margin="0,0,0,5">
+            <TextBlock Text="Open-Source Libraries" Style="{StaticResource MediumTitle}" Margin="0,20,0,8" />
+            <TextBlock Margin="0,0,0,5">
                 <Hyperlink NavigateUri="https://github.com/CommunityToolkit/WindowsCommunityToolkit">
                     Windows Community Toolkit
                 </Hyperlink>
                 <Hyperlink FontSize="10" NavigateUri="https://github.com/CommunityToolkit/WindowsCommunityToolkit/blob/main/License.md">
                     (License)
                 </Hyperlink>
-        </TextBlock>
-        <TextBlock Margin="0,0,0,5">
+            </TextBlock>
+            <TextBlock Margin="0,0,0,5">
+                <Hyperlink NavigateUri="https://github.com/MahApps/MahApps.Metro">
+                    MahApps
+                </Hyperlink>
+                <Hyperlink FontSize="10" NavigateUri="https://github.com/MahApps/MahApps.Metro/blob/develop/LICENSE">
+                    (License)
+                </Hyperlink>
+            </TextBlock>
+            <TextBlock Margin="0,0,0,5">
                 <Hyperlink NavigateUri="https://github.com/drewnoakes/metadata-extractor-dotnet">
                     MetadataExtractor
                 </Hyperlink>
                 <Hyperlink FontSize="10" NavigateUri="https://github.com/drewnoakes/metadata-extractor-dotnet/blob/master/LICENSE">
                     (License)
                 </Hyperlink>
-        </TextBlock>
-        <TextBlock Margin="0,0,0,5">
+            </TextBlock>
+            <TextBlock Margin="0,0,0,5">
                 <Hyperlink NavigateUri="https://github.com/codebude/QRCoder/">
                     QRCoder
                 </Hyperlink>
                 <Hyperlink FontSize="10" NavigateUri="https://github.com/codebude/QRCoder/blob/master/LICENSE.txt">
                     (License)
                 </Hyperlink>
-        </TextBlock>
-        <TextBlock>
+            </TextBlock>
+            <TextBlock>
                 <Hyperlink NavigateUri="https://github.com/dotnet/pinvoke">
                     dotnet/pinvoke
                 </Hyperlink>
                 <Hyperlink FontSize="10" NavigateUri="https://github.com/dotnet/pinvoke/blob/master/LICENSE">
                     (License)
                 </Hyperlink>
-        </TextBlock>
-    </StackPanel>
+            </TextBlock>
+        </StackPanel>
+    </ScrollViewer>
+
 </UserControl>
