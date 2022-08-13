@@ -1,4 +1,5 @@
 ﻿using Medior.Shared;
+using Medior.Shared.Services;
 using System;
 using System.Drawing;
 using System.IO;

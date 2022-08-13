@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Medior.Shared.Services;
+using System;
 using System.Windows.Input;
 
 namespace Medior.ViewModels

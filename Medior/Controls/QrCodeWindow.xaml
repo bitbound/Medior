@@ -3,17 +3,30 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:controls="clr-namespace:Medior.Controls"
+        xmlns:c="clr-namespace:Medior.Controls"
         xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
         xmlns:local="clr-namespace:Medior.Controls"
         mc:Ignorable="d"
-        Height="400" Width="500"
+        Height="500" Width="600"
         WindowStartupLocation="CenterScreen"
         TitleCharacterCasing="Normal"
+        Background="{StaticResource MahApps.Brushes.Window.Background}"
         Loaded="Window_Loaded">
-    <controls:GridEx RowDefinitionsEx="Auto, 15, *" Margin="10">
+    
+    <c:GridEx RowDefinitionsEx="Auto, Auto, *" Margin="10">
         <TextBlock x:Name="HeaderText" Grid.Row="0" TextAlignment="Center" Style="{StaticResource LargeTitle}" />
 
-        <Image x:Name="QrImage" Grid.Row="2" Stretch="Uniform"></Image>
-    </controls:GridEx>
+        <c:GridEx Grid.Row="1" ColumnDefinitionsEx="*, Auto, Auto" Margin="0,0,0,10">
+            <TextBox x:Name="QrUrlTextBox" Grid.Column="0" IsReadOnly="True" />
+            <Button x:Name="CopyButton" Grid.Column="1" Margin="5,0,0,0" Click="CopyButton_Click">
+                <c:IconLabel IconKind="RegularCopy" IconText="Copy" />
+            </Button>
+
+            <Button x:Name="SaveButton" Grid.Column="2" Margin="5,0,0,0" Click="SaveButton_Click">
+                <c:IconLabel IconKind="RegularCopy" IconText="Save" />
+            </Button>
+        </c:GridEx>
+        
+        <Image x:Name="QrImage" Grid.Row="2" Stretch="Uniform" MaxWidth="400"></Image>
+    </c:GridEx>
 </mah:MetroWindow>

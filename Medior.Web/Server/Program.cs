@@ -1,3 +1,4 @@
+using Medior.Shared.Services;
 using Medior.Web.Server.Data;
 using Medior.Web.Server.Hubs;
 using Medior.Web.Server.Services;
@@ -21,10 +22,11 @@ builder.Services.AddSignalR(options =>
     })
     .AddMessagePackProtocol();
 
-builder.Services.AddHostedService<FileCleanupService>();
+builder.Services.AddHostedService<DbCleanupService>();
 
 builder.Services.AddSingleton<IAppSettings, AppSettings>();
-builder.Services.AddSingleton<IClipboardSyncService, ClipboardSyncService>();
+builder.Services.AddSingleton<ISystemTime, SystemTime>();
+builder.Services.AddScoped<IClipboardSyncService, ClipboardSyncService>();
 builder.Services.AddScoped<IUploadedFileManager, UploadedFileManager>();
 builder.Host.UseSystemd();
 

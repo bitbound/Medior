@@ -1,14 +1,14 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Messaging;
-using Medior.Shared;
+﻿using Medior.Shared;
 using Medior.Shared.Dtos;
-using Medior.Shared.Dtos.Enums;
+using Medior.Shared.Entities;
+using Medior.Shared.Entities.Enums;
 using Medior.Shared.Interfaces;
 using Medior.Shared.Services;
 using Medior.Shared.Services.Http;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
@@ -29,14 +29,14 @@ namespace Medior.ViewModels
         private readonly IDesktopHubConnection _hubConnection;
         private readonly ILogger<ClipboardSyncViewModel> _logger;
         private readonly IMessenger _messenger;
+        private readonly IProcessService _processes;
         private readonly IQrCodeGenerator _qrCodeGenerator;
         private readonly IServerUriProvider _serverUri;
+        private readonly ISettings _settings;
         private readonly ISystemTime _systemTime;
         private readonly IUiDispatcher _uiDispatcher;
+        private readonly IWindowService _windowService;
 
-
-        [ObservableProperty]
-        private ImageSource? _qrCodeImage;
 
         [ObservableProperty]
         private int _receiptExpirationSeconds;
@@ -50,10 +50,6 @@ namespace Medior.ViewModels
         [NotifyCanExecuteChangedFor(nameof(CopySyncUrlCommand))]
         private string _syncUrl = string.Empty;
 
-        private string _receivedText = string.Empty;
-        private Bitmap? _receivedBitmap;
-        private ImageSource? _receivedImage;
-
         public ClipboardSyncViewModel(
             IMessenger messenger,
             IDesktopHubConnection hubConnection,
@@ -62,6 +58,9 @@ namespace Medior.ViewModels
             IServerUriProvider serverUri,
             ISystemTime systemTime,
             IUiDispatcher uiDispatcher,
+            IWindowService windowService,
+            IProcessService processService,
+            ISettings settings,
             ILogger<ClipboardSyncViewModel> logger)
         {
             _messenger = messenger;
@@ -71,12 +70,71 @@ namespace Medior.ViewModels
             _serverUri = serverUri;
             _systemTime = systemTime;
             _uiDispatcher = uiDispatcher;
+            _windowService = windowService;
+            _processes = processService;
+            _settings = settings;
             _logger = logger;
 
             _messenger.Register<ClipboardReadyDto>(this, HandleClipboardReady);
+
+            RefreshClips();
+
+            ClipboardSaves.CollectionChanged += ClipboardSaves_CollectionChanged;
         }
 
+        public ObservableCollectionEx<ClipboardSaveDto> ClipboardSaves { get; } = new();
+
         private bool IsCopyEnabled => !string.IsNullOrWhiteSpace(SyncUrl);
+
+        [RelayCommand]
+        public void GetQrCode(ClipboardSaveDto clip)
+        {
+            var url = $"{_serverUri.ServerUri}/clipboard-sync/{clip.Id}?accessToken={clip.AccessTokenView}";
+            _windowService.ShowQrCode(url, "Share Link");
+        }
+
+        public void RefreshClips()
+        {
+            foreach (var clip in _settings.ClipboardSaves)
+            {
+                if (!ClipboardSaves.Any(x => x.Id == clip.Id))
+                {
+                    ClipboardSaves.Add(clip);
+                }
+            }
+        }
+
+        public async Task UpdateClipboardSave(ClipboardSaveDto dto)
+        {
+            _settings.ClipboardSaves = ClipboardSaves.ToArray();
+            var result = await _clipboardApi.UpdateClip(dto);
+            if (!result.IsSuccess)
+            {
+                _messenger.SendToast("Failed to update clip", ToastType.Error);
+                return;
+            }
+            _messenger.SendToast("Clip updated", ToastType.Success);
+        }
+
+        [RelayCommand]
+        private void CancelReceive()
+        {
+            ReceiptExpirationTimer?.Dispose();
+            ReceiptExpirationTimer = null;
+        }
+
+        private void ClipboardSaves_CollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        {
+            _settings.ClipboardSaves = ClipboardSaves.ToArray();
+        }
+
+        [RelayCommand]
+        private void CopyLink(ClipboardSaveDto clip)
+        {
+            var url = $"{_serverUri.ServerUri}/clipboard-sync/{clip.Id}?accessToken={clip.AccessTokenView}";
+            Clipboard.SetText(url);
+            _messenger.SendToast("Copied to clipboard", ToastType.Success);
+        }
 
         [RelayCommand(CanExecute = nameof(IsCopyEnabled))]
         private void CopySyncUrl()
@@ -85,17 +143,28 @@ namespace Medior.ViewModels
             _messenger.SendToast("Copied to clipboard", ToastType.Success);
         }
 
+        [RelayCommand]
+        private async Task DeleteFile(ClipboardSaveDto clip)
+        {
+            var result = await _clipboardApi.DeleteClip(clip);
+
+            if (result.IsSuccess)
+            {
+                ClipboardSaves.Remove(clip);
+                _messenger.SendToast("File deleted", ToastType.Success);
+            }
+            else
+            {
+                _messenger.SendToast("File delete failed", ToastType.Error);
+            }
+        }
+
         private Result<ClipboardContentDto> GetClipboardContent()
         {
             if (Clipboard.ContainsText())
             {
                 var text = Clipboard.GetText();
-                var binary = Encoding.UTF8.GetBytes(text);
-                var content = new ClipboardContentDto()
-                {
-                    Content = binary,
-                    Type = ClipboardContentType.Text
-                };
+                var content = new ClipboardContentDto(text);
                 return Result.Ok(content);
 
             }
@@ -106,11 +175,7 @@ namespace Medior.ViewModels
                 using var ms = new MemoryStream();
                 bitmap.Save(ms, ImageFormat.Png);
 
-                var content = new ClipboardContentDto()
-                {
-                    Content = ms.ToArray(),
-                    Type = ClipboardContentType.Bitmap
-                };
+                var content = new ClipboardContentDto(ms.ToArray());
 
                 return Result.Ok(content);
             }
@@ -120,7 +185,7 @@ namespace Medior.ViewModels
             }
         }
 
-        private async void HandleClipboardReady(object recipient, ClipboardReadyDto message)
+        private void HandleClipboardReady(object recipient, ClipboardReadyDto message)
         {
             try
             {
@@ -133,37 +198,9 @@ namespace Medior.ViewModels
                 ReceiptExpirationTimer?.Dispose();
                 ReceiptExpirationTimer = null;
 
-                var contentResult = await _clipboardApi.GetClipboardContent(message.AccessKey);
-                if (!contentResult.IsSuccess)
-                {
-                    _messenger.SendToast("Failed to receive clipboard", ToastType.Error);
-                    return;
-                }
+                ClipboardSaves.Add(message.ClipboardSave);
 
-                var content = contentResult.Value!.Content;
-
-                QrCodeImage = null;
-
-                switch (contentResult.Value!.Type)
-                {
-                    case ClipboardContentType.Text:
-                        {
-                            _receivedText = Encoding.UTF8.GetString(content);
-                        }
-                        break;
-                    case ClipboardContentType.Bitmap:
-                        {
-                            _receivedBitmap?.Dispose();
-                            using var ms = new MemoryStream();
-                            _receivedBitmap = new Bitmap(ms);
-                            _receivedImage = _receivedBitmap.ToBitmapImage(ImageFormat.Png);
-                        }
-                        break;
-                    case ClipboardContentType.Unknown:
-                    default:
-                        _messenger.SendToast("Unknown content type received", ToastType.Warning);
-                        break;
-                }
+                _messenger.SendToast("Clipboard content received", ToastType.Success);
             }
             catch (Exception ex)
             {
@@ -174,6 +211,17 @@ namespace Medior.ViewModels
             {
                 _messenger.Send(LoaderUpdateMessage.Empty);
             }
+        }
+        [RelayCommand]
+        private void OpenLink(ClipboardSaveDto clip)
+        {
+            var url = $"{_serverUri.ServerUri}/clipboard-sync/{clip.Id}?accessToken={clip.AccessTokenView}";
+            var psi = new ProcessStartInfo()
+            {
+                FileName = url,
+                UseShellExecute = true
+            };
+            _processes.Start(psi);
         }
 
         [RelayCommand]
@@ -187,15 +235,7 @@ namespace Medior.ViewModels
 
             SyncUrl = $"{_serverUri.ServerUri}/clipboard-sync?receiptToken={receiptResult.Value!}";
 
-            var codeResult = _qrCodeGenerator.GenerateCode(SyncUrl);
-            if (!codeResult.IsSuccess)
-            {
-                _messenger.SendToast("Failed to generate QR code", ToastType.Error);
-                return;
-            }
-
-            using var bitmap = codeResult.Value!;
-            QrCodeImage = bitmap.ToBitmapImage(ImageFormat.Png);
+            _windowService.ShowQrCode(SyncUrl, "Receive Clipboard Link");
 
             _receiptStartTime = _systemTime.Now;
             ReceiptExpirationSeconds = 600;
@@ -221,6 +261,7 @@ namespace Medior.ViewModels
             };
             ReceiptExpirationTimer.Start();
         }
+
         [RelayCommand]
         private async Task Send()
         {
@@ -240,23 +281,14 @@ namespace Medior.ViewModels
                     return;
                 }
 
-                var sendResult = await _clipboardApi.SetClipboardContent(result.Value!);
+                var sendResult = await _clipboardApi.SaveClipboardContent(result.Value!);
                 if (!sendResult.IsSuccess)
                 {
                     return;
                 }
 
-                SyncUrl = sendResult.Value!;
-
-                var codeResult = _qrCodeGenerator.GenerateCode(SyncUrl);
-                if (!codeResult.IsSuccess)
-                {
-                    _messenger.SendToast("Failed to generate QR code", ToastType.Error);
-                    return;
-                }
-
-                using var bitmap = codeResult.Value!;
-                QrCodeImage = bitmap.ToBitmapImage(ImageFormat.Png);
+                ClipboardSaves.Add(sendResult.Value!);
+                _messenger.SendToast("Clipboard saved", ToastType.Success);
             }
             finally
             {

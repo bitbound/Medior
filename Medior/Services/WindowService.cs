@@ -100,7 +100,7 @@ namespace Medior.Services
                 _messenger.Send(new ToastMessage("Failed to generate QR code", ToastType.Error));
             }
 
-            var window = new QrCodeWindow(result.Value, windowTitle);
+            var window = new QrCodeWindow(result.Value, windowTitle, url);
             window.Show();
         }
 

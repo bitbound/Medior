@@ -2,6 +2,7 @@
 using Medior.Models;
 using Medior.Models.PhotoSorter;
 using Medior.Shared;
+using Medior.Shared.Dtos;
 using Medior.Shared.Entities;
 using Medior.Shared.Interfaces;
 using Microsoft.Extensions.Logging;
@@ -22,6 +23,8 @@ namespace Medior.Services
         SortJob[] SortJobs { get; set; }
         bool StartAtLogon { get; set; }
         AppTheme Theme { get; set; }
+        ClipboardSaveDto[] ClipboardSaves { get; set; }
+
         Task Save();
     }
     public class Settings : ISettings
@@ -129,6 +132,12 @@ namespace Medior.Services
             get => Get<AppTheme>();
             set => Set(value);
         }
+        public ClipboardSaveDto[] ClipboardSaves
+        {
+            get => Get<ClipboardSaveDto[]>() ?? Array.Empty<ClipboardSaveDto>();
+            set => Set(value);
+        }
+
         public async Task Save()
         {
             if (!await _fileLock.WaitAsync(0))

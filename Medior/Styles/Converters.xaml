@@ -4,6 +4,7 @@
     
     <converters:ValueEqualsParameterConverter x:Key="ValueEqualsParameterConverter" />
     <converters:NullToVisibilityConverter x:Key="NullToVisibilityConverter" />
+    <converters:ReverseNullToVisibilityConverter x:Key="ReverseNullToVisibilityConverter" />
     <converters:ValueEqualsParameterVisibilityConverter x:Key="ValueEqualsParameterVisibilityConverter" />
     <converters:MultiBoolAllToVisibilityConverter x:Key="MultiBoolAllToVisibilityConverter" />
     <converters:MultiBoolAnyToVisibilityConverter x:Key="MultiBoolAnyToVisibilityConverter" />

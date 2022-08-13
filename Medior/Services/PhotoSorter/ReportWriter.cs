@@ -1,4 +1,5 @@
 ﻿using Medior.Models.PhotoSorter;
+using Medior.Shared.Services;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;

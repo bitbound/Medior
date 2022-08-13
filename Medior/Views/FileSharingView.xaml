@@ -35,11 +35,12 @@
 
             <DataGrid ItemsSource="{Binding FileUploads}" AutoGenerateColumns="False" CanUserAddRows="False" CanUserDeleteRows="True">
                 <DataGrid.Columns>
-                    <DataGridTextColumn Header="File Name" Binding="{Binding FileName}" />
-                    <DataGridTextColumn Header="File Size" Binding="{Binding FileSize, StringFormat=\{0:N0\}}" />
-                    <DataGridTextColumn Header="Uploaded At" Binding="{Binding UploadedAt}" />
+                    <DataGridTextColumn Header="File Name" Binding="{Binding FileName}" IsReadOnly="True" />
+                    <DataGridTextColumn Header="File Size" Binding="{Binding FileSize, StringFormat=\{0:N0\}}" IsReadOnly="True" />
+                    <DataGridTextColumn Header="Uploaded At" Binding="{Binding UploadedAt}" IsReadOnly="True" />
+                    <DataGridTextColumn Header="Last Accessed" Binding="{Binding LastAccessed}" IsReadOnly="True" />
 
-                    <DataGridTemplateColumn Header="Actions">
+                    <DataGridTemplateColumn Header="Actions" IsReadOnly="True">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
                                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">

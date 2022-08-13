@@ -1,36 +1,55 @@
-﻿@page "/clipboard-sync"
+﻿@page "/clipboard-sync/{clipId?}"
 @using Medior.Shared
-@using Medior.Shared.Dtos.Enums
+@using Medior.Shared.Entities.Enums
 @using Medior.Shared.Interfaces
 @using System.Text
-@inject NavigationManager NavManager
 @inject HttpClient HttpClient
 @inject ILogger<FileSharing> Logger
 @inject IClipboardApi ClipboardApi
 @inject IToastService ToastService
 @inject ILoaderService LoaderService
 @inject IServerUriProvider ServerUriProvider
-@inject NavigationManager NavManager
 @inject IJsInterop JsInterop
 
 <PageTitle>Clipboard Sync</PageTitle>
 
 <h3>Clipboard Sync</h3>
 
-<div class="row mt-5">
+ <div class="row">
     <div class="col-6">
-        <button class="btn btn-lg btn-primary me-3" @onclick="SendClipboard">
-            Send
-        </button>
-
-        <button class="btn btn-lg btn-primary">
-            Receive
-        </button>
+        <div class="lead text-muted">
+            Download the desktop app to access all features.
+        </div>
     </div>
 </div>
 
+@if (string.IsNullOrWhiteSpace(ReceiptToken))
+{
+    <div class="row mt-5">
+        <div class="col-6">
+            <button class="btn btn-lg btn-primary me-3" @onclick="SendClipboard">
+                Send
+            </button>
+        </div>
+    </div>
+}
+
 <div class="row mt-5">
-    @if (!string.IsNullOrWhiteSpace(_receivedText))
+    @if (!string.IsNullOrWhiteSpace(ReceiptToken))
+    {
+        <div class="col-12 mb-1">
+            <h5>Your partner is waiting.</h5>
+            <p class="text-muted">
+                Click below to send your clipboard.
+            </p>
+        </div>
+        <div class="col-md-10 col-lg-8">
+            <button class="btn btn-lg btn-primary me-3" @onclick="SendClipboardToRecipient">
+                Transfer Clipboard
+            </button>
+        </div>
+    }
+    else if (!string.IsNullOrWhiteSpace(_receivedText))
     {
         <div class="col-12 mb-1">
             <h5>Received Text:</h5>
@@ -72,6 +91,8 @@
     private string _receivedText = string.Empty;
     private string _syncUrl = string.Empty;
 
+    [Parameter]
+    public string? ClipId { get; set; }
 
     [Parameter]
     [SupplyParameterFromQuery]
@@ -84,9 +105,15 @@
 
     protected override async Task OnInitializedAsync()
     {
-        if (!string.IsNullOrWhiteSpace(AccessToken))
+        if (!string.IsNullOrWhiteSpace(ClipId))
         {
-            var result = await ClipboardApi.GetClipboardContent(AccessToken);
+            if (string.IsNullOrWhiteSpace(AccessToken))
+            {
+                ToastService.Show("Access token required", ToastType.Warning);
+                return;
+            }
+
+            var result = await ClipboardApi.GetClipboardContent(ClipId, AccessToken);
             if (!result.IsSuccess)
             {
                 if (result.Exception is HttpRequestException httpException &&
@@ -103,34 +130,15 @@
             switch (result.Value!.Type)
             {
                 case ClipboardContentType.Bitmap:
-                    var base64 = Convert.ToBase64String(result.Value!.Content);
-                    _receivedBase64Image = $"data:image/png;base64,{base64}";
+                    _receivedBase64Image = $"data:image/png;base64,{result.Value!.Base64Content}";
                     break;
                 case ClipboardContentType.Text:
-                    _receivedText = Encoding.UTF8.GetString(result.Value!.Content);
+                    _receivedText = result.Value!.GetTextContent();
                     break;
                 default:
                     ToastService.Show("Unknown content type", ToastType.Warning);
                     return;
             }
-        }
-        else if (!string.IsNullOrWhiteSpace(ReceiptToken))
-        {
-            var contentResult = await GetClipboardContent();
-
-            if (!contentResult.IsSuccess)
-            {
-                return;
-            }
-
-            var result = await ClipboardApi.SendToReceiver(ReceiptToken, contentResult.Value!);
-            if (!result.IsSuccess)
-            {
-                ToastService.Show("Failed to send clipboard", ToastType.Error);
-                return;
-            }
-
-            ToastService.Show("Clipboard sent", ToastType.Success);
         }
 
         await base.OnInitializedAsync();
@@ -150,11 +158,7 @@
 
         if (imageContent.Any())
         {
-            content = new ClipboardContentDto()
-                {
-                    Content = imageContent,
-                    Type = ClipboardContentType.Bitmap
-                };
+            content = new ClipboardContentDto(imageContent);
         }
         else
         {
@@ -166,12 +170,7 @@
                 return Result.Fail<ClipboardContentDto>("Failed to get clipboard");
             }
 
-            content = new ClipboardContentDto()
-                {
-                    Content = Encoding.UTF8.GetBytes(textContent),
-                    Type = ClipboardContentType.Text
-                };
-
+            content = new ClipboardContentDto(textContent);
         }
 
         return Result.Ok(content);
@@ -190,7 +189,7 @@
             return;
         }
 
-        var result = await ClipboardApi.SetClipboardContent(contentResult.Value!);
+        var result = await ClipboardApi.SaveClipboardContent(contentResult.Value!);
 
         if (!result.IsSuccess)
         {
@@ -198,9 +197,40 @@
             return;
         }
 
-        _syncUrl = result.Value!;
+        var clip = result.Value!;
+        _syncUrl = $"{ServerUriProvider.ServerUri}/clipboard-sync/{clip.Id}?accessToken={clip.AccessTokenView}";
 
         ToastService.Show("Clipboard sent", ToastType.Success);
     }
 
+    private async Task SendClipboardToRecipient()
+    {
+        try
+        {
+            if (ReceiptToken is null)
+            {
+                return;
+            }
+
+            var contentResult = await GetClipboardContent();
+
+            if (!contentResult.IsSuccess)
+            {
+                return;
+            }
+
+            var result = await ClipboardApi.SendToReceiver(ReceiptToken, contentResult.Value!);
+            if (!result.IsSuccess)
+            {
+                ToastService.Show("Failed to send clipboard", ToastType.Error);
+                return;
+            }
+
+            ToastService.Show("Clipboard sent", ToastType.Success);
+        }
+        finally
+        {
+            ReceiptToken = null;
+        }
+    }
 }

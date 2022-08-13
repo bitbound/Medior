@@ -14,6 +14,7 @@ namespace Medior.Web.Server.Data
 
 #nullable disable
         public DbSet<UploadedFile> UploadedFiles { get; set; }
+        public DbSet<ClipboardSave> ClipboardSaves { get; set; }
 
 #nullable enable
 

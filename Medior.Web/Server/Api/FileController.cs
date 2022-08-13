@@ -33,7 +33,8 @@ namespace Medior.Web.Server.Api
                 return NotFound("The file does not exist.");
             }
 
-            if (result.UploadedFile!.AccessTokenView != accessToken)
+            if (accessToken != result.UploadedFile!.AccessTokenView &&
+                accessToken != result.UploadedFile!.AccessTokenEdit)
             {
                 return Unauthorized();
             }

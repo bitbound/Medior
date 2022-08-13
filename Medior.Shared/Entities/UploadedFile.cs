@@ -11,18 +11,16 @@ namespace Medior.Shared.Entities
 {
     public class UploadedFile
     {
-        public string AccessTokenView { get; set; } = string.Empty;
-
         public string AccessTokenEdit { get; set; } = string.Empty;
-
+        public string AccessTokenView { get; set; } = string.Empty;
         public string ContentDisposition { get; init; } = string.Empty;
-
         public string FileName { get; init; } = string.Empty;
         public long FileSize { get; init; }
 
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public Guid Id { get; init; }
 
+        public bool IsEncrypted { get; init; }
         public DateTimeOffset LastAccessed { get; set; }
         public DateTimeOffset UploadedAt { get; init; }
     }

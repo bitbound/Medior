@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Medior.Services
+namespace Medior.Shared.Services
 {
     public interface ISystemTime
     {

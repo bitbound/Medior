@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Medior.Shared.Dtos;
+using Medior.ViewModels;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -23,6 +25,26 @@ namespace Medior.Views
         public ClipboardSyncView()
         {
             InitializeComponent();
+        }
+
+        public ClipboardSyncViewModel? ViewModel => DataContext as ClipboardSyncViewModel;
+
+        private void UserControl_Loaded(object sender, RoutedEventArgs e)
+        {
+            ViewModel?.RefreshClips();
+        }
+
+        private async void DataGrid_CellEditEnding(object sender, DataGridCellEditEndingEventArgs e)
+        {
+            if (ViewModel is null || e.EditAction == DataGridEditAction.Cancel)
+            {
+                return;
+            }
+
+            if (e.EditingElement.DataContext is ClipboardSaveDto dto)
+            {
+                await ViewModel.UpdateClipboardSave(dto);
+            }
         }
 
     }

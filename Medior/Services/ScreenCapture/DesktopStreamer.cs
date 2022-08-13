@@ -1,5 +1,6 @@
 ﻿using Medior.Dtos;
 using Medior.Models;
+using Medior.Shared.Services;
 using Microsoft.Extensions.Logging;
 using Microsoft.IO;
 using System;

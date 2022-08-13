@@ -15,5 +15,6 @@
         }
 
         public int FileRetentionDays => _configuration.GetValue<int>(nameof(FileRetentionDays));
+        public int ClipboardRetentionDays => _configuration.GetValue<int>(nameof(ClipboardRetentionDays));
     }
 }

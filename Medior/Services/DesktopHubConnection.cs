@@ -1,7 +1,6 @@
 ﻿using Medior.Interfaces;
 using Medior.Shared;
 using Medior.Shared.Dtos;
-using Medior.Shared.Dtos.Enums;
 using Medior.Shared.Interfaces;
 using Medior.Shared.SignalR;
 using Microsoft.AspNetCore.SignalR.Client;

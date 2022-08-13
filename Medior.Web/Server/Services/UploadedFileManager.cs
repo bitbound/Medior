@@ -1,6 +1,7 @@
 ﻿using Medior.Shared;
 using Medior.Shared.Entities;
 using Medior.Shared.Helpers;
+using Medior.Shared.Services;
 using Medior.Web.Server.Data;
 using Medior.Web.Server.Models;
 
@@ -19,13 +20,16 @@ namespace Medior.Web.Server.Services
         private readonly string _appData;
         private readonly AppDb _appDb;
         private readonly IWebHostEnvironment _hostEnv;
+        private readonly ISystemTime _systemTime;
 
         public UploadedFileManager(
             AppDb appDb,
+            ISystemTime systemTime,
             IWebHostEnvironment hostEnv)
         {
             _appDb = appDb;
             _hostEnv = hostEnv;
+            _systemTime = systemTime;
             _appData = Directory.CreateDirectory(Path.Combine(_hostEnv.ContentRootPath, "App_Data")).FullName;
         }
 
@@ -67,7 +71,7 @@ namespace Medior.Web.Server.Services
                 return Result.Fail<UploadedFile>("File not found.");
             }
 
-            uploadedFile.LastAccessed = DateTimeOffset.Now;
+            uploadedFile.LastAccessed = _systemTime.Now;
             await _appDb.SaveChangesAsync();
 
             return Result.Ok(uploadedFile);
@@ -89,7 +93,7 @@ namespace Medior.Web.Server.Services
                 return RetrievedFile.Empty;
             }
 
-            uploadedFile.LastAccessed = DateTimeOffset.Now;
+            uploadedFile.LastAccessed = _systemTime.Now;
             await _appDb.SaveChangesAsync();
 
             var fs = new FileStream(filePath, FileMode.Open);
@@ -107,8 +111,8 @@ namespace Medior.Web.Server.Services
             var uploadEntity = new UploadedFile()
             {
                 FileName = uploadedFile.FileName,
-                UploadedAt = DateTimeOffset.Now,
-                LastAccessed = DateTimeOffset.Now,
+                UploadedAt = _systemTime.Now,
+                LastAccessed = _systemTime.Now,
                 ContentDisposition = uploadedFile.ContentDisposition,
                 FileSize = uploadedFile.Length,
                 AccessTokenEdit = RandomGenerator.GenerateAccessKey(),
