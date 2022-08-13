@@ -42,6 +42,7 @@
         <Image Grid.Row="3"
                HorizontalAlignment="Center"
                MaxWidth="350"
-               Source="{Binding QrCodeImage}" />
+               Source="{Binding QrCodeImage}"
+               Visibility="{Binding QrCodeImage, Converter={StaticResource NullToVisibilityConverter}}"/>
     </c:GridEx>
 </UserControl>

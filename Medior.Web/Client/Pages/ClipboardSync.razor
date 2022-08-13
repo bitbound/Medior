@@ -32,6 +32,9 @@
 <div class="row mt-5">
     @if (!string.IsNullOrWhiteSpace(_receivedText))
     {
+        <div class="col-12 mb-1">
+            <h5>Received Text:</h5>
+        </div>
         <div class="col-md-10 col-lg-8">
             <textarea readonly class="w-100" style="min-height: 300px;">
                 @_receivedText
@@ -40,6 +43,9 @@
     }
     else if (!string.IsNullOrWhiteSpace(_receivedBase64Image))
     {
+        <div class="col-12 mb-1">
+            <h5>Received Image:</h5>
+        </div>
         <div class="col-12">
             <img class="img-fluid border border-light border-2" src="@(_receivedBase64Image)" />
         </div>

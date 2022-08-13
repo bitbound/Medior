@@ -1,4 +1,5 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Messaging;
 using Medior.Shared;
 using Medior.Shared.Dtos;
 using Medior.Shared.Dtos.Enums;
@@ -8,6 +9,7 @@ using Medior.Shared.Services.Http;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
@@ -16,6 +18,7 @@ using System.Threading.Tasks;
 using System.Timers;
 using System.Windows;
 using System.Windows.Media;
+using System.Windows.Media.Imaging;
 
 namespace Medior.ViewModels
 {
@@ -23,27 +26,33 @@ namespace Medior.ViewModels
     public partial class ClipboardSyncViewModel
     {
         private readonly IClipboardApi _clipboardApi;
-        private readonly IServerUriProvider _serverUri;
-        private readonly ISystemTime _systemTime;
-        private readonly IUiDispatcher _uiDispatcher;
         private readonly IDesktopHubConnection _hubConnection;
         private readonly ILogger<ClipboardSyncViewModel> _logger;
         private readonly IMessenger _messenger;
         private readonly IQrCodeGenerator _qrCodeGenerator;
+        private readonly IServerUriProvider _serverUri;
+        private readonly ISystemTime _systemTime;
+        private readonly IUiDispatcher _uiDispatcher;
+
 
         [ObservableProperty]
         private ImageSource? _qrCodeImage;
 
         [ObservableProperty]
-        [NotifyCanExecuteChangedFor(nameof(CopySyncUrlCommand))]
-        private string _syncUrl = string.Empty;
+        private int _receiptExpirationSeconds;
 
         [ObservableProperty]
         private Timer? _receiptExpirationTimer;
 
-        [ObservableProperty]
-        private int _receiptExpirationSeconds;
         private DateTimeOffset _receiptStartTime;
+
+        [ObservableProperty]
+        [NotifyCanExecuteChangedFor(nameof(CopySyncUrlCommand))]
+        private string _syncUrl = string.Empty;
+
+        private string _receivedText = string.Empty;
+        private Bitmap? _receivedBitmap;
+        private ImageSource? _receivedImage;
 
         public ClipboardSyncViewModel(
             IMessenger messenger,
@@ -63,10 +72,11 @@ namespace Medior.ViewModels
             _systemTime = systemTime;
             _uiDispatcher = uiDispatcher;
             _logger = logger;
+
+            _messenger.Register<ClipboardReadyDto>(this, HandleClipboardReady);
         }
 
         private bool IsCopyEnabled => !string.IsNullOrWhiteSpace(SyncUrl);
-
 
         [RelayCommand(CanExecute = nameof(IsCopyEnabled))]
         private void CopySyncUrl()
@@ -74,7 +84,6 @@ namespace Medior.ViewModels
             Clipboard.SetText(_syncUrl);
             _messenger.SendToast("Copied to clipboard", ToastType.Success);
         }
-
 
         private Result<ClipboardContentDto> GetClipboardContent()
         {
@@ -96,7 +105,7 @@ namespace Medior.ViewModels
                 using var bitmap = image.ToBitmap();
                 using var ms = new MemoryStream();
                 bitmap.Save(ms, ImageFormat.Png);
-                
+
                 var content = new ClipboardContentDto()
                 {
                     Content = ms.ToArray(),
@@ -111,6 +120,62 @@ namespace Medior.ViewModels
             }
         }
 
+        private async void HandleClipboardReady(object recipient, ClipboardReadyDto message)
+        {
+            try
+            {
+                _messenger.Send(new LoaderUpdateMessage()
+                {
+                    IsShown = true,
+                    Text = "Receiving clipboard"
+                });
+
+                ReceiptExpirationTimer?.Dispose();
+                ReceiptExpirationTimer = null;
+
+                var contentResult = await _clipboardApi.GetClipboardContent(message.AccessKey);
+                if (!contentResult.IsSuccess)
+                {
+                    _messenger.SendToast("Failed to receive clipboard", ToastType.Error);
+                    return;
+                }
+
+                var content = contentResult.Value!.Content;
+
+                QrCodeImage = null;
+
+                switch (contentResult.Value!.Type)
+                {
+                    case ClipboardContentType.Text:
+                        {
+                            _receivedText = Encoding.UTF8.GetString(content);
+                        }
+                        break;
+                    case ClipboardContentType.Bitmap:
+                        {
+                            _receivedBitmap?.Dispose();
+                            using var ms = new MemoryStream();
+                            _receivedBitmap = new Bitmap(ms);
+                            _receivedImage = _receivedBitmap.ToBitmapImage(ImageFormat.Png);
+                        }
+                        break;
+                    case ClipboardContentType.Unknown:
+                    default:
+                        _messenger.SendToast("Unknown content type received", ToastType.Warning);
+                        break;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error while receiving clipboard.");
+                _messenger.SendToast("Failed to receive clipboard", ToastType.Error);
+            }
+            finally
+            {
+                _messenger.Send(LoaderUpdateMessage.Empty);
+            }
+        }
+
         [RelayCommand]
         private async Task Receive()
         {
@@ -119,7 +184,7 @@ namespace Medior.ViewModels
             {
                 return;
             }
-           
+
             SyncUrl = $"{_serverUri.ServerUri}/clipboard-sync?receiptToken={receiptResult.Value!}";
 
             var codeResult = _qrCodeGenerator.GenerateCode(SyncUrl);
@@ -129,13 +194,15 @@ namespace Medior.ViewModels
                 return;
             }
 
-            QrCodeImage = codeResult.Value!.ToBitmapImage(ImageFormat.Png);
+            using var bitmap = codeResult.Value!;
+            QrCodeImage = bitmap.ToBitmapImage(ImageFormat.Png);
 
             _receiptStartTime = _systemTime.Now;
             ReceiptExpirationSeconds = 600;
             ReceiptExpirationTimer?.Dispose();
             ReceiptExpirationTimer = new Timer(1_000);
-            ReceiptExpirationTimer.Elapsed += (s, e) => {
+            ReceiptExpirationTimer.Elapsed += (s, e) =>
+            {
 
                 _uiDispatcher.Invoke(() =>
                 {
@@ -154,7 +221,6 @@ namespace Medior.ViewModels
             };
             ReceiptExpirationTimer.Start();
         }
-
         [RelayCommand]
         private async Task Send()
         {
@@ -189,7 +255,8 @@ namespace Medior.ViewModels
                     return;
                 }
 
-                QrCodeImage = codeResult.Value!.ToBitmapImage(ImageFormat.Png);
+                using var bitmap = codeResult.Value!;
+                QrCodeImage = bitmap.ToBitmapImage(ImageFormat.Png);
             }
             finally
             {
