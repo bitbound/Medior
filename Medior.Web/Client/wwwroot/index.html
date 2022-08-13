@@ -56,7 +56,13 @@
         <a class="dismiss">🗙</a>
     </div>
     <script src="_framework/blazor.webassembly.js"></script>
-    <script>navigator.serviceWorker.register('service-worker.js');</script>
+    <script>
+        navigator.serviceWorker
+            .getRegistration('service-worker.js')
+            .then(x => x.unregister())
+            .catch(() => { });
+        //navigator.serviceWorker.register('service-worker.js');
+    </script>
 </body>
 
 </html>
