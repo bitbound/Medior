@@ -37,8 +37,8 @@
                 <DataGrid.Columns>
                     <DataGridTextColumn Header="File Name" Binding="{Binding FileName}" IsReadOnly="True" />
                     <DataGridTextColumn Header="File Size" Binding="{Binding FileSize, StringFormat=\{0:N0\}}" IsReadOnly="True" />
-                    <DataGridTextColumn Header="Uploaded At" Binding="{Binding UploadedAt}" IsReadOnly="True" />
-                    <DataGridTextColumn Header="Last Accessed" Binding="{Binding LastAccessed}" IsReadOnly="True" />
+                    <DataGridTextColumn Header="Uploaded At" Binding="{Binding UploadedAt, Converter={StaticResource DateTimeOffsetToLocalTimeConverter}}" IsReadOnly="True" />
+                    <DataGridTextColumn Header="Last Accessed" Binding="{Binding LastAccessed, Converter={StaticResource DateTimeOffsetToLocalTimeConverter}}" IsReadOnly="True" />
 
                     <DataGridTemplateColumn Header="Actions" IsReadOnly="True">
                         <DataGridTemplateColumn.CellTemplate>

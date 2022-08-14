@@ -23,7 +23,7 @@
             <RadioButton
                 GroupName="AppTheme"
                 Content="System Default"
-                IsChecked="{Binding Theme, Mode=OneWay, Converter={StaticResource ValueEqualsParameterConverter}, ConverterParameter={x:Static models:AppTheme.Default}}">
+                IsChecked="{Binding Theme, Mode=OneWay, Converter={StaticResource ValueEqualsParameterBoolConverter}, ConverterParameter={x:Static models:AppTheme.Default}}">
                 <i:Interaction.Triggers>
                     <i:EventTrigger EventName="Checked">
                         <i:InvokeCommandAction Command="{Binding SetThemeCommand}" CommandParameter="{x:Static models:AppTheme.Default}" />
@@ -34,7 +34,7 @@
                 GroupName="AppTheme"
                 Content="Light"
                 Margin="0,5,0,0"
-                IsChecked="{Binding Theme, Mode=OneWay, Converter={StaticResource ValueEqualsParameterConverter}, ConverterParameter={x:Static models:AppTheme.Light}}">
+                IsChecked="{Binding Theme, Mode=OneWay, Converter={StaticResource ValueEqualsParameterBoolConverter}, ConverterParameter={x:Static models:AppTheme.Light}}">
                 <i:Interaction.Triggers>
                     <i:EventTrigger EventName="Checked">
                         <i:InvokeCommandAction Command="{Binding SetThemeCommand}" CommandParameter="{x:Static models:AppTheme.Light}" />
@@ -45,7 +45,7 @@
                 GroupName="AppTheme"
                 Content="Dark"
                 Margin="0,5,0,0"
-                IsChecked="{Binding Theme, Mode=OneWay, Converter={StaticResource ValueEqualsParameterConverter}, ConverterParameter={x:Static models:AppTheme.Dark}}">
+                IsChecked="{Binding Theme, Mode=OneWay, Converter={StaticResource ValueEqualsParameterBoolConverter}, ConverterParameter={x:Static models:AppTheme.Dark}}">
                 <i:Interaction.Triggers>
                     <i:EventTrigger EventName="Checked">
                         <i:InvokeCommandAction Command="{Binding SetThemeCommand}" CommandParameter="{x:Static models:AppTheme.Dark}" />

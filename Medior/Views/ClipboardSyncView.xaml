@@ -46,8 +46,8 @@
                 <DataGridTextColumn Header="Friendly Name" Binding="{Binding FriendlyName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" IsReadOnly="False" />
                 <DataGridTextColumn Header="Content Type" Binding="{Binding ContentType}" IsReadOnly="True" />
                 <DataGridTextColumn Header="Content Size" Binding="{Binding ContentSize, StringFormat=\{0:N0\}}" IsReadOnly="True" />
-                <DataGridTextColumn Header="Created" Binding="{Binding CreatedAt}" IsReadOnly="True" />
-                <DataGridTextColumn Header="Last Accessed" Binding="{Binding LastAccessed}" IsReadOnly="True" />
+                <DataGridTextColumn Header="Created" Binding="{Binding CreatedAt, Converter={StaticResource DateTimeOffsetToLocalTimeConverter}}" IsReadOnly="True" />
+                <DataGridTextColumn Header="Last Accessed" Binding="{Binding LastAccessed, Converter={StaticResource DateTimeOffsetToLocalTimeConverter}}" IsReadOnly="True" />
 
                 <DataGridTemplateColumn Header="Actions" IsReadOnly="True">
                     <DataGridTemplateColumn.CellTemplate>

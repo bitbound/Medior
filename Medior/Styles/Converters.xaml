@@ -2,14 +2,15 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:converters="clr-namespace:Medior.Converters">
     
-    <converters:ValueEqualsParameterConverter x:Key="ValueEqualsParameterConverter" />
-    <converters:NullToVisibilityConverter x:Key="NullToVisibilityConverter" />
-    <converters:ReverseNullToVisibilityConverter x:Key="ReverseNullToVisibilityConverter" />
-    <converters:ValueEqualsParameterVisibilityConverter x:Key="ValueEqualsParameterVisibilityConverter" />
+    <converters:DateTimeOffsetToLocalTimeConverter x:Key="DateTimeOffsetToLocalTimeConverter" />
+    <converters:IsEmptyToVisibilityConverter x:Key="IsEmptyToVisibilityConverter" />
     <converters:MultiBoolAllToVisibilityConverter x:Key="MultiBoolAllToVisibilityConverter" />
     <converters:MultiBoolAnyToVisibilityConverter x:Key="MultiBoolAnyToVisibilityConverter" />
     <converters:NotNullToBoolConverter x:Key="NotNullToBoolConverter" />
-    <converters:IsEmptyToVisibilityConverter x:Key="IsEmptyToVisibilityConverter" />
-    <converters:ReverseIsEmptyToVisibilityConverter x:Key="ReverseIsEmptyToVisibilityConverter" />
+    <converters:NullToVisibilityConverter x:Key="NullToVisibilityConverter" />
     <converters:ReverseBooleanToVisibilityConverter x:Key="ReverseBooleanToVisibilityConverter" />
+    <converters:ReverseIsEmptyToVisibilityConverter x:Key="ReverseIsEmptyToVisibilityConverter" />
+    <converters:ReverseNullToVisibilityConverter x:Key="ReverseNullToVisibilityConverter" />
+    <converters:ValueEqualsParameterBoolConverter x:Key="ValueEqualsParameterBoolConverter" />
+    <converters:ValueEqualsParameterVisibilityConverter x:Key="ValueEqualsParameterVisibilityConverter" />
 </ResourceDictionary>

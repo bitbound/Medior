@@ -21,7 +21,7 @@
                 GroupName="KeepAwakeMode"
                 Content="Off (use system power settings)"
                 HorizontalAlignment="Left"
-                IsChecked="{Binding Mode, Mode=OneWay, Converter={StaticResource ValueEqualsParameterConverter}, ConverterParameter={x:Static vm:KeepAwakeMode.Off}}">
+                IsChecked="{Binding Mode, Mode=OneWay, Converter={StaticResource ValueEqualsParameterBoolConverter}, ConverterParameter={x:Static vm:KeepAwakeMode.Off}}">
                 <i:Interaction.Triggers>
                     <i:EventTrigger EventName="Checked">
                         <i:InvokeCommandAction Command="{Binding SetModeCommand}" CommandParameter="{x:Static vm:KeepAwakeMode.Off}" />
@@ -33,7 +33,7 @@
                 Content="Indefinite (stay on until explicitly turned off)"
                 Margin="0,5,0,0"
                 HorizontalAlignment="Left"
-                IsChecked="{Binding Mode, Mode=OneWay, Converter={StaticResource ValueEqualsParameterConverter}, ConverterParameter={x:Static vm:KeepAwakeMode.Indefinite}}">
+                IsChecked="{Binding Mode, Mode=OneWay, Converter={StaticResource ValueEqualsParameterBoolConverter}, ConverterParameter={x:Static vm:KeepAwakeMode.Indefinite}}">
                 <i:Interaction.Triggers>
                     <i:EventTrigger EventName="Checked">
                         <i:InvokeCommandAction Command="{Binding SetModeCommand}" CommandParameter="{x:Static vm:KeepAwakeMode.Indefinite}" />
@@ -45,7 +45,7 @@
                 Content="Temporary (stay on until specified time)"
                 Margin="0,5,0,0"
                 HorizontalAlignment="Left"
-                IsChecked="{Binding Mode, Mode=OneWay, Converter={StaticResource ValueEqualsParameterConverter}, ConverterParameter={x:Static vm:KeepAwakeMode.Temporary}}">
+                IsChecked="{Binding Mode, Mode=OneWay, Converter={StaticResource ValueEqualsParameterBoolConverter}, ConverterParameter={x:Static vm:KeepAwakeMode.Temporary}}">
                 <i:Interaction.Triggers>
                     <i:EventTrigger EventName="Checked">
                         <i:InvokeCommandAction Command="{Binding SetModeCommand}" CommandParameter="{x:Static vm:KeepAwakeMode.Temporary}" />
@@ -56,7 +56,7 @@
             <mah:DateTimePicker 
                 Margin="50, 10, 0, 0"
                 HorizontalAlignment="Left"
-                IsEnabled="{Binding Mode, Converter={StaticResource ValueEqualsParameterConverter}, ConverterParameter={x:Static vm:KeepAwakeMode.Temporary}}"
+                IsEnabled="{Binding Mode, Converter={StaticResource ValueEqualsParameterBoolConverter}, ConverterParameter={x:Static vm:KeepAwakeMode.Temporary}}"
                 Width="200"
                 SelectedDateTime="{Binding KeepAwakeExpiration, Mode=TwoWay}" />
 

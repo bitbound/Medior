@@ -4,7 +4,7 @@ using System.Windows.Data;
 
 namespace Medior.Converters
 {
-    public class ValueEqualsParameterConverter : IValueConverter
+    public class ValueEqualsParameterBoolConverter : IValueConverter
     {
 
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
