@@ -24,15 +24,15 @@ namespace Medior.Shared.Services.Http
     }
     public class ClipboardApi : IClipboardApi
     {
-        private readonly IHttpClientFactory _clientFactory;
+        private readonly HttpClient _client;
         private readonly ILogger<ClipboardApi> _logger;
         private readonly IServerUriProvider _uri;
         public ClipboardApi(
-            IHttpClientFactory clientFactory,
+            HttpClient client,
             IServerUriProvider serverUri,
             ILogger<ClipboardApi> logger)
         {
-            _clientFactory = clientFactory;
+            _client = client;
             _uri = serverUri;
             _logger = logger;
         }
@@ -41,9 +41,7 @@ namespace Medior.Shared.Services.Http
         {
             try
             {
-                using var client = _clientFactory.CreateClient();
-
-                var response = await client.DeleteAsync($"{_uri.ServerUri}/api/clipboard/{clip.Id}?accessToken={clip.AccessTokenEdit}");
+                var response = await _client.DeleteAsync($"{_uri.ServerUri}/api/clipboard/{clip.Id}?accessToken={clip.AccessTokenEdit}");
                 response.EnsureSuccessStatusCode();
                 return Result.Ok();
             }
@@ -62,8 +60,7 @@ namespace Medior.Shared.Services.Http
         {
             try
             {
-                using var client = _clientFactory.CreateClient();
-                var dto = await client.GetFromJsonAsync<ClipboardContentDto>($"{_uri.ServerUri}/api/clipboard/{clipId}/{accessToken}");
+                var dto = await _client.GetFromJsonAsync<ClipboardContentDto>($"{_uri.ServerUri}/api/clipboard/{clipId}/{accessToken}");
                 if (dto is null)
                 {
                     return Result.Fail<ClipboardContentDto>("Response was empty.");
@@ -82,8 +79,7 @@ namespace Medior.Shared.Services.Http
         {
             try
             {
-                using var client = _clientFactory.CreateClient();
-                var response = await client.PostAsJsonAsync($"{_uri.ServerUri}/api/clipboard", content);
+                var response = await _client.PostAsJsonAsync($"{_uri.ServerUri}/api/clipboard", content);
                 response.EnsureSuccessStatusCode();
                 var clipSave = await response.Content.ReadFromJsonAsync<ClipboardSaveDto>();
                 if (clipSave is null)
@@ -103,8 +99,7 @@ namespace Medior.Shared.Services.Http
         {
             try
             {
-                using var client = _clientFactory.CreateClient();
-                var response = await client.PostAsJsonAsync($"{_uri.ServerUri}/api/clipboard/{receiptToken}", content);
+                var response = await _client.PostAsJsonAsync($"{_uri.ServerUri}/api/clipboard/{receiptToken}", content);
                 response.EnsureSuccessStatusCode();
                 return Result.Ok();
             }
@@ -118,8 +113,7 @@ namespace Medior.Shared.Services.Http
         {
             try
             {
-                using var client = _clientFactory.CreateClient();
-                var response = await client.PutAsJsonAsync($"{_uri.ServerUri}/api/clipboard", dto);
+                var response = await _client.PutAsJsonAsync($"{_uri.ServerUri}/api/clipboard", dto);
                 response.EnsureSuccessStatusCode();
                 return Result.Ok();
             }

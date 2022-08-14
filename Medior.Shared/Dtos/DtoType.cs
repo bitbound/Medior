@@ -11,7 +11,7 @@ namespace Medior.Shared.Dtos
     public enum DtoType
     {
         Unknown,
-        ClipboardReady
-
+        ClipboardReady,
+        UserAccount,
     }
 }

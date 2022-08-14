@@ -1,6 +1,6 @@
-﻿using Medior.Models;
+﻿using Medior.Helpers;
+using Medior.Models;
 using Medior.Shared;
-using Medior.Utilities;
 using Microsoft.Extensions.Logging;
 using PInvoke;
 using SharpDX.Direct3D11;

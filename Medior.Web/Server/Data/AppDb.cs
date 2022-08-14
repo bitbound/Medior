@@ -15,11 +15,15 @@ namespace Medior.Web.Server.Data
 #nullable disable
         public DbSet<UploadedFile> UploadedFiles { get; set; }
         public DbSet<ClipboardSave> ClipboardSaves { get; set; }
-
+        public DbSet<UserAccount> UserAccounts { get; set; }
 #nullable enable
-
+        
         protected override void OnModelCreating(ModelBuilder builder)
         {
+            builder
+                .Entity<UserAccount>()
+                .HasIndex(x => x.Username);
+
             if (Database.ProviderName == "Microsoft.EntityFrameworkCore.Sqlite")
             {
                 // SQLite does not have proper support for DateTimeOffset via Entity Framework Core, see the limitations

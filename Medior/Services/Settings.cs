@@ -8,6 +8,7 @@ using Medior.Shared.Interfaces;
 using Microsoft.Extensions.Logging;
 using System;
 using System.IO;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Threading;
@@ -17,13 +18,22 @@ namespace Medior.Services
 {
     public interface ISettings: IServerUriProvider
     {
+        ClipboardSaveDto[] ClipboardSaves { get; set; }
+        byte[] EncryptedPrivateKey { get; set; }
         UploadedFile[] FileUploads { get; set; }
         bool HandlePrintScreen { get; set; }
         bool IsNavPaneOpen { get; set; }
+        public string PrivateKey { get; set; }
+        byte[] PrivateKeyBytes { get; set; }
+        public string PublicKey { get; set; }
+        byte[] PublicKeyBytes { get; set; }
+        string SettingsFilePath { get; }
         SortJob[] SortJobs { get; set; }
         bool StartAtLogon { get; set; }
         AppTheme Theme { get; set; }
-        ClipboardSaveDto[] ClipboardSaves { get; set; }
+        string Username { get; set; }
+
+        Task<Result> ChangeSettingsFilePath(string filePath, bool importExistingFile);
 
         Task Save();
     }
@@ -38,6 +48,7 @@ namespace Medior.Services
         private readonly IRegistryService _registryService;
         private readonly JsonSerializerOptions _serializerOptions = new() { WriteIndented = true };
         private SettingsModel _settings = new();
+        private string _privateKey = string.Empty;
 
         public Settings(
             IFileSystem fileSystem, 
@@ -52,6 +63,18 @@ namespace Medior.Services
             _keyboardHookManager = keyboardHookManager;
             _logger = logger;
             Load();
+        }
+
+        public ClipboardSaveDto[] ClipboardSaves
+        {
+            get => Get<ClipboardSaveDto[]>() ?? Array.Empty<ClipboardSaveDto>();
+            set => Set(value);
+        }
+
+        public byte[] EncryptedPrivateKey
+        {
+            get => Get<byte[]>() ?? Array.Empty<byte>();
+            set => Set(value);
         }
 
         public UploadedFile[] FileUploads
@@ -83,6 +106,49 @@ namespace Medior.Services
             set => Set(value);
         }
 
+        public string PrivateKey
+        {
+            get => _privateKey;
+            set => _privateKey = value;
+        }
+
+        public byte[] PrivateKeyBytes
+        {
+            get
+            {
+                if (string.IsNullOrWhiteSpace(_privateKey))
+                {
+                    return Array.Empty<byte>();
+                }
+                return Convert.FromBase64String(_privateKey);
+            }
+            set
+            {
+                _privateKey = Convert.ToBase64String(value);
+            }
+        }
+
+        public string PublicKey
+        {
+            get => Get<string>() ?? string.Empty;
+            set => Set(value);
+        }
+
+        public byte[] PublicKeyBytes
+        {
+            get
+            {
+                if (string.IsNullOrWhiteSpace(PublicKey))
+                {
+                    return Array.Empty<byte>();
+                }
+                return Convert.FromBase64String(PublicKey);
+            }
+            set
+            {
+                PublicKey = Convert.ToBase64String(value);
+            }
+        }
         public string ServerUri
         {
             get
@@ -111,6 +177,19 @@ namespace Medior.Services
             }
         }
 
+        public string SettingsFilePath
+        {
+            get
+            {
+                if (_environmentHelper.IsDebug)
+                {
+                    return _filePath;
+                }
+                return _registryService.GetSettingsFilePath() ?? _filePath;
+            }
+            private set => _registryService.SetSettingsFilePath(value);
+        }
+
         public SortJob[] SortJobs
         {
             get => Get<SortJob[]>() ?? Array.Empty<SortJob>();
@@ -132,10 +211,41 @@ namespace Medior.Services
             get => Get<AppTheme>();
             set => Set(value);
         }
-        public ClipboardSaveDto[] ClipboardSaves
+
+        public string Username
         {
-            get => Get<ClipboardSaveDto[]>() ?? Array.Empty<ClipboardSaveDto>();
+            get => Get<string>() ?? string.Empty;
             set => Set(value);
+        }
+        public async Task<Result> ChangeSettingsFilePath(string filePath, bool importExistingFile)
+        {
+            var originalPath = filePath;
+
+            try
+            {
+                SettingsFilePath = filePath;
+
+                if (_fileSystem.FileExists(filePath) && importExistingFile)
+                {
+                    var result = Load();
+                    if (!result.IsSuccess)
+                    {
+                        throw result.Exception!;
+                    }
+                }
+                else
+                {
+                    await Save();
+                }
+                return Result.Ok();
+            }
+            catch (Exception ex)
+            {
+                SettingsFilePath = originalPath;
+                _ = Load();
+                _logger.LogError(ex, "Error while changing settings file path.");
+                return Result.Fail(ex);
+            }
         }
 
         public async Task Save()
@@ -147,10 +257,10 @@ namespace Medior.Services
 
             try
             {
-                _fileSystem.CreateDirectory(Path.GetDirectoryName(_filePath)!);
+                _fileSystem.CreateDirectory(Path.GetDirectoryName(SettingsFilePath)!);
                 var serializedModel = JsonSerializer.Serialize(_settings, _serializerOptions);
-                await _fileSystem.WriteAllTextAsync(_filePath, serializedModel);
-                _fileSystem.Encrypt(_filePath);
+                await _fileSystem.WriteAllTextAsync(SettingsFilePath, serializedModel);
+                _fileSystem.Encrypt(SettingsFilePath);
             }
             catch (Exception ex)
             {
@@ -184,14 +294,14 @@ namespace Medior.Services
             {
                 _fileLock.Wait();
 
-                _fileSystem.CreateDirectory(Path.GetDirectoryName(_filePath)!);
+                _fileSystem.CreateDirectory(Path.GetDirectoryName(SettingsFilePath)!);
 
-                if (!_fileSystem.FileExists(_filePath))
+                if (!_fileSystem.FileExists(SettingsFilePath))
                 {
                     return Result.Ok();
                 }
 
-                var serializedModel = _fileSystem.ReadAllText(_filePath);
+                var serializedModel = _fileSystem.ReadAllText(SettingsFilePath);
                 _settings = JsonSerializer.Deserialize<SettingsModel>(serializedModel) ?? new();
                 return Result.Ok();
             }

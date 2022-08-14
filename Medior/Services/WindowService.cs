@@ -1,7 +1,6 @@
 ﻿using Medior.Controls;
 using Medior.Controls.ScreenCapture;
 using Medior.Shared.Helpers;
-using Medior.Utilities;
 using System;
 using System.Drawing;
 using System.Windows.Forms;
@@ -12,18 +11,20 @@ namespace Medior.Services
     {
         IDisposable HideMainWindow();
 
+        void ShowAccountHelp();
+
         Rectangle ShowCapturePicker(Bitmap backgroundImage);
         Rectangle ShowCapturePicker();
         void ShowMainWindow();
-        IDisposable ShowRecordingFrame(Rectangle selectedArea);
         void ShowQrCode(string url, string windowTitle);
+
+        IDisposable ShowRecordingFrame(Rectangle selectedArea);
     }
 
     public class WindowService : IWindowService
     {
-        private readonly IQrCodeGenerator _qrCodeGenerator;
         private readonly IMessenger _messenger;
-
+        private readonly IQrCodeGenerator _qrCodeGenerator;
         public WindowService(IQrCodeGenerator qrCodeGenerator, IMessenger messenger)
         {
             _qrCodeGenerator = qrCodeGenerator;
@@ -58,6 +59,12 @@ namespace Medior.Services
             {
                 return CallbackDisposable.Empty;
             }
+        }
+
+        public void ShowAccountHelp()
+        {
+            // TODO: Create help window.
+            MessageBox.Show("Not implemented yet");
         }
 
         public Rectangle ShowCapturePicker(Bitmap backgroundImage)

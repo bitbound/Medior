@@ -5,6 +5,8 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
              xmlns:models="clr-namespace:Medior.Models"
+             xmlns:icons="http://metro.mahapps.com/winfx/xaml/iconpacks"
+             xmlns:c="clr-namespace:Medior.Controls"
              xmlns:local="clr-namespace:Medior.Views"
              xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
              mc:Ignorable="d" 
@@ -15,6 +17,49 @@
         <TextBlock Style="{StaticResource LargeTitle}">
             Settings
         </TextBlock>
+
+        <Label>
+            Settings File
+        </Label>
+        <c:GridEx ColumnDefinitionsEx="*, Auto" Margin="0,0,0,10">
+            <TextBox Grid.Column="0" Text="{Binding SettingsFilePath, Mode=OneWay}" IsReadOnly="True" />
+            <Button Grid.Column="1" Margin="5,0,0,0" Command="{Binding ChangeSettingsFilePathCommand}">
+                Change
+            </Button>
+        </c:GridEx>
+
+        <StackPanel Orientation="Horizontal">
+            <Label>
+                Account Services
+            </Label>
+            <Button Margin="5,0,0,0" ToolTip="Account Info" Command="{Binding ShowAccountHelpCommand}">
+                <icons:PackIconBoxIcons Kind="RegularHelpCircle" Width="10" Height="10"/>
+            </Button>
+        </StackPanel>
+
+        <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
+            <Label>
+                Status:    
+            </Label>
+            <Label Content="Enabled" Visibility="{Binding IsAccountEnabled, Converter={StaticResource BooleanToVisibilityConverter}}" />
+            <Label Content="Disabled" Visibility="{Binding IsAccountEnabled, Converter={StaticResource ReverseBooleanToVisibilityConverter}}" />
+        </StackPanel>
+
+        <Button Command="{Binding CreateAccountCommand}" 
+                HorizontalAlignment="Left" 
+                Margin="0,0,0,5"
+                Visibility="{Binding IsAccountEnabled, Converter={StaticResource ReverseBooleanToVisibilityConverter}}">
+            Create Account
+        </Button>
+
+        <StackPanel Orientation="Horizontal" Margin="0,0,0,5" Visibility="{Binding IsAccountEnabled, Converter={StaticResource BooleanToVisibilityConverter}}">
+            <Button Command="{Binding RegenerateKeysCommand}" BorderBrush="Red">
+                Regenerate Keys
+            </Button>
+            <Button Command="{Binding DeleteAccountCommand}" BorderBrush="Red" Margin="10,0,0,0">
+                Delete Account
+            </Button>
+        </StackPanel>
 
         <Label>
             App Theme

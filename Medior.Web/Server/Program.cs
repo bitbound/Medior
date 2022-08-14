@@ -1,7 +1,10 @@
+using Medior.Shared.Auth;
 using Medior.Shared.Services;
+using Medior.Web.Server.Auth;
 using Medior.Web.Server.Data;
 using Medior.Web.Server.Hubs;
 using Medior.Web.Server.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.EntityFrameworkCore;
@@ -14,6 +17,25 @@ builder.Services.AddDbContext<AppDb>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("SQLite"));
 });
 
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = AuthSchemes.DigitalSignature;
+    options.AddScheme(AuthSchemes.DigitalSignature, builder =>
+    {
+        builder.DisplayName = "Digital Signature";
+        builder.HandlerType = typeof(DigitalSignatureAuthenticationHandler);
+    });
+});
+
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy(PolicyNames.DigitalSignaturePolicy, builder =>
+    {
+        builder.AddAuthenticationSchemes(AuthSchemes.DigitalSignature);
+        builder.AddRequirements(new DigitalSignatureRequirement());
+    });
+});
+
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
 builder.Services.AddSignalR(options =>
@@ -23,11 +45,11 @@ builder.Services.AddSignalR(options =>
     .AddMessagePackProtocol();
 
 builder.Services.AddHostedService<DbCleanupService>();
-
 builder.Services.AddSingleton<IAppSettings, AppSettings>();
 builder.Services.AddSingleton<ISystemTime, SystemTime>();
 builder.Services.AddScoped<IClipboardSyncService, ClipboardSyncService>();
 builder.Services.AddScoped<IUploadedFileManager, UploadedFileManager>();
+builder.Services.AddScoped<IEncryptionService, EncryptionService>();
 builder.Host.UseSystemd();
 
 var app = builder.Build();
@@ -51,6 +73,9 @@ app.UseBlazorFrameworkFiles();
 app.UseStaticFiles();
 
 app.UseRouting();
+
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.MapRazorPages();
 app.MapControllers();

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Win32;
+using System;
 using System.Linq;
 
 namespace Medior.Services
@@ -7,13 +8,25 @@ namespace Medior.Services
     {
         void SetStartAtLogon(bool isEnabled);
         bool GetStartAtLogon();
+        void SetSettingsFilePath(string filePath);
+        string? GetSettingsFilePath();
     }
 
     internal class RegistryService : IRegistryService
     {
+        public string? GetSettingsFilePath()
+        {
+            var key = Registry.CurrentUser.OpenSubKey(@"Software\Medior");
+            if (key is null)
+            {
+                return null;
+            }
+            return (string?)key.GetValue("SettingsFilePath", null);
+        }
+
         public bool GetStartAtLogon()
         {
-            var runKey = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Run", true);
+            var runKey = Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Run", true);
 
             if (runKey is null)
             {
@@ -22,9 +35,15 @@ namespace Medior.Services
             return runKey.GetValueNames().Contains("Medior");
         }
 
+        public void SetSettingsFilePath(string filePath)
+        {
+            var key = Registry.CurrentUser.CreateSubKey(@"Software\Medior", true);
+            key.SetValue("SettingsFilePath", filePath, RegistryValueKind.ExpandString);
+        }
+
         public void SetStartAtLogon(bool isEnabled)
         {
-            var runKey = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Run", true);
+            var runKey = Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Run", true);
 
             if (runKey is null)
             {
@@ -34,7 +53,7 @@ namespace Medior.Services
             if (isEnabled)
             {
                 var exePath = Environment.GetCommandLineArgs().First().Replace(".dll", ".exe", StringComparison.OrdinalIgnoreCase);
-                runKey.SetValue("Medior", $@"""{exePath}"" --hidden", Microsoft.Win32.RegistryValueKind.ExpandString);
+                runKey.SetValue("Medior", $@"""{exePath}"" --hidden", RegistryValueKind.ExpandString);
             }
             else
             {

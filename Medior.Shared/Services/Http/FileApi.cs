@@ -30,15 +30,15 @@ namespace Medior.Shared.Services.Http
     }
     public class FileApi : IFileApi
     {
-        private readonly IHttpClientFactory _clientFactory;
+        private readonly HttpClient _client;
         private readonly ILogger<FileApi> _logger;
         private readonly IServerUriProvider _uri;
         public FileApi(
-            IHttpClientFactory clientFactory,
+            HttpClient client,
             IServerUriProvider uriProvider,
             ILogger<FileApi> logger)
         {
-            _clientFactory = clientFactory;
+            _client = client;
             _uri = uriProvider;
             _logger = logger;
         }
@@ -47,9 +47,7 @@ namespace Medior.Shared.Services.Http
         {
             try
             {
-                using var client = _clientFactory.CreateClient();
-
-                var response = await client.DeleteAsync($"{_uri.ServerUri}/api/file/{file.Id}?accessToken={file.AccessTokenEdit}");
+                var response = await _client.DeleteAsync($"{_uri.ServerUri}/api/file/{file.Id}?accessToken={file.AccessTokenEdit}");
                 response.EnsureSuccessStatusCode();
                 return Result.Ok();
             }
@@ -69,8 +67,7 @@ namespace Medior.Shared.Services.Http
             try
             {
                 var tempPath = Path.Combine(Path.GetTempPath(), $"MediorSetup-{Guid.NewGuid()}.exe");
-                using var client = _clientFactory.CreateClient();
-                using var netStream = await client.GetStreamAsync($"{_uri.ServerUri}/downloads/MediorSetup.exe");
+                using var netStream = await _client.GetStreamAsync($"{_uri.ServerUri}/downloads/MediorSetup.exe");
                 using var fs = File.Open(tempPath, FileMode.Create);
                 await netStream.CopyToAsync(fs);
                 return Result.Ok(tempPath);
@@ -86,8 +83,7 @@ namespace Medior.Shared.Services.Http
         {
             try
             {
-                using var client = _clientFactory.CreateClient();
-                var response = await client.GetAsync($"{_uri.ServerUri}/api/version/desktop");
+                var response = await _client.GetAsync($"{_uri.ServerUri}/api/version/desktop");
                 response.EnsureSuccessStatusCode();
 
                 var stringContent = await response.Content.ReadAsStringAsync();
@@ -107,9 +103,8 @@ namespace Medior.Shared.Services.Http
 
         public async Task<HttpResponseMessage> GetFileHeaders(string fileId, string accessToken)
         {
-            using var client = _clientFactory.CreateClient();
             using var request = new HttpRequestMessage(HttpMethod.Head, $"{_uri.ServerUri}/api/file/{fileId}?accessToken={accessToken}");
-            return await client.SendAsync(request);
+            return await _client.SendAsync(request);
         }
 
         public Task<Result<UploadedFile>> UploadFile(byte[] fileBytes, string fileName)
@@ -121,14 +116,13 @@ namespace Medior.Shared.Services.Http
         {
             try
             {
-                using var client = _clientFactory.CreateClient();
                 var serverUri = _uri.ServerUri;
 
                 var multiContent = new MultipartFormDataContent();
                 var byteContent = new StreamContent(fileStream);
                 multiContent.Add(byteContent, "file", fileName);
 
-                var response = await client.PostAsync($"{serverUri}/api/file", multiContent);
+                var response = await _client.PostAsync($"{serverUri}/api/file", multiContent);
                 response.EnsureSuccessStatusCode();
 
                 var uploadedFile = await response.Content.ReadFromJsonAsync<UploadedFile>();

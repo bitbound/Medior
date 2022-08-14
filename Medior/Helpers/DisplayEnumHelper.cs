@@ -29,7 +29,7 @@ using System.Drawing;
 using System.Numerics;
 using System.Runtime.InteropServices;
 
-namespace Medior.Utilities
+namespace Medior.Helpers
 {
     internal static class DisplaysEnumerationHelper
     {

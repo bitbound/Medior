@@ -13,6 +13,15 @@ using Views;
 using Medior.Interfaces;
 using Microsoft.AspNetCore.SignalR.Client;
 using Medior.Shared.Services.Http;
+using System.Net.Http.Headers;
+using System.Net;
+using Medior.Shared.Auth;
+using Medior.Models;
+using Medior.Shared.Dtos;
+using Medior.Shared.Entities;
+using MessagePack;
+using Medior.Shared.Helpers;
+using Medior.Helpers;
 
 namespace Medior
 {
@@ -57,17 +66,15 @@ namespace Medior
                 services.AddSingleton<IDialogService, DialogService>();
                 services.AddSingleton<IKeyboardHookManager, KeyboardHookManager>();
                 services.AddSingleton<ITrayService, TrayService>();
-                services.AddSingleton<IFileApi, FileApi>();
-                services.AddSingleton<IClipboardApi, ClipboardApi>();
                 services.AddSingleton<IUiDispatcher, UiDispatcher>();
                 services.AddSingleton<IEnvironmentHelper, EnvironmentHelper>();
+                services.AddSingleton<IEncryptionService, EncryptionService>();
                 services.AddSingleton(services => DialogCoordinator.Instance);
                 services.AddSingleton<ISettings, Settings>();
                 services.AddSingleton<IServerUriProvider>(services => services.GetRequiredService<ISettings>());
                 services.AddSingleton<IMessenger>(WeakReferenceMessenger.Default);
                 services.AddSingleton<IThemeSetter, ThemeSetter>();
                 services.AddSingleton<IWindowService, WindowService>();
-                services.AddScoped<IMessageSigner, MessageSigner>();
                 services.AddScoped<ICapturePicker, CapturePicker>();
                 services.AddScoped<IScreenGrabber, ScreenGrabber>();
                 services.AddScoped<IScreenRecorder, ScreenRecorder>();
@@ -85,6 +92,14 @@ namespace Medior
                 services.AddSingleton(services => (IBackgroundService)services.GetRequiredService<IDesktopHubConnection>());
 
                 services.AddHttpClient();
+                services.AddHttpClient<IAccountApi, AccountApi>((services, config) =>
+                {
+                    HttpHelper.ConfigureAuthenticatedClient(services, config);
+                });
+                services.AddHttpClient<IFileApi, FileApi>();
+                services.AddHttpClient<IClipboardApi, ClipboardApi>();
+
+
                 services.AddLogging(builder => builder.AddProvider(new FileLoggerProvider()));
 
                 _instance = services.BuildServiceProvider();

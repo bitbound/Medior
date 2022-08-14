@@ -1,6 +1,5 @@
 ﻿using Medior.Native;
 using Medior.Shared.Helpers;
-using Medior.Utilities;
 using PInvoke;
 using System;
 using System.Drawing;

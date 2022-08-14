@@ -11,9 +11,12 @@ namespace Medior.Models
         public UploadedFile[] FileUploads { get; set; } = Array.Empty<UploadedFile>();
         public bool HandlePrintScreen { get; set; } = true;
         public bool IsNavPaneOpen { get; set; } = true;
+        public string EncryptedPrivateKey { get; set; } = string.Empty;
+        public string PublicKey { get; set; } = string.Empty;
         public string ServerUri { get; set; } = string.Empty;
         public SortJob[] SortJobs { get; set; } = Array.Empty<SortJob>();
         public bool StartAtLogon { get; set; } = true;
         public AppTheme Theme { get; set; } = AppTheme.Dark;
+        public string Username { get; set; } = string.Empty;
     }
 }
