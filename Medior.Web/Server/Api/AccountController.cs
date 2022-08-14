@@ -11,7 +11,7 @@ namespace Medior.Web.Server.Api
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize(Policy = PolicyNames.DigitalSignaturePolicy)]
+    [ServiceFilter(typeof(DigitalSignatureFilterAttribute))]
     public class AccountController : ControllerBase
     {
         private readonly AppDb _appDb;

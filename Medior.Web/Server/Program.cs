@@ -17,24 +17,24 @@ builder.Services.AddDbContext<AppDb>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("SQLite"));
 });
 
-builder.Services.AddAuthentication(options =>
-{
-    options.DefaultAuthenticateScheme = AuthSchemes.DigitalSignature;
-    options.AddScheme(AuthSchemes.DigitalSignature, builder =>
-    {
-        builder.DisplayName = "Digital Signature";
-        builder.HandlerType = typeof(DigitalSignatureAuthenticationHandler);
-    });
-});
+//builder.Services.AddAuthentication(options =>
+//{
+//    options.DefaultAuthenticateScheme = AuthSchemes.DigitalSignature;
+//    options.AddScheme(AuthSchemes.DigitalSignature, builder =>
+//    {
+//        builder.DisplayName = "Digital Signature";
+//        builder.HandlerType = typeof(DigitalSignatureAuthenticationHandler);
+//    });
+//});
 
-builder.Services.AddAuthorization(options =>
-{
-    options.AddPolicy(PolicyNames.DigitalSignaturePolicy, builder =>
-    {
-        builder.AddAuthenticationSchemes(AuthSchemes.DigitalSignature);
-        builder.AddRequirements(new DigitalSignatureRequirement());
-    });
-});
+//builder.Services.AddAuthorization(options =>
+//{
+//    options.AddPolicy(PolicyNames.DigitalSignaturePolicy, builder =>
+//    {
+//        builder.AddAuthenticationSchemes(AuthSchemes.DigitalSignature);
+//        builder.AddRequirements(new DigitalSignatureRequirement());
+//    });
+//});
 
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
@@ -50,6 +50,7 @@ builder.Services.AddSingleton<ISystemTime, SystemTime>();
 builder.Services.AddScoped<IClipboardSyncService, ClipboardSyncService>();
 builder.Services.AddScoped<IUploadedFileManager, UploadedFileManager>();
 builder.Services.AddScoped<IEncryptionService, EncryptionService>();
+builder.Services.AddScoped<DigitalSignatureFilterAttribute>();
 builder.Host.UseSystemd();
 
 var app = builder.Build();
@@ -74,8 +75,8 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
-app.UseAuthentication();
-app.UseAuthorization();
+//app.UseAuthentication();
+//app.UseAuthorization();
 
 app.MapRazorPages();
 app.MapControllers();
