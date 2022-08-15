@@ -15,11 +15,11 @@ namespace Medior.Web.Server.Auth
     public class DigitalSignatureFilterAttribute : IAsyncAuthorizationFilter
     {
         private readonly IServiceScopeFactory _scopeFactory;
-        private readonly ILogger<DigitalSignatureAuthorizationHandler> _logger;
+        private readonly ILogger<DigitalSignatureFilterAttribute> _logger;
 
         public DigitalSignatureFilterAttribute(
             IServiceScopeFactory scopeFactory,
-            ILogger<DigitalSignatureAuthorizationHandler> logger)
+            ILogger<DigitalSignatureFilterAttribute> logger)
         {
             _scopeFactory = scopeFactory;
             _logger = logger;

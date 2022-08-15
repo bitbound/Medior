@@ -5,6 +5,9 @@ using Medior.Shared.Services;
 using Medior.Web.Server.Data;
 using MessagePack;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc.Controllers;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using System.Security.Claims;
@@ -34,6 +37,11 @@ namespace Medior.Web.Server.Auth
         {
             using var _ = _logger.BeginScope(nameof(HandleAuthenticateAsync));
 
+            if (!CheckForAuthorizeAttribute())
+            {
+                return AuthenticateResult.NoResult();
+            }
+
             var authHeader = Context.Request.Headers.Authorization.FirstOrDefault(x => 
                 x.StartsWith(AuthSchemes.DigitalSignature));
 
@@ -56,6 +64,49 @@ namespace Medior.Web.Server.Auth
                 _logger.LogError(ex, "Failed to parse header {authHeader}.", authHeader);
                 return AuthenticateResult.Fail("An error occurred on the server.");
             }
+        }
+
+        private bool CheckForAuthorizeAttribute()
+        {
+
+            var metaData = Context.GetEndpoint()?.Metadata;
+
+            if (metaData is null)
+            {
+                return false;
+            }
+
+            if (metaData.Any(x => x is HubMetadata))
+            {
+                var hubType = metaData.GetMetadata<HubMetadata>()?.HubType;
+                if (hubType?.CustomAttributes.Any(x=>x.AttributeType == typeof(AuthorizeAttribute)) == true)
+                {
+                    return true;
+                }
+            }
+
+            if (metaData.Any(x => x is ControllerActionDescriptor))
+            {
+                var descriptor = metaData.GetMetadata<ControllerActionDescriptor>();
+
+                var controllerAuthorize = descriptor
+                    ?.ControllerTypeInfo
+                    ?.CustomAttributes
+                    ?.Any(x => x.AttributeType == typeof(AuthorizeAttribute));
+
+                var actionAuthorize = descriptor
+                    ?.ControllerTypeInfo
+                    ?.GetMethod(descriptor.ActionName)
+                    ?.CustomAttributes
+                    ?.Any(x => x.AttributeType == typeof(AuthorizeAttribute));
+
+                if (controllerAuthorize == true || actionAuthorize == true)
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         private bool TryGetSignedPayload(string header, out SignedPayloadDto signedPayload)
@@ -99,12 +150,12 @@ namespace Medior.Web.Server.Auth
 
             var claims = new Claim[]
               {
-                        new Claim("PublicKey", publicKey),
-                        new Claim("Username", account.Username)
+                        new Claim(ClaimNames.PublicKey, publicKey),
+                        new Claim(ClaimNames.Username, account.Username)
               };
             var identity = new ClaimsIdentity(claims, AuthSchemes.DigitalSignature);
             var principal = new ClaimsPrincipal(identity);
-            await Context.SignInAsync(principal);
+            //await Context.SignInAsync(principal);
             return AuthenticateResult.Success(new AuthenticationTicket(principal, AuthSchemes.DigitalSignature));
         }
     }
