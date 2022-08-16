@@ -28,7 +28,7 @@
             </Button>
         </c:GridEx>
 
-        <StackPanel Orientation="Horizontal">
+        <StackPanel Orientation="Horizontal" Margin="0,10,0,0">
             <Label>
                 Account Services
             </Label>
@@ -47,12 +47,14 @@
 
         <Button Command="{Binding CreateAccountCommand}" 
                 HorizontalAlignment="Left" 
-                Margin="0,0,0,5"
+                Margin="0,0,0,20"
                 Visibility="{Binding IsAccountEnabled, Converter={StaticResource ReverseBooleanToVisibilityConverter}}">
             Create Account
         </Button>
 
-        <StackPanel Orientation="Horizontal" Margin="0,0,0,5" Visibility="{Binding IsAccountEnabled, Converter={StaticResource BooleanToVisibilityConverter}}">
+        <StackPanel Orientation="Horizontal" 
+                    Margin="0,0,0,20"
+                    Visibility="{Binding IsAccountEnabled, Converter={StaticResource BooleanToVisibilityConverter}}">
             <Button Command="{Binding RegenerateKeysCommand}" BorderBrush="Red">
                 Regenerate Keys
             </Button>

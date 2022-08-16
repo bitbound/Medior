@@ -11,6 +11,8 @@ namespace Medior.Shared.Services
         Result<UserKeysExport> ImportPrivateKey(string password, byte[] encryptedKey);
         void ImportPublicKey(byte[] publicBytes);
 
+        void Reset();
+
         UserKeysExport RestoreState();
 
         void SaveState();
@@ -27,6 +29,7 @@ namespace Medior.Shared.Services
         private RSAParameters? _backupParams;
         private UserKeysExport? _currentKeys;
         private RSA _rsa = RSA.Create();
+
         public EncryptionService(ILogger<EncryptionService> logger)
         {
             _logger = logger;
@@ -42,7 +45,6 @@ namespace Medior.Shared.Services
             _currentKeys = new UserKeysExport(publicKey, privateKey, encryptedPrivateKey);
             return _currentKeys;
         }
-
 
         public Result<UserKeysExport> ImportPrivateKey(string password, byte[] encryptedKey)
         {
@@ -65,6 +67,12 @@ namespace Medior.Shared.Services
         public void ImportPublicKey(byte[] publicKeyBytes)
         {
             _rsa.ImportRSAPublicKey(publicKeyBytes, out _);
+        }
+
+        public void Reset()
+        {
+            _rsa.Dispose();
+            _rsa = RSA.Create();
         }
 
         public UserKeysExport RestoreState()

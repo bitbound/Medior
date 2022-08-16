@@ -21,10 +21,10 @@ namespace Medior.ViewModels
     [ObservableObject]
     public partial class SettingsViewModel
     {
+        private readonly IAccountApi _accountApi;
         private readonly IDialogService _dialogs;
         private readonly IEncryptionService _encryption;
         private readonly IFileSystem _fileSystem;
-        private readonly IAccountApi _accountApi;
         private readonly ILogger<SettingsViewModel> _logger;
         private readonly IMessenger _messenger;
         private readonly ISettings _settings;
@@ -88,78 +88,6 @@ namespace Medior.ViewModels
         }
 
         [RelayCommand]
-        public async Task RegenerateKeys()
-        {
-            try
-            {
-                var result = await _dialogs.ShowMessageAsync(
-                    "Confirm Regenerate",
-                    "Are you sure you want to regenerate your public and private keys?\n\n" +
-                        "You will need to pair with your contacts again, and encrypted files will" +
-                        "become inaccessible.",
-                    MessageDialogStyle.AffirmativeAndNegative);
-
-                if (result != MessageDialogResult.Affirmative)
-                {
-                    return;
-                }
-
-                var response1 = await _dialogs.ShowLoginAsync(
-                    "Create a PIN/Password",
-                    "Enter a PIN/password to use for decrypting your new private key.\n\n",
-                    new LoginDialogSettings()
-                    {
-                        ShouldHideUsername = true,
-                        PasswordWatermark = "Enter again to confirm...",
-                        AffirmativeButtonText = "Submit"
-                    });
-
-                var response2 = await _dialogs.ShowLoginAsync(
-                    "Confirm Your PIN/Password",
-                    "Enter your password a second time to confirm.\n\n",
-                    new LoginDialogSettings()
-                    {
-                        ShouldHideUsername = true,
-                        PasswordWatermark = "Enter again to confirm...",
-                        AffirmativeButtonText = "Submit"
-                    });
-
-                _encryption.SaveState();
-
-                var keys = _encryption.GenerateKeys(response1.Password);
-
-                var account = new UserAccount()
-                {
-                    PublicKey = keys.PublicKeyBase64,
-                    Username = _settings.Username
-                };
-
-                var accountResult = await _accountApi.UpdatePublicKey(account);
-
-                if (!accountResult.IsSuccess)
-                {
-                    await _dialogs.ShowError(accountResult.Exception!);
-                    return;
-                }
-
-                _settings.PublicKeyBytes = keys.PublicKey;
-                _settings.Username = account.Username;
-                _settings.PrivateKeyBytes = keys.PrivateKey;
-                _settings.EncryptedPrivateKeyBytes = keys.EncryptedPrivateKey;
-            }
-            catch (Exception ex)
-            {
-                var restoredKeys = _encryption.RestoreState();
-                _settings.PublicKeyBytes = restoredKeys.PublicKey;
-                _settings.PrivateKeyBytes = restoredKeys.PrivateKey;
-                _settings.EncryptedPrivateKeyBytes = restoredKeys.EncryptedPrivateKey;
-                _settings.Username = string.Empty;
-                _logger.LogError(ex, "Error while regenerating keys.");
-                await _dialogs.ShowError(ex);
-            }
-        }
-
-        [RelayCommand]
         public void ShowAccountHelp()
         {
             _windowService.ShowAccountHelp();
@@ -200,7 +128,7 @@ namespace Medior.ViewModels
                     MessageDialogStyle.AffirmativeAndNegativeAndSingleAuxiliary,
                     dialogSettings);
 
-             
+
                 switch (actionResult)
                 {
                     case MessageDialogResult.Affirmative:
@@ -275,12 +203,12 @@ namespace Medior.ViewModels
 
                 if (!Regex.IsMatch(response1.Username, "^((\\w|-)* {0,1}([a-zA-Z0-9])+)+$"))
                 {
-                    await _dialogs.ShowMessageAsync("Invalid Pattern", 
+                    await _dialogs.ShowMessageAsync("Invalid Pattern",
                         "Username can only contain alphanumeric characters, underscores, and hyphens. " +
                         "It must end with an alphanumeric character.  It cannot have two consecutive spaces.");
                     return;
                 }
-                
+
                 var response2 = await _dialogs.ShowLoginAsync(
                     "Confirm Your PIN/Password",
                     "Enter your password a second time to confirm.\n\n",
@@ -319,6 +247,8 @@ namespace Medior.ViewModels
                 _settings.PublicKeyBytes = keys.PublicKey;
                 _settings.PrivateKeyBytes = keys.PrivateKey;
                 _settings.EncryptedPrivateKeyBytes = keys.EncryptedPrivateKey;
+
+                _messenger.SendToast("Account created", ToastType.Success);
             }
             catch (Exception ex)
             {
@@ -333,14 +263,134 @@ namespace Medior.ViewModels
             {
                 OnPropertyChanged(nameof(IsAccountEnabled));
             }
-     
-            
+
+
         }
 
         [RelayCommand]
         private async Task DeleteAccount()
         {
+            try
+            {
+                var result = await _dialogs.ShowMessageAsync(
+                  "Confirm Deletion",
+                  "Are you sure you want to delete your account (public/private key)?\n\n" +
+                      "You will lose access to your encrypted files and your contacts.  Online " +
+                      "features that depend on an account, such as file encryption, will stop working.",
+                  MessageDialogStyle.AffirmativeAndNegative);
 
+                if (result != MessageDialogResult.Affirmative)
+                {
+                    return;
+                }
+
+                var accountResult = await _accountApi.DeleteAccount();
+
+                if (!accountResult.IsSuccess)
+                {
+                    await _dialogs.ShowError(accountResult.Exception!);
+                    return;
+                }
+
+                _settings.PublicKeyBytes = Array.Empty<byte>();
+                _settings.PrivateKeyBytes = Array.Empty<byte>();
+                _settings.EncryptedPrivateKeyBytes = Array.Empty<byte>();
+                _settings.Username = string.Empty;
+                _encryption.Reset();
+
+                _messenger.SendToast("Account deleted", ToastType.Success);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error while deleting account.");
+                await _dialogs.ShowError(ex);
+            }
+        }
+
+        [RelayCommand]
+        private async Task RegenerateKeys()
+        {
+            try
+            {
+                var result = await _dialogs.ShowMessageAsync(
+                    "Confirm Regenerate",
+                    "Are you sure you want to regenerate your public and private keys?\n\n" +
+                        "You will need to pair with your contacts again, and encrypted files will " +
+                        "become inaccessible.",
+                    MessageDialogStyle.AffirmativeAndNegative);
+
+                if (result != MessageDialogResult.Affirmative)
+                {
+                    return;
+                }
+
+                var response1 = await _dialogs.ShowLoginAsync(
+                    "Create a PIN/Password",
+                    "Enter a PIN/password to use for decrypting your new private key.\n\n",
+                    new LoginDialogSettings()
+                    {
+                        ShouldHideUsername = true,
+                        PasswordWatermark = "Enter again to confirm...",
+                        AffirmativeButtonText = "Submit"
+                    });
+
+                var response2 = await _dialogs.ShowLoginAsync(
+                    "Confirm Your PIN/Password",
+                    "Enter your password a second time to confirm.\n\n",
+                    new LoginDialogSettings()
+                    {
+                        ShouldHideUsername = true,
+                        PasswordWatermark = "Enter again to confirm...",
+                        AffirmativeButtonText = "Submit"
+                    });
+
+                _encryption.SaveState();
+
+
+                var keys = _encryption.GenerateKeys(response1.Password);
+
+                var account = new UserAccount()
+                {
+                    PublicKey = keys.PublicKeyBase64,
+                    Username = _settings.Username
+                };
+
+                HttpHelper.UpdateClientAuthorization(_accountApi.Client, account, _encryption);
+
+                var accountResult = await _accountApi.UpdatePublicKey(account);
+
+                if (!accountResult.IsSuccess)
+                {
+                    await _dialogs.ShowError(accountResult.Exception!);
+                    return;
+                }
+
+                _settings.PublicKeyBytes = keys.PublicKey;
+                _settings.Username = account.Username;
+                _settings.PrivateKeyBytes = keys.PrivateKey;
+                _settings.EncryptedPrivateKeyBytes = keys.EncryptedPrivateKey;
+
+                _messenger.SendToast("Keys regenerated", ToastType.Success);
+            }
+            catch (Exception ex)
+            {
+                var restoredKeys = _encryption.RestoreState();
+                _settings.PublicKeyBytes = restoredKeys.PublicKey;
+                _settings.PrivateKeyBytes = restoredKeys.PrivateKey;
+                _settings.EncryptedPrivateKeyBytes = restoredKeys.EncryptedPrivateKey;
+                _settings.Username = string.Empty;
+
+                var account = new UserAccount()
+                {
+                    PublicKey = _settings.PublicKey,
+                    Username = _settings.Username
+                };
+
+                HttpHelper.UpdateClientAuthorization(_accountApi.Client, account, _encryption);
+
+                _logger.LogError(ex, "Error while regenerating keys.");
+                await _dialogs.ShowError(ex);
+            }
         }
     }
 }

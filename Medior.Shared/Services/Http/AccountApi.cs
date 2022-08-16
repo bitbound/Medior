@@ -18,6 +18,7 @@ namespace Medior.Shared.Services.Http
 
         Task<Result<UserAccount>> CreateAccount(UserAccount account);
         Task<Result<UserAccount>> UpdatePublicKey(UserAccount account);
+        Task<Result> DeleteAccount();
     }
 
     public class AccountApi : IAccountApi
@@ -52,6 +53,21 @@ namespace Medior.Shared.Services.Http
             {
                 _logger.LogError(ex, "Error while creating account.");
                 return Result.Fail<UserAccount>(ex);
+            }
+        }
+
+        public async Task<Result> DeleteAccount()
+        {
+            try
+            {
+                var response = await _client.DeleteAsync($"/api/Account");
+                response.EnsureSuccessStatusCode();
+                return Result.Ok();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error while deleting account.");
+                return Result.Fail(ex);
             }
         }
 

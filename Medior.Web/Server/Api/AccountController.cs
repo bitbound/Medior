@@ -1,6 +1,7 @@
 ﻿using Medior.Shared.Entities;
 using Medior.Web.Server.Auth;
 using Medior.Web.Server.Data;
+using Medior.Web.Server.Extensions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -51,6 +52,28 @@ namespace Medior.Web.Server.Api
             return account;
         }
 
+        [HttpDelete]
+        public async Task<IActionResult> Delete()
+        {
+            if (!User.TryGetUserId(out var userId))
+            {
+                _logger.LogWarning("User ID could not be parsed from claims.");
+                return BadRequest();
+            }
+
+            var user = await _appDb.UserAccounts.FindAsync(userId);
+
+            if (user is null)
+            {
+                _logger.LogWarning("User not found. Id: {userId}", userId);
+                return NotFound();
+            }
+
+            _appDb.UserAccounts.Remove(user);
+            await _appDb.SaveChangesAsync();
+            return Ok();
+        }
+
         [HttpPut]
         public async Task<ActionResult<UserAccount>> Update(UserAccount account)
         {
@@ -68,8 +91,7 @@ namespace Medior.Web.Server.Api
                 return BadRequest();
             }
 
-            var idClaim = User.Claims.FirstOrDefault(x => x.Type == ClaimNames.UserId);
-            if (!Guid.TryParse(idClaim?.Value, out var userId))
+            if (!User.TryGetUserId(out var userId))
             {
                 _logger.LogWarning("User ID could not be parsed from claims.");
                 return BadRequest();
@@ -80,7 +102,7 @@ namespace Medior.Web.Server.Api
             if (user is null)
             {
                 _logger.LogWarning("User not found. Id: {userId}", userId);
-                return BadRequest();
+                return NotFound();
             }
 
             user.PublicKey = account.PublicKey;

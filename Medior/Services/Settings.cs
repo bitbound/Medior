@@ -263,6 +263,7 @@ namespace Medior.Services
                 else
                 {
                     await Save();
+                    _fileSystem.DeleteFile(originalPath);
                 }
                 return Result.Ok();
             }

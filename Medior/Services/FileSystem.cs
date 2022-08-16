@@ -37,6 +37,7 @@ namespace Medior.Services
 
         void WriteAllText(string filePath, string contents);
         Task WriteAllTextAsync(string path, string content);
+        void DeleteFile(string filePath);
     }
 
     public class FileSystem : IFileSystem
@@ -93,6 +94,11 @@ namespace Medior.Services
         public FileStream CreateFileStream(string filePath, FileMode mode)
         {
             return new FileStream(filePath, mode);
+        }
+
+        public void DeleteFile(string filePath)
+        {
+            File.Delete(filePath);
         }
 
         public void Encrypt(string filePath)
