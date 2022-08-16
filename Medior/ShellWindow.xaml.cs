@@ -24,5 +24,13 @@ namespace Medior
 
             NavMenu.Content = Activator.CreateInstance(navMenuItem.ControlType);
         }
+
+        private async void MetroWindow_ContentRendered(object sender, EventArgs e)
+        {
+            if (DataContext is ShellViewModel vm)
+            {
+                await vm.LoadPrivateKey();
+            }
+        }
     }
 }

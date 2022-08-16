@@ -20,6 +20,7 @@
         OverlayFadeIn="{DynamicResource DialogFadeIn}"
         OverlayFadeOut="{DynamicResource DialogFadeOut}"
         dialog:DialogParticipation.Register="{Binding}"
+        ContentRendered="MetroWindow_ContentRendered"
         DataContext="{x:Static vm:ViewModelLocator.ShellWindowViewModel}">
 
     

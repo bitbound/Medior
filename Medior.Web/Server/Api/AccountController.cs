@@ -55,6 +55,11 @@ namespace Medior.Web.Server.Api
         [HttpDelete]
         public async Task<IActionResult> Delete()
         {
+            if (!User.HasAccountOnServer())
+            {
+                return NotFound();
+            }
+
             if (!User.TryGetUserId(out var userId))
             {
                 _logger.LogWarning("User ID could not be parsed from claims.");

@@ -10,6 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Linq;
+using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -263,8 +264,6 @@ namespace Medior.ViewModels
             {
                 OnPropertyChanged(nameof(IsAccountEnabled));
             }
-
-
         }
 
         [RelayCommand]
@@ -288,8 +287,13 @@ namespace Medior.ViewModels
 
                 if (!accountResult.IsSuccess)
                 {
-                    await _dialogs.ShowError(accountResult.Exception!);
-                    return;
+                    // If the account no longer exists on the server, continue with local deletion.
+                    if (accountResult.Exception is not HttpRequestException httpEx ||
+                        httpEx.StatusCode != System.Net.HttpStatusCode.NotFound)
+                    {
+                        await _dialogs.ShowError(accountResult.Exception!);
+                        return;
+                    }
                 }
 
                 _settings.PublicKeyBytes = Array.Empty<byte>();
@@ -304,6 +308,10 @@ namespace Medior.ViewModels
             {
                 _logger.LogError(ex, "Error while deleting account.");
                 await _dialogs.ShowError(ex);
+            }
+            finally
+            {
+                OnPropertyChanged(nameof(IsAccountEnabled));
             }
         }
 
@@ -346,7 +354,6 @@ namespace Medior.ViewModels
 
                 _encryption.SaveState();
 
-
                 var keys = _encryption.GenerateKeys(response1.Password);
 
                 var account = new UserAccount()
@@ -355,7 +362,6 @@ namespace Medior.ViewModels
                     Username = _settings.Username
                 };
 
-                HttpHelper.UpdateClientAuthorization(_accountApi.Client, account, _encryption);
 
                 var accountResult = await _accountApi.UpdatePublicKey(account);
 
@@ -364,6 +370,8 @@ namespace Medior.ViewModels
                     await _dialogs.ShowError(accountResult.Exception!);
                     return;
                 }
+
+                HttpHelper.UpdateClientAuthorization(_accountApi.Client, account, _encryption);
 
                 _settings.PublicKeyBytes = keys.PublicKey;
                 _settings.Username = account.Username;
@@ -378,7 +386,6 @@ namespace Medior.ViewModels
                 _settings.PublicKeyBytes = restoredKeys.PublicKey;
                 _settings.PrivateKeyBytes = restoredKeys.PrivateKey;
                 _settings.EncryptedPrivateKeyBytes = restoredKeys.EncryptedPrivateKey;
-                _settings.Username = string.Empty;
 
                 var account = new UserAccount()
                 {

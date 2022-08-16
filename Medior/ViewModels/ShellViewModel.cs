@@ -8,11 +8,14 @@ using System.Threading.Tasks;
 using MahApps.Metro.Controls.Dialogs;
 using Medior.Shared.Interfaces;
 using System.Diagnostics;
+using Medior.Shared.Services;
 
 namespace Medior.ViewModels
 {
     public class ShellViewModel : ObservableObjectEx
     {
+        private readonly IDialogCoordinator _dialogs;
+        private readonly IEncryptionService _encryption;
         private readonly IMessenger _messenger;
         private readonly ISettings _settings;
         private readonly IWindowService _windowService;
@@ -20,11 +23,15 @@ namespace Medior.ViewModels
             IMessenger messeger,
             ISettings settings,
             IWindowService windowService,
+            IDialogCoordinator dialogs,
+            IEncryptionService encryption,
             IEnumerable<AppModule> appModules)
         {
             _settings = settings;
             _messenger = messeger;
             _windowService = windowService;
+            _dialogs = dialogs;
+            _encryption = encryption;
             AppModules.AddRange(appModules);
             FilteredAppModules.AddRange(appModules);
 
@@ -32,6 +39,7 @@ namespace Medior.ViewModels
             _messenger.Register<LoaderUpdateMessage>(this, HandleLoaderUpdate);
             _messenger.Register<NavigateRequestMessage>(this, HandleNavigateRequest);
         }
+
 
         public ObservableCollectionEx<AppModule> AppModules { get; } = new();
 
@@ -96,6 +104,64 @@ namespace Medior.ViewModels
         {
             get => Get<AppModule>() ?? AppModules.FirstOrDefault();
             set => Set(value);
+        }
+
+
+        public async Task LoadPrivateKey()
+        {
+            if (!_settings.IsAccountEnabled)
+            {
+                return;
+            }
+
+            while (!_settings.PrivateKeyBytes.Any())
+            {
+                var input = await _dialogs.ShowLoginAsync(
+                    this,
+                    "Enter Your PIN/Password",
+                    "You must enter your password to decrypt your private key.\n",
+                    new LoginDialogSettings()
+                    {
+                        ShouldHideUsername = true,
+                        PasswordWatermark = "Enter your PIN"
+                    });
+
+                if (string.IsNullOrWhiteSpace(input.Password))
+                {
+                    return;
+                }
+
+                var result = _encryption.ImportPrivateKey(input.Password, _settings.EncryptedPrivateKeyBytes);
+
+                if (result.IsSuccess)
+                {
+                    _settings.PrivateKeyBytes = result.Value!.PrivateKey;
+                    _settings.PublicKeyBytes = result.Value!.PublicKey;
+                }
+
+                if (!_settings.PrivateKeyBytes.Any())
+                {
+                    var tryAgainResult = await _dialogs.ShowMessageAsync(
+                        this,
+                        "Try Again?",
+                        "PIN/password is incorrect.  Private key decryption failed.  Do you want to try again?\n",
+                        MessageDialogStyle.AffirmativeAndNegative,
+                        new MetroDialogSettings()
+                        {
+                            AffirmativeButtonText = "Yes",
+                            NegativeButtonText = "No",
+                            DefaultButtonFocus = MessageDialogResult.Affirmative
+                        });
+
+                    if (tryAgainResult != MessageDialogResult.Affirmative)
+                    {
+                        await _dialogs.ShowMessageAsync(this, "Shutting Down",
+                            "Medior cannot start without decrypting the private key.  The application will " +
+                            "now shut down.  You can delete your settings file to start over with a fresh state.\n");
+                        WpfApp.Current.Shutdown();
+                    }
+                }
+            }
         }
 
         private async void HandleHotKeyInvocation(object recipient, GenericMessage<HotKeyHookKind> message)

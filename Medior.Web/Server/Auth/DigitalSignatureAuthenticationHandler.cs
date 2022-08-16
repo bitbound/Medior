@@ -133,7 +133,7 @@ namespace Medior.Web.Server.Auth
             var account = MessagePackSerializer.Deserialize<UserAccount>(signedDto.Payload);
             var publicKey = account.PublicKey;
 
-            var existingUser = await appDb.UserAccounts.FirstOrDefaultAsync(x => x.Username == account.Username);
+            var existingUser = await appDb.UserAccounts.FirstOrDefaultAsync(x => x.PublicKey == account.PublicKey);
             if (existingUser is not null)
             {
                 publicKey = existingUser.PublicKey;
