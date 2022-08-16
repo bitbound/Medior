@@ -41,5 +41,21 @@ namespace Medior.Helpers
             config.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(AuthSchemes.DigitalSignature, base64Payload);
             config.BaseAddress = new Uri(serverUri.ServerUri);
         }
+
+        internal static void UpdateClientAuthorization(HttpClient config, UserAccount account, IEncryptionService encryption)
+        {
+            var payload = MessagePackSerializer.Serialize(account);
+            var signature = encryption.Sign(payload);
+            var dto = new SignedPayloadDto()
+            {
+                DtoType = DtoType.UserAccount,
+                Payload = payload,
+                Signature = signature
+            };
+
+            var dtoBytes = MessagePackSerializer.Serialize(dto);
+            var base64Payload = Convert.ToBase64String(dtoBytes);
+            config.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(AuthSchemes.DigitalSignature, base64Payload);
+        }
     }
 }

@@ -17,6 +17,7 @@ namespace Medior.Shared.Services.Http
         HttpClient Client { get; }
 
         Task<Result<UserAccount>> CreateAccount(UserAccount account);
+        Task<Result<UserAccount>> UpdatePublicKey(UserAccount account);
     }
 
     public class AccountApi : IAccountApi
@@ -49,10 +50,29 @@ namespace Medior.Shared.Services.Http
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error while checking desktop version.");
+                _logger.LogError(ex, "Error while creating account.");
                 return Result.Fail<UserAccount>(ex);
             }
         }
 
+        public async Task<Result<UserAccount>> UpdatePublicKey(UserAccount account)
+        {
+            try
+            {
+                var response = await _client.PutAsJsonAsync($"/api/Account", account);
+                response.EnsureSuccessStatusCode();
+                var newAccount = await response.Content.ReadFromJsonAsync<UserAccount>();
+                if (newAccount is null)
+                {
+                    return Result.Fail<UserAccount>("Response was empty.");
+                }
+                return Result.Ok(newAccount);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error while updating public key.");
+                return Result.Fail<UserAccount>(ex);
+            }
+        }
     }
 }

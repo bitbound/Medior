@@ -50,5 +50,44 @@ namespace Medior.Web.Server.Api
             await _appDb.SaveChangesAsync();
             return account;
         }
+
+        [HttpPut]
+        public async Task<ActionResult<UserAccount>> Update(UserAccount account)
+        {
+            using var scope = _logger.BeginScope(nameof(Update));
+
+            if (account.Id != Guid.Empty)
+            {
+                _logger.LogWarning("Attempted to create new account with populated Id: {guid}", account.Id);
+                return BadRequest();
+            }
+
+            if (!Regex.IsMatch(account.Username, "^((\\w|-)* {0,1}([a-zA-Z0-9])+)+$"))
+            {
+                _logger.LogWarning("Username is invalid: {username}", account.Username);
+                return BadRequest();
+            }
+
+            var idClaim = User.Claims.FirstOrDefault(x => x.Type == ClaimNames.UserId);
+            if (!Guid.TryParse(idClaim?.Value, out var userId))
+            {
+                _logger.LogWarning("User ID could not be parsed from claims.");
+                return BadRequest();
+            }
+
+            var user = await _appDb.UserAccounts.FindAsync(userId);
+
+            if (user is null)
+            {
+                _logger.LogWarning("User not found. Id: {userId}", userId);
+                return BadRequest();
+            }
+
+            user.PublicKey = account.PublicKey;
+            user.Username = account.Username;
+            await _appDb.SaveChangesAsync();
+
+            return user;
+        }
     }
 }

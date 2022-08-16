@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Concurrent;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -86,19 +87,29 @@ namespace Medior.Services
                 ex = ex.InnerException;
             }
 
-            return $"[{logLevel}]\t" +
-                $"{DateTimeOffset.Now:yyyy-MM-dd HH:mm:ss.fff}\t" +
-                (
-                    scopeStack.Any() ?
+            var entry =
+                $"[{logLevel}]\t" +
+                $"{DateTimeOffset.Now:yyyy-MM-dd HH:mm:ss.fff}\t";
+
+            entry += scopeStack.Any() ?
                         $"[{string.Join(" - ", scopeStack)} - {categoryName}]\t" :
-                        $"[{categoryName}]\t"
-                ) +
-                $"Message: {state}\t" +
-                (
-                    !string.IsNullOrWhiteSpace(exMessage) ?
-                        $"Exception: {exMessage}{Environment.NewLine}" :
-                        Environment.NewLine
-                );
+                        $"[{categoryName}]\t";
+
+            entry += $"Message: {state}\t";
+
+            if (!string.IsNullOrWhiteSpace(exMessage))
+            {
+                entry += exMessage;
+            }
+
+            if (exception is not null)
+            {
+                entry += $"{Environment.NewLine}{exception.StackTrace}";
+            }
+
+            entry += Environment.NewLine;
+
+            return entry;
         }
 
         private async void SinkTimer_Elapsed(object? sender, System.Timers.ElapsedEventArgs e)

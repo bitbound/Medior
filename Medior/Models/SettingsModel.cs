@@ -8,10 +8,11 @@ namespace Medior.Models
     public class SettingsModel
     {
         public ClipboardSaveDto[] ClipboardSaves { get; set; } = Array.Empty<ClipboardSaveDto>();
+        public string EncryptedPrivateKey { get; set; } = string.Empty;
         public UploadedFile[] FileUploads { get; set; } = Array.Empty<UploadedFile>();
         public bool HandlePrintScreen { get; set; } = true;
+        public bool IsFileEncryptionEnabled { get; set; }
         public bool IsNavPaneOpen { get; set; } = true;
-        public string EncryptedPrivateKey { get; set; } = string.Empty;
         public string PublicKey { get; set; } = string.Empty;
         public string ServerUri { get; set; } = string.Empty;
         public SortJob[] SortJobs { get; set; } = Array.Empty<SortJob>();

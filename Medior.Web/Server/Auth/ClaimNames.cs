@@ -4,5 +4,6 @@
     {
         public const string Username = "Username";
         public const string PublicKey = "PublicKey";
+        public const string UserId = "UserId";
     }
 }

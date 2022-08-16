@@ -149,13 +149,14 @@ namespace Medior.Web.Server.Auth
             }
 
             var claims = new Claim[]
-              {
-                        new Claim(ClaimNames.PublicKey, publicKey),
-                        new Claim(ClaimNames.Username, account.Username)
-              };
+            {
+                new Claim(ClaimNames.PublicKey, publicKey),
+                new Claim(ClaimNames.Username, account.Username),
+                new Claim(ClaimNames.UserId, $"{existingUser?.Id}")
+            };
+
             var identity = new ClaimsIdentity(claims, AuthSchemes.DigitalSignature);
             var principal = new ClaimsPrincipal(identity);
-            //await Context.SignInAsync(principal);
             return AuthenticateResult.Success(new AuthenticationTicket(principal, AuthSchemes.DigitalSignature));
         }
     }

@@ -11,6 +11,10 @@ namespace Medior.Shared.Services
         Result<UserKeysExport> ImportPrivateKey(string password, byte[] encryptedKey);
         void ImportPublicKey(byte[] publicBytes);
 
+        UserKeysExport RestoreState();
+
+        void SaveState();
+
         byte[] Sign(byte[] payload);
         bool Verify(byte[] payload, byte[] signature);
     }
@@ -19,8 +23,10 @@ namespace Medior.Shared.Services
     {
         private readonly ILogger<EncryptionService> _logger;
         private readonly PbeParameters _pbeParameters = new(PbeEncryptionAlgorithm.Aes256Cbc, HashAlgorithmName.SHA512, 5_000);
+        private UserKeysExport? _backupKeys;
+        private RSAParameters? _backupParams;
+        private UserKeysExport? _currentKeys;
         private RSA _rsa = RSA.Create();
-
         public EncryptionService(ILogger<EncryptionService> logger)
         {
             _logger = logger;
@@ -33,7 +39,8 @@ namespace Medior.Shared.Services
             var encryptedPrivateKey = _rsa.ExportEncryptedPkcs8PrivateKey(password, _pbeParameters);
             var privateKey = _rsa.ExportRSAPrivateKey();
             var publicKey = _rsa.ExportRSAPublicKey();
-            return new UserKeysExport(publicKey, privateKey, encryptedPrivateKey);
+            _currentKeys = new UserKeysExport(publicKey, privateKey, encryptedPrivateKey);
+            return _currentKeys;
         }
 
 
@@ -45,8 +52,8 @@ namespace Medior.Shared.Services
                 var privateKey = _rsa.ExportRSAPrivateKey();
                 var publicKey = _rsa.ExportRSAPublicKey();
                 var encryptedPrivateKey = encryptedKey;
-                var keys = new UserKeysExport(publicKey, privateKey, encryptedPrivateKey);
-                return Result.Ok(keys);
+                _currentKeys = new UserKeysExport(publicKey, privateKey, encryptedPrivateKey);
+                return Result.Ok(_currentKeys);
             }
             catch (Exception ex)
             {
@@ -58,6 +65,33 @@ namespace Medior.Shared.Services
         public void ImportPublicKey(byte[] publicKeyBytes)
         {
             _rsa.ImportRSAPublicKey(publicKeyBytes, out _);
+        }
+
+        public UserKeysExport RestoreState()
+        {
+            if (_backupKeys is null || !_backupParams.HasValue)
+            {
+                throw new Exception("No backup state to restore.");
+            }
+
+            _rsa.ImportParameters(_backupParams.Value);
+            _currentKeys = _backupKeys;
+
+            _backupKeys = null;
+            _backupParams = null;
+
+            return _currentKeys;
+        }
+
+        public void SaveState()
+        {
+            if (_currentKeys is null)
+            {
+                throw new Exception("No current keys to save.");
+            }
+
+            _backupParams = _rsa.ExportParameters(true);
+            _backupKeys = (UserKeysExport)_currentKeys.Clone();
         }
 
         public byte[] Sign(byte[] payload)

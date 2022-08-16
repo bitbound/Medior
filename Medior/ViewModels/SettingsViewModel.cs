@@ -1,4 +1,5 @@
 ﻿using MahApps.Metro.Controls.Dialogs;
+using Medior.Helpers;
 using Medior.Models;
 using Medior.Shared;
 using Medior.Shared.Auth;
@@ -23,12 +24,13 @@ namespace Medior.ViewModels
         private readonly IDialogService _dialogs;
         private readonly IEncryptionService _encryption;
         private readonly IFileSystem _fileSystem;
-        private readonly IServiceScopeFactory _scopeFactory;
+        private readonly IAccountApi _accountApi;
         private readonly ILogger<SettingsViewModel> _logger;
         private readonly IMessenger _messenger;
         private readonly ISettings _settings;
         private readonly IThemeSetter _themeSetter;
         private readonly IWindowService _windowService;
+
         public SettingsViewModel(
             ISettings settings,
             IThemeSetter themeSetter,
@@ -37,7 +39,7 @@ namespace Medior.ViewModels
             IEncryptionService encryption,
             IDialogService dialogs,
             IFileSystem fileSystem,
-            IServiceScopeFactory scopeFactory,
+            IAccountApi accountApi,
             IWindowService windowService)
         {
             _settings = settings;
@@ -48,7 +50,7 @@ namespace Medior.ViewModels
             _encryption = encryption;
             _dialogs = dialogs;
             _fileSystem = fileSystem;
-            _scopeFactory = scopeFactory;
+            _accountApi = accountApi;
             SetThemeCommand = new RelayCommand<AppTheme>(parameter =>
             {
                 Theme = parameter;
@@ -61,10 +63,7 @@ namespace Medior.ViewModels
             set => _settings.HandlePrintScreen = value;
         }
 
-        public bool IsAccountEnabled
-        {
-            get => !string.IsNullOrWhiteSpace(_settings.PublicKey) && _settings.EncryptedPrivateKey.Any();
-        }
+        public bool IsAccountEnabled => _settings.IsAccountEnabled;
 
         public ICommand SetThemeCommand { get; }
 
@@ -87,10 +86,77 @@ namespace Medior.ViewModels
                 _themeSetter.SetTheme(value);
             }
         }
+
         [RelayCommand]
         public async Task RegenerateKeys()
         {
+            try
+            {
+                var result = await _dialogs.ShowMessageAsync(
+                    "Confirm Regenerate",
+                    "Are you sure you want to regenerate your public and private keys?\n\n" +
+                        "You will need to pair with your contacts again, and encrypted files will" +
+                        "become inaccessible.",
+                    MessageDialogStyle.AffirmativeAndNegative);
 
+                if (result != MessageDialogResult.Affirmative)
+                {
+                    return;
+                }
+
+                var response1 = await _dialogs.ShowLoginAsync(
+                    "Create a PIN/Password",
+                    "Enter a PIN/password to use for decrypting your new private key.\n\n",
+                    new LoginDialogSettings()
+                    {
+                        ShouldHideUsername = true,
+                        PasswordWatermark = "Enter again to confirm...",
+                        AffirmativeButtonText = "Submit"
+                    });
+
+                var response2 = await _dialogs.ShowLoginAsync(
+                    "Confirm Your PIN/Password",
+                    "Enter your password a second time to confirm.\n\n",
+                    new LoginDialogSettings()
+                    {
+                        ShouldHideUsername = true,
+                        PasswordWatermark = "Enter again to confirm...",
+                        AffirmativeButtonText = "Submit"
+                    });
+
+                _encryption.SaveState();
+
+                var keys = _encryption.GenerateKeys(response1.Password);
+
+                var account = new UserAccount()
+                {
+                    PublicKey = keys.PublicKeyBase64,
+                    Username = _settings.Username
+                };
+
+                var accountResult = await _accountApi.UpdatePublicKey(account);
+
+                if (!accountResult.IsSuccess)
+                {
+                    await _dialogs.ShowError(accountResult.Exception!);
+                    return;
+                }
+
+                _settings.PublicKeyBytes = keys.PublicKey;
+                _settings.Username = account.Username;
+                _settings.PrivateKeyBytes = keys.PrivateKey;
+                _settings.EncryptedPrivateKeyBytes = keys.EncryptedPrivateKey;
+            }
+            catch (Exception ex)
+            {
+                var restoredKeys = _encryption.RestoreState();
+                _settings.PublicKeyBytes = restoredKeys.PublicKey;
+                _settings.PrivateKeyBytes = restoredKeys.PrivateKey;
+                _settings.EncryptedPrivateKeyBytes = restoredKeys.EncryptedPrivateKey;
+                _settings.Username = string.Empty;
+                _logger.LogError(ex, "Error while regenerating keys.");
+                await _dialogs.ShowError(ex);
+            }
         }
 
         [RelayCommand]
@@ -239,14 +305,9 @@ namespace Medior.ViewModels
                     Username = response1.Username.Trim()
                 };
 
-                _settings.PublicKeyBytes = keys.PublicKey;
-                _settings.Username = account.Username;
+                HttpHelper.UpdateClientAuthorization(_accountApi.Client, account, _encryption);
 
-                // Get a new scoped instance so it gets the new public key in settings.
-                using var scope = _scopeFactory.CreateScope();
-                var accountApi = scope.ServiceProvider.GetRequiredService<IAccountApi>();
-
-                var accountResult = await accountApi.CreateAccount(account);
+                var accountResult = await _accountApi.CreateAccount(account);
 
                 if (!accountResult.IsSuccess)
                 {
@@ -254,13 +315,17 @@ namespace Medior.ViewModels
                     return;
                 }
 
-                _settings.PublicKeyBytes = keys.PublicKey ?? 
-                    throw new Exception("Generated public key is null.");
+                _settings.Username = account.Username;
+                _settings.PublicKeyBytes = keys.PublicKey;
                 _settings.PrivateKeyBytes = keys.PrivateKey;
-                _settings.EncryptedPrivateKey = keys.EncryptedPrivateKey;
+                _settings.EncryptedPrivateKeyBytes = keys.EncryptedPrivateKey;
             }
             catch (Exception ex)
             {
+                _settings.PublicKeyBytes = Array.Empty<byte>();
+                _settings.PrivateKeyBytes = Array.Empty<byte>();
+                _settings.EncryptedPrivateKeyBytes = Array.Empty<byte>();
+                _settings.Username = string.Empty;
                 _logger.LogError(ex, "Error while creating new account.");
                 await _dialogs.ShowError(ex);
             }

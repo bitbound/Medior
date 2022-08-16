@@ -16,12 +16,14 @@ using System.Threading.Tasks;
 
 namespace Medior.Services
 {
-    public interface ISettings: IServerUriProvider
+    public interface ISettings : IServerUriProvider
     {
         ClipboardSaveDto[] ClipboardSaves { get; set; }
-        byte[] EncryptedPrivateKey { get; set; }
+        byte[] EncryptedPrivateKeyBytes { get; set; }
         UploadedFile[] FileUploads { get; set; }
         bool HandlePrintScreen { get; set; }
+        bool IsAccountEnabled { get; }
+        bool IsFileEncryptionEnabled { get; set; }
         bool IsNavPaneOpen { get; set; }
         public string PrivateKey { get; set; }
         byte[] PrivateKeyBytes { get; set; }
@@ -32,7 +34,6 @@ namespace Medior.Services
         bool StartAtLogon { get; set; }
         AppTheme Theme { get; set; }
         string Username { get; set; }
-
         Task<Result> ChangeSettingsFilePath(string filePath, bool importExistingFile);
 
         Task Save();
@@ -47,11 +48,11 @@ namespace Medior.Services
         private readonly ILogger<Settings> _logger;
         private readonly IRegistryService _registryService;
         private readonly JsonSerializerOptions _serializerOptions = new() { WriteIndented = true };
-        private SettingsModel _settings = new();
         private string _privateKey = string.Empty;
+        private SettingsModel _settings = new();
 
         public Settings(
-            IFileSystem fileSystem, 
+            IFileSystem fileSystem,
             IRegistryService registryService,
             IEnvironmentHelper environmentHelper,
             IKeyboardHookManager keyboardHookManager,
@@ -71,10 +72,26 @@ namespace Medior.Services
             set => Set(value);
         }
 
-        public byte[] EncryptedPrivateKey
+        public string EncryptedPrivateKey
         {
-            get => Get<byte[]>() ?? Array.Empty<byte>();
+            get => Get<string>() ?? string.Empty;
             set => Set(value);
+        }
+
+        public byte[] EncryptedPrivateKeyBytes
+        {
+            get
+            {
+                if (string.IsNullOrWhiteSpace(EncryptedPrivateKey))
+                {
+                    return Array.Empty<byte>();
+                }
+                return Convert.FromBase64String(EncryptedPrivateKey);
+            }
+            set
+            {
+                EncryptedPrivateKey = Convert.ToBase64String(value);
+            }
         }
 
         public UploadedFile[] FileUploads
@@ -98,6 +115,16 @@ namespace Medior.Services
                     _keyboardHookManager.UnsetPrintScreenHook();
                 }
             }
+        }
+
+        public bool IsAccountEnabled =>
+            !string.IsNullOrWhiteSpace(PublicKey) &&
+            EncryptedPrivateKeyBytes.Any();
+
+        public bool IsFileEncryptionEnabled
+        {
+            get => Get<bool>();
+            set => Set(value);
         }
 
         public bool IsNavPaneOpen
@@ -164,7 +191,7 @@ namespace Medior.Services
                 {
                     return uri;
                 }
-                
+
                 return "https://medior.app";
             }
             set
