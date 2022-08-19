@@ -64,6 +64,11 @@
         </StackPanel>
 
         <Label>
+            Server URL
+        </Label>
+        <TextBox Text="{Binding ServerUri, Mode=TwoWay}" Margin="0,0,0,10" />
+
+        <Label>
             App Theme
         </Label>
         <StackPanel Margin="0,0,0,10">

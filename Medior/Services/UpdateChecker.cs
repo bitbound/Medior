@@ -32,6 +32,7 @@ namespace Medior.Services
         private readonly IMessenger _messenger;
         private readonly IProcessService _processes;
         private readonly IWindowService _windowService;
+        private readonly SemaphoreSlim _promptLock = new(1, 1);
 
         public UpdateChecker(
             IFileApi fileApi, 
@@ -113,33 +114,40 @@ namespace Medior.Services
 
         private async Task PromptToUpdate()
         {
-            _windowService.ShowMainWindow();
-            var result = await _dialogs.ShowMessageAsync(
-                    "Update Available",
-                    "A new version is available.  Would you like to update now?",
-                    MessageDialogStyle.AffirmativeAndNegative,
-                    new() { DefaultButtonFocus = MessageDialogResult.Affirmative });
-
-            if (result != MessageDialogResult.Affirmative)
+            try
             {
-                return;
+                _windowService.ShowMainWindow();
+                var result = await _dialogs.ShowMessageAsync(
+                        "Update Available",
+                        "A new version is available.  Would you like to update now?",
+                        MessageDialogStyle.AffirmativeAndNegative,
+                        new() { DefaultButtonFocus = MessageDialogResult.Affirmative });
+
+                if (result != MessageDialogResult.Affirmative)
+                {
+                    return;
+                }
+
+
+                var downloadResult = await _fileApi.DownloadDesktopSetup();
+
+                if (!downloadResult.IsSuccess)
+                {
+                    _messenger.SendToast("Failed to download update", ToastType.Error);
+                    return;
+                }
+
+                var psi = new ProcessStartInfo()
+                {
+                    FileName = downloadResult.Value!,
+                    UseShellExecute = true
+                };
+                _processes.Start(psi);
             }
-
-
-            var downloadResult = await _fileApi.DownloadDesktopSetup();
-
-            if (!downloadResult.IsSuccess)
+            finally
             {
-                _messenger.SendToast("Failed to download update", ToastType.Error);
-                return;
+                _promptLock.Release();
             }
-
-            var psi = new ProcessStartInfo()
-            {
-                FileName = downloadResult.Value!,
-                UseShellExecute = true
-            };
-            _processes.Start(psi);
         }
     }
 }

@@ -15,17 +15,13 @@ namespace Medior.Extensions
             messenger.Send(new GenericMessage<ParameterlessMessageKind>(kind));
         }
 
-        public static void RegisterParameterless(this IMessenger messenger, 
+        public static void RegisterGeneric(this IMessenger messenger, 
             object recipient, 
-            ParameterlessMessageKind kind, 
             MessageHandler<object, GenericMessage<ParameterlessMessageKind>> handler)
         {
             messenger.Register<GenericMessage<ParameterlessMessageKind>>(recipient, (r, m) =>
             {
-                if (m.Value == kind)
-                {
-                    handler(recipient, m);
-                }
+                handler(recipient, m);
             });
         }
 

@@ -20,6 +20,7 @@ namespace Medior.Services
     public interface IDesktopHubConnection
     {
         Task<Result<string>> GetClipboardReceiptToken();
+        Task<Result> CheckConnection();
     }
 
     internal class DesktopHubConnection : HubConnectionBase, IDesktopHubClient, IDesktopHubConnection, IBackgroundService
@@ -42,7 +43,18 @@ namespace Medior.Services
             _httpConfig = httpConfigurer;
             _logger = logger;
 
-            _messenger.RegisterParameterless(this, ParameterlessMessageKind.PrivateKeyChanged, HandlePrivateKeyChanged);
+
+            _messenger.RegisterGeneric(this, HandleConnectionDetailsChanged);
+        }
+
+        public async Task<Result> CheckConnection()
+        {
+            var result = await GetConnection();
+            if (!result.IsSuccess)
+            {
+                return Result.Fail("Connection is faulted.");
+            }
+            return Result.Ok();
         }
 
         public async Task<Result<string>> GetClipboardReceiptToken()
@@ -73,12 +85,15 @@ namespace Medior.Services
             var signature = _httpConfig.GetDigitalSignature();
             options.Headers.Add("Authorization", $"{AuthSchemes.DigitalSignature} {signature}");
         }
-        private async void HandlePrivateKeyChanged(object recipient, GenericMessage<ParameterlessMessageKind> message)
+        private async void HandleConnectionDetailsChanged(object recipient, GenericMessage<ParameterlessMessageKind> message)
         {
-            await Reconnect(
-                $"{_serverUri.ServerUri}/hubs/desktop",
-                ConfigureConnection,
-                ConfigureHttpOptions);
+            if (message.Value is ParameterlessMessageKind.PrivateKeyChanged or ParameterlessMessageKind.ServerUriChanged)
+            {
+                await Reconnect(
+                    $"{_serverUri.ServerUri}/hubs/desktop",
+                    ConfigureConnection,
+                    ConfigureHttpOptions);
+            }
         }
         private async Task<Result<T>> TryInvoke<T>(Func<HubConnection, Task<Result<T>>> hubInvocation)
         {

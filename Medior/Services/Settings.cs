@@ -35,8 +35,8 @@ namespace Medior.Services
         AppTheme Theme { get; set; }
         string Username { get; set; }
         Task<Result> ChangeSettingsFilePath(string filePath, bool importExistingFile);
-
         Task Save();
+        Task SetServerUri(string uri);
     }
     public class Settings : ISettings
     {
@@ -46,6 +46,7 @@ namespace Medior.Services
         private readonly string _filePath = AppConstants.SettingsFilePath;
         private readonly IFileSystem _fileSystem;
         private readonly IKeyboardHookManager _keyboardHookManager;
+        private readonly IMessenger _messenger;
         private readonly ILogger<Settings> _logger;
         private readonly IRegistryService _registryService;
         private readonly JsonSerializerOptions _serializerOptions = new() { WriteIndented = true };
@@ -57,12 +58,14 @@ namespace Medior.Services
             IRegistryService registryService,
             IEnvironmentHelper environmentHelper,
             IKeyboardHookManager keyboardHookManager,
+            IMessenger messenger,
             ILogger<Settings> logger)
         {
             _fileSystem = fileSystem;
             _registryService = registryService;
             _environmentHelper = environmentHelper;
             _keyboardHookManager = keyboardHookManager;
+            _messenger = messenger;
             _logger = logger;
             Load();
         }
@@ -181,16 +184,16 @@ namespace Medior.Services
         {
             get
             {
-                if (_environmentHelper.IsDebug)
-                {
-                    return "https://localhost:7162";
-                }
-
                 var uri = Get<string>()?.TrimEnd('/');
 
                 if (Uri.TryCreate(uri, UriKind.Absolute, out _))
                 {
                     return uri;
+                }
+
+                if (_environmentHelper.IsDebug)
+                {
+                    return "https://localhost:7162";
                 }
 
                 return "https://medior.app";
@@ -303,7 +306,12 @@ namespace Medior.Services
             }
         }
 
-
+        public async Task SetServerUri(string uri)
+        {
+            _settings.ServerUri = uri;
+            await Save();
+            _messenger.SendParameterlessMessage(ParameterlessMessageKind.ServerUriChanged);
+        }
 
         private T? Get<T>([CallerMemberName] string propertyName = "", T? defaultValue = default)
         {

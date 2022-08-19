@@ -10,9 +10,6 @@ namespace Medior.Services
     public interface IWindowService
     {
         IDisposable HideMainWindow();
-
-        void ShowAccountHelp();
-
         Rectangle ShowCapturePicker(Bitmap backgroundImage);
         Rectangle ShowCapturePicker();
         void ShowMainWindow();
@@ -59,12 +56,6 @@ namespace Medior.Services
             {
                 return CallbackDisposable.Empty;
             }
-        }
-
-        public void ShowAccountHelp()
-        {
-            // TODO: Create help window.
-            MessageBox.Show("Not implemented yet");
         }
 
         public Rectangle ShowCapturePicker(Bitmap backgroundImage)

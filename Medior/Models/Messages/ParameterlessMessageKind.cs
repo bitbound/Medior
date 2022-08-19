@@ -3,6 +3,7 @@
     internal enum ParameterlessMessageKind
     {
         StopRecordingRequested,
-        PrivateKeyChanged
+        PrivateKeyChanged,
+        ServerUriChanged
     }
 }

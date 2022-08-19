@@ -26,6 +26,7 @@ namespace Medior.ViewModels
         private readonly IEncryptionService _encryption;
         private readonly IFileSystem _fileSystem;
         private readonly IHttpConfigurer _httpConfig;
+        private readonly IDesktopHubConnection _hubConnection;
         private readonly ILogger<SettingsViewModel> _logger;
         private readonly IMessenger _messenger;
         private readonly ISettings _settings;
@@ -42,6 +43,7 @@ namespace Medior.ViewModels
             IFileSystem fileSystem,
             IAccountApi accountApi,
             IHttpConfigurer httpConfigurer,
+            IDesktopHubConnection hubConnection,
             IWindowService windowService)
         {
             _settings = settings;
@@ -54,10 +56,7 @@ namespace Medior.ViewModels
             _fileSystem = fileSystem;
             _httpConfig = httpConfigurer;
             _accountApi = accountApi;
-            SetThemeCommand = new RelayCommand<AppTheme>(parameter =>
-            {
-                Theme = parameter;
-            });
+            _hubConnection = hubConnection;
         }
 
         public bool HandlePrintScreen
@@ -68,12 +67,21 @@ namespace Medior.ViewModels
 
         public bool IsAccountEnabled => _settings.IsAccountEnabled;
 
-        public ICommand SetThemeCommand { get; }
+        public string ServerUri
+        {
+            get => _settings.ServerUri;
+            set
+            {
+                _settings.SetServerUri(value);
+                _ = CheckServerConnection();
+            }
+        }
 
         public string SettingsFilePath
         {
             get => _settings.SettingsFilePath;
         }
+
         public bool StartAtLogon
         {
             get => _settings.StartAtLogon;
@@ -91,9 +99,21 @@ namespace Medior.ViewModels
         }
 
         [RelayCommand]
-        public void ShowAccountHelp()
+        public async Task ShowAccountHelp()
         {
-            _windowService.ShowAccountHelp();
+            await _dialogs.ShowMessageAsync(
+                 "Account Info",
+                 "When you create an account in Medior, you generate an RSA public/private key pair locally " +
+                 "on your machine, similar to how SSH keys work. Only the public key is sent to the server " +
+                 "and to other clients.  The private key never leaves your machine.\n\n" +
+                 "" +
+                 "Messages sent to the server and to contacts are signed using your private key.  Using your " +
+                 "public key, they are able to verify that the message actually came from you and hasn't been " +
+                 "altered.  Your private key also lets you encrypt data that only can you can decrypt (i.e. client-" +
+                 "side encryption).\n\n" +
+                 "" +
+                 "Additionally, clients do not inherently trust the server to verify messages from other clients.  " +
+                 "They do their own verification based on known public keys.");
         }
 
         [RelayCommand]
@@ -165,6 +185,17 @@ namespace Medior.ViewModels
             }
 
             _messenger.SendToast("Settings path changed", ToastType.Success);
+        }
+
+        private async Task CheckServerConnection()
+        {
+            var result = await _hubConnection.CheckConnection();
+            if (!result.IsSuccess)
+            {
+                await _dialogs.ShowError("Connection failed.  Please check the server URL.");
+                return;
+            }
+            _messenger.SendToast("Reconnected to server", ToastType.Success);
         }
 
         [RelayCommand]
@@ -404,6 +435,12 @@ namespace Medior.ViewModels
                 _logger.LogError(ex, "Error while regenerating keys.");
                 await _dialogs.ShowError(ex);
             }
+        }
+
+        [RelayCommand]
+        private void SetTheme(AppTheme theme)
+        {
+            Theme = theme;
         }
     }
 }
