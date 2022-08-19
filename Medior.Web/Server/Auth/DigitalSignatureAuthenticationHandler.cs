@@ -15,7 +15,6 @@ using System.Text.Encodings.Web;
 
 namespace Medior.Web.Server.Auth
 {
-
     public class DigitalSignatureAuthenticationHandler : AuthenticationHandler<AuthenticationSchemeOptions>
     {
         private readonly ILogger<DigitalSignatureAuthenticationHandler> _logger;
@@ -37,24 +36,25 @@ namespace Medior.Web.Server.Auth
         {
             using var _ = _logger.BeginScope(nameof(HandleAuthenticateAsync));
 
-            if (!CheckForAuthorizeAttribute())
-            {
-                return AuthenticateResult.NoResult();
-            }
+            var isAuthorizeEndpoint = CheckForAuthorizeAttribute();
 
             var authHeader = Context.Request.Headers.Authorization.FirstOrDefault(x => 
                 x.StartsWith(AuthSchemes.DigitalSignature));
 
             if (string.IsNullOrWhiteSpace(authHeader))
             {
-                return AuthenticateResult.Fail($"{AuthSchemes.DigitalSignature} authorization is missing.");
+                return isAuthorizeEndpoint ?
+                    AuthenticateResult.Fail($"{AuthSchemes.DigitalSignature} authorization is missing.") :
+                    AuthenticateResult.NoResult();
             }
 
             try
             {
                 if (!TryGetSignedPayload(authHeader, out var signedDto))
                 {
-                    return AuthenticateResult.Fail("Failed to parse authorization header.");
+                    return isAuthorizeEndpoint ?
+                        AuthenticateResult.Fail("Failed to parse authorization header.") :
+                        AuthenticateResult.NoResult();
                 }
 
                 return await VerifySignature(signedDto);
@@ -62,7 +62,9 @@ namespace Medior.Web.Server.Auth
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to parse header {authHeader}.", authHeader);
-                return AuthenticateResult.Fail("An error occurred on the server.");
+                return isAuthorizeEndpoint ?
+                    AuthenticateResult.Fail("An error occurred on the server.") :
+                    AuthenticateResult.NoResult();
             }
         }
 

@@ -15,7 +15,7 @@
 <h3>File Sharing</h3>
 
  <div class="row">
-    <div class="col-6">
+    <div class="col-12">
         <div class="lead text-muted">
             Download the desktop app to access all features.
         </div>
@@ -25,7 +25,7 @@
 @if (string.IsNullOrWhiteSpace(FileId))
 {
     <div class="row mt-5">
-        <div class="col-6">
+        <div class="col-12">
             <FileUploadButton Multiple="false" OnFilesChanged="HandleFilesChanged" ClassNames="btn btn-lg btn-primary">
                 Upload
             </FileUploadButton>

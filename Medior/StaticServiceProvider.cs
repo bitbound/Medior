@@ -21,7 +21,7 @@ using Medior.Shared.Dtos;
 using Medior.Shared.Entities;
 using MessagePack;
 using Medior.Shared.Helpers;
-using Medior.Helpers;
+using System.Net.Http;
 
 namespace Medior
 {
@@ -75,6 +75,7 @@ namespace Medior
                 services.AddSingleton<IMessenger>(WeakReferenceMessenger.Default);
                 services.AddSingleton<IThemeSetter, ThemeSetter>();
                 services.AddSingleton<IWindowService, WindowService>();
+                services.AddSingleton<IHttpConfigurer, HttpConfigurer>();
                 services.AddScoped<ICapturePicker, CapturePicker>();
                 services.AddScoped<IScreenGrabber, ScreenGrabber>();
                 services.AddScoped<IScreenRecorder, ScreenRecorder>();
@@ -91,13 +92,9 @@ namespace Medior
                 services.AddSingleton<IDesktopHubConnection, DesktopHubConnection>();
                 services.AddSingleton(services => (IBackgroundService)services.GetRequiredService<IDesktopHubConnection>());
 
-                services.AddHttpClient();
-                services.AddHttpClient<IAccountApi, AccountApi>((services, config) =>
-                {
-                    HttpHelper.ConfigureAuthenticatedClient(services, config);
-                });
-                services.AddHttpClient<IFileApi, FileApi>();
-                services.AddHttpClient<IClipboardApi, ClipboardApi>();
+                services.AddHttpClient<IAccountApi, AccountApi>(ConfigureHttpClient);
+                services.AddHttpClient<IFileApi, FileApi>(ConfigureHttpClient);
+                services.AddHttpClient<IClipboardApi, ClipboardApi>(ConfigureHttpClient);
 
 
                 services.AddLogging(builder => builder.AddProvider(new FileLoggerProvider()));
@@ -110,6 +107,12 @@ namespace Medior
             {
                 _buildLock.Release();
             }
+        }
+
+        private static void ConfigureHttpClient(IServiceProvider services, HttpClient client)
+        {
+            var httpConfig = services.GetRequiredService<IHttpConfigurer>();
+            httpConfig.ConfigureAuthenticatedClient(client);
         }
     }
 }

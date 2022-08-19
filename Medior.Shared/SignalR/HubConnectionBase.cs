@@ -8,6 +8,7 @@ using Medior.Shared.Dtos;
 using Medior.Shared.Helpers;
 using Medior.Shared.Interfaces;
 using MessagePack;
+using Microsoft.AspNetCore.Http.Connections.Client;
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -23,18 +24,71 @@ namespace Medior.Shared.SignalR
     {
         private static readonly ConcurrentDictionary<Guid, byte[]> _dtoChunks = new();
         private readonly ILogger<HubConnectionBase> _baseLogger;
-        private readonly IHubConnectionBuilder _builder;
+        private readonly IServiceScopeFactory _scopeFactory;
         private readonly IDtoHandler _dtoHandler;
+        private CancellationToken _cancellationToken;
         private HubConnection? _connection;
 
         public HubConnectionBase(
-            IHubConnectionBuilder builder,
+            IServiceScopeFactory scopeFactory,
             IDtoHandler dtoHandler,
             ILogger<HubConnectionBase> logger)
         {
-            _builder = builder;
+            _scopeFactory = scopeFactory;
             _dtoHandler = dtoHandler;
             _baseLogger = logger;
+        }
+
+        public async Task Connect(
+            string hubUrl, 
+            Action<HubConnection> connectionConfig, 
+            Action<HttpConnectionOptions> optionsConfig,
+            CancellationToken cancellationToken)
+        {
+            if (_connection is not null && 
+                _connection.State != HubConnectionState.Disconnected)
+            {
+                return;
+            }
+
+            _cancellationToken = cancellationToken;
+
+            using var scope = _scopeFactory.CreateScope();
+            var builder = scope.ServiceProvider.GetRequiredService<IHubConnectionBuilder>();
+            
+            _connection = builder
+                .WithUrl(hubUrl, options =>
+                {
+                    optionsConfig(options);
+                })
+                .AddMessagePackProtocol()
+                .WithAutomaticReconnect(new RetryPolicy())
+                .Build();
+
+            _connection.On<DtoWrapper>("ReceiveDto", ReceiveDto);
+            _connection.Reconnecting += HubConnection_Reconnecting;
+            _connection.Reconnected += HubConnection_Reconnected;
+
+            connectionConfig.Invoke(_connection);
+
+            await StartConnection();
+        }
+
+        public async Task ReceiveDto(DtoWrapper dto)
+        {
+            await _dtoHandler.ReceiveDto(dto);
+        }
+
+        public async Task Reconnect(string hubUrl,
+            Action<HubConnection> connectionConfig,
+            Action<HttpConnectionOptions> optionsConfig)
+        {
+            if (_connection is not null)
+            {
+                await _connection.StopAsync();
+            }
+
+            await Connect(hubUrl, connectionConfig, optionsConfig, _cancellationToken);
         }
 
         protected async Task<Result<HubConnection>> GetConnection()
@@ -47,61 +101,12 @@ namespace Medior.Shared.SignalR
             return Result.Ok(_connection!);
         }
 
-
-        public async Task Connect(string hubUrl, Action<HubConnection> configure, CancellationToken cancellationToken)
-        {
-            if (_connection is not null)
-            {
-                return;
-            }
-
-            _connection = _builder
-                .WithUrl(hubUrl)
-                .AddMessagePackProtocol()
-                .WithAutomaticReconnect(new RetryPolicy())
-                .Build();
-
-            _connection.On<DtoWrapper>("ReceiveDto", ReceiveDto);
-            _connection.Reconnecting += HubConnection_Reconnecting;
-            _connection.Reconnected += HubConnection_Reconnected;
-
-            configure.Invoke(_connection);
-
-            while (!cancellationToken.IsCancellationRequested)
-            {
-                try
-                {
-                    _baseLogger.LogInformation("Connecting to server.");
-
-                    await _connection.StartAsync(cancellationToken);
-
-                    _baseLogger.LogInformation("Connected to server.");
-
-                    break;
-                }
-                catch (HttpRequestException ex)
-                {
-                    _baseLogger.LogWarning("Failed to connect to server.  Status Code: {code}", ex.StatusCode);
-                }
-                catch (Exception ex)
-                {
-                    _baseLogger.LogError(ex, "Error in hub connection.");
-                }
-                await Task.Delay(3_000, cancellationToken);
-            }
-        }
-
         protected async Task SendDtoToPeer<T>(T dto, DtoType dtoType, Guid requestId, HubType peerHubType, string requesterConnectionId)
         {
             foreach (var wrapper in DtoChunker.ChunkDto(dto, dtoType, requestId))
             {
                 await _connection!.InvokeAsync("SendDtoToPeer", wrapper, peerHubType, requesterConnectionId);
             }
-        }
-
-        public async Task ReceiveDto(DtoWrapper dto)
-        {
-            await _dtoHandler.ReceiveDto(dto);
         }
 
         protected async Task<Result<T>> WaitForResponse<T>(
@@ -175,6 +180,37 @@ namespace Medior.Shared.SignalR
             return Task.CompletedTask;
         }
 
+        private async Task StartConnection()
+        {
+            if (_connection is null)
+            {
+                _baseLogger.LogWarning("Connection shouldn't be null here.");
+                return;
+            }
+
+            while (!_cancellationToken.IsCancellationRequested)
+            {
+                try
+                {
+                    _baseLogger.LogInformation("Connecting to server.");
+
+                    await _connection.StartAsync(_cancellationToken);
+
+                    _baseLogger.LogInformation("Connected to server.");
+
+                    break;
+                }
+                catch (HttpRequestException ex)
+                {
+                    _baseLogger.LogWarning("Failed to connect to server.  Status Code: {code}", ex.StatusCode);
+                }
+                catch (Exception ex)
+                {
+                    _baseLogger.LogError(ex, "Error in hub connection.");
+                }
+                await Task.Delay(3_000, _cancellationToken);
+            }
+        }
         private class RetryPolicy : IRetryPolicy
         {
             public TimeSpan? NextRetryDelay(RetryContext retryContext)

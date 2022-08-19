@@ -11,7 +11,7 @@ namespace Medior.Web.Server.Services
     {
         Task<RetrievedFile> Load(Guid fileId);
 
-        Task<UploadedFile> Save(IFormFile uploadedFile);
+        Task<UploadedFile> Save(IFormFile uploadedFile, Guid? ownerId = null);
         Task Delete(Guid id);
         Task<Result<UploadedFile>> GetData(Guid id);
     }
@@ -106,7 +106,7 @@ namespace Medior.Web.Server.Services
             };
         }
 
-        public async Task<UploadedFile> Save(IFormFile uploadedFile)
+        public async Task<UploadedFile> Save(IFormFile uploadedFile, Guid? ownerId = null)
         {
             var uploadEntity = new UploadedFile()
             {
@@ -116,7 +116,8 @@ namespace Medior.Web.Server.Services
                 ContentDisposition = uploadedFile.ContentDisposition,
                 FileSize = uploadedFile.Length,
                 AccessTokenEdit = RandomGenerator.GenerateAccessKey(),
-                AccessTokenView = RandomGenerator.GenerateAccessKey()
+                AccessTokenView = RandomGenerator.GenerateAccessKey(),
+                UserAccountId = ownerId
             };
 
             _appDb.UploadedFiles.Add(uploadEntity);

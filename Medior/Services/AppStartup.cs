@@ -21,6 +21,7 @@ namespace Medior.Services
         private readonly IRegistryService _registry;
         private readonly IProcessService _processService;
         private readonly IKeyboardHookManager _keyboardHookManager;
+        private readonly IEnvironmentHelper _environment;
         private readonly ILogger<AppStartup> _logger;
         private readonly IEnumerable<IBackgroundService> _backgroundServices;
         private readonly List<Task> _backgroundTasks = new();
@@ -31,6 +32,7 @@ namespace Medior.Services
             IKeyboardHookManager keyboardHookManager,
             IRegistryService registry,
             IProcessService processService,
+            IEnvironmentHelper environment,
             ILogger<AppStartup> logger,
             IEnumerable<IBackgroundService> backgroundServices)
         {
@@ -40,6 +42,7 @@ namespace Medior.Services
             _registry = registry;
             _processService = processService;
             _keyboardHookManager = keyboardHookManager;
+            _environment = environment;
             _logger = logger;
             _backgroundServices = backgroundServices;
         }
@@ -67,6 +70,11 @@ namespace Medior.Services
 
         private void StopOtherInstances()
         {
+            if (_environment.IsDebug)
+            {
+                return;
+            }
+
             var procs = _processService
                 .GetProcessesByName("Medior")
                 .Where(x => x.Id != Environment.ProcessId);

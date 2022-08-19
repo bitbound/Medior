@@ -57,14 +57,6 @@ namespace Medior.ViewModels
 
         public ObservableCollectionEx<UploadedFile> FileUploads { get; } = new();
 
-        public bool IsAccountEnabled => _settings.IsAccountEnabled;
-
-        public bool ShouldEncryptFiles
-        {
-            get => _settings.IsFileEncryptionEnabled;
-            set => _settings.IsFileEncryptionEnabled = value;
-        }
-
         public async Task UploadFiles(string[] fileList)
         {
             using var disposable = new CallbackDisposable(() =>

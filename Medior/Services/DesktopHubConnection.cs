@@ -1,9 +1,12 @@
 ﻿using Medior.Interfaces;
 using Medior.Shared;
+using Medior.Shared.Auth;
 using Medior.Shared.Dtos;
 using Medior.Shared.Interfaces;
 using Medior.Shared.SignalR;
+using Microsoft.AspNetCore.Http.Connections.Client;
 using Microsoft.AspNetCore.SignalR.Client;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -21,21 +24,25 @@ namespace Medior.Services
 
     internal class DesktopHubConnection : HubConnectionBase, IDesktopHubClient, IDesktopHubConnection, IBackgroundService
     {
-        private readonly IServerUriProvider _serverUri;
-        private readonly IMessenger _messenger;
+        private readonly IHttpConfigurer _httpConfig;
         private readonly ILogger<DesktopHubConnection> _logger;
-
+        private readonly IMessenger _messenger;
+        private readonly IServerUriProvider _serverUri;
         public DesktopHubConnection(
-            IHubConnectionBuilder builder,
+            IServiceScopeFactory scopeFactory,
             IServerUriProvider serverUri,
             IDtoHandler dtoHandler,
             IMessenger messenger,
+            IHttpConfigurer httpConfigurer,
             ILogger<DesktopHubConnection> logger) 
-            : base(builder, dtoHandler, logger)
+            : base(scopeFactory, dtoHandler, logger)
         {
             _serverUri = serverUri;
             _messenger = messenger;
+            _httpConfig = httpConfigurer;
             _logger = logger;
+
+            _messenger.RegisterParameterless(this, ParameterlessMessageKind.PrivateKeyChanged, HandlePrivateKeyChanged);
         }
 
         public async Task<Result<string>> GetClipboardReceiptToken()
@@ -47,18 +54,32 @@ namespace Medior.Services
             });
         }
 
-
         public async Task Start(CancellationToken cancellationToken)
         {
-            await Connect($"{_serverUri.ServerUri}/hubs/desktop", ConfigureConnection, cancellationToken);
+            await Connect(
+                $"{_serverUri.ServerUri}/hubs/desktop",
+                ConfigureConnection,
+                ConfigureHttpOptions,
+                cancellationToken);
         }
 
         private void ConfigureConnection(HubConnection connection)
         {
-            
+
         }
 
-
+        private void ConfigureHttpOptions(HttpConnectionOptions options)
+        {
+            var signature = _httpConfig.GetDigitalSignature();
+            options.Headers.Add("Authorization", $"{AuthSchemes.DigitalSignature} {signature}");
+        }
+        private async void HandlePrivateKeyChanged(object recipient, GenericMessage<ParameterlessMessageKind> message)
+        {
+            await Reconnect(
+                $"{_serverUri.ServerUri}/hubs/desktop",
+                ConfigureConnection,
+                ConfigureHttpOptions);
+        }
         private async Task<Result<T>> TryInvoke<T>(Func<HubConnection, Task<Result<T>>> hubInvocation)
         {
             var getConnectionResult = await GetConnection();

@@ -35,8 +35,12 @@ namespace Medior.Shared.Entities
         public Guid Id { get; init; }
 
         [DataMember]
-        public bool IsEncrypted { get; init; }
-        [DataMember]
         public DateTimeOffset LastAccessed { get; set; }
+
+        [DataMember]
+        public UserAccount? UserAccount { get; init; }
+
+        [DataMember]
+        public Guid? UserAccountId { get; init; }
     }
 }

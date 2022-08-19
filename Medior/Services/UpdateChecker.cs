@@ -25,12 +25,13 @@ namespace Medior.Services
     public class UpdateChecker : IUpdateChecker, IBackgroundService
     {
         private readonly IFileApi _fileApi;
-        private readonly TimeSpan _checkInterval = TimeSpan.FromHours(6);
+        private readonly TimeSpan _checkInterval = TimeSpan.FromHours(1);
         private readonly IDialogService _dialogs;
         private readonly IEnvironmentHelper _environment;
         private readonly ILogger<UpdateChecker> _logger;
         private readonly IMessenger _messenger;
         private readonly IProcessService _processes;
+        private readonly IWindowService _windowService;
 
         public UpdateChecker(
             IFileApi fileApi, 
@@ -38,12 +39,14 @@ namespace Medior.Services
             IDialogService dialogs,
             IEnvironmentHelper environmentHelper,
             IProcessService processes,
+            IWindowService windowService,
             ILogger<UpdateChecker> logger)
         {
             _fileApi = fileApi;
             _messenger = messenger;
             _dialogs = dialogs;
             _processes = processes;
+            _windowService = windowService;
             _environment = environmentHelper;
             _logger = logger;
         }
@@ -54,6 +57,8 @@ namespace Medior.Services
         {
             try
             {
+                using var scope = _logger.BeginScope(nameof(CheckForUpdates));
+
                 var result = await _fileApi.GetDesktopVersion();
 
                 if (!result.IsSuccess)
@@ -64,14 +69,18 @@ namespace Medior.Services
                 var localVersion = Assembly.GetExecutingAssembly().GetName().Version;
                 var remoteVersion = result.Value;
 
-                if (localVersion != remoteVersion)
+                if (localVersion == remoteVersion)
                 {
-                    IsNewVersionAvailable = true;
+                    _logger.LogInformation("Version is current.");
+                    return;
+                }
 
-                    if (promptToDownload)
-                    {
-                        await PromptToUpdate();
-                    }
+                _logger.LogInformation("New version available: {version}", remoteVersion);
+                IsNewVersionAvailable = true;
+
+                if (promptToDownload)
+                {
+                    await PromptToUpdate();
                 }
             }
             catch (Exception ex)
@@ -104,6 +113,7 @@ namespace Medior.Services
 
         private async Task PromptToUpdate()
         {
+            _windowService.ShowMainWindow();
             var result = await _dialogs.ShowMessageAsync(
                     "Update Available",
                     "A new version is available.  Would you like to update now?",

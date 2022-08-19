@@ -1,5 +1,4 @@
 ﻿using MahApps.Metro.Controls.Dialogs;
-using Medior.Helpers;
 using Medior.Models;
 using Medior.Shared;
 using Medior.Shared.Auth;
@@ -26,6 +25,7 @@ namespace Medior.ViewModels
         private readonly IDialogService _dialogs;
         private readonly IEncryptionService _encryption;
         private readonly IFileSystem _fileSystem;
+        private readonly IHttpConfigurer _httpConfig;
         private readonly ILogger<SettingsViewModel> _logger;
         private readonly IMessenger _messenger;
         private readonly ISettings _settings;
@@ -41,6 +41,7 @@ namespace Medior.ViewModels
             IDialogService dialogs,
             IFileSystem fileSystem,
             IAccountApi accountApi,
+            IHttpConfigurer httpConfigurer,
             IWindowService windowService)
         {
             _settings = settings;
@@ -51,6 +52,7 @@ namespace Medior.ViewModels
             _encryption = encryption;
             _dialogs = dialogs;
             _fileSystem = fileSystem;
+            _httpConfig = httpConfigurer;
             _accountApi = accountApi;
             SetThemeCommand = new RelayCommand<AppTheme>(parameter =>
             {
@@ -234,7 +236,7 @@ namespace Medior.ViewModels
                     Username = response1.Username.Trim()
                 };
 
-                HttpHelper.UpdateClientAuthorization(_accountApi.Client, account, _encryption);
+                _httpConfig.UpdateClientAuthorizations(account);
 
                 var accountResult = await _accountApi.CreateAccount(account);
 
@@ -248,6 +250,8 @@ namespace Medior.ViewModels
                 _settings.PublicKeyBytes = keys.PublicKey;
                 _settings.PrivateKeyBytes = keys.PrivateKey;
                 _settings.EncryptedPrivateKeyBytes = keys.EncryptedPrivateKey;
+
+                _messenger.SendParameterlessMessage(ParameterlessMessageKind.PrivateKeyChanged);
 
                 _messenger.SendToast("Account created", ToastType.Success);
             }
@@ -274,8 +278,7 @@ namespace Medior.ViewModels
                 var result = await _dialogs.ShowMessageAsync(
                   "Confirm Deletion",
                   "Are you sure you want to delete your account (public/private key)?\n\n" +
-                      "You will lose access to your encrypted files and your contacts.  Online " +
-                      "features that depend on an account, such as file encryption, will stop working.",
+                      "Online features that depend on client-side encryption will stop working.",
                   MessageDialogStyle.AffirmativeAndNegative);
 
                 if (result != MessageDialogResult.Affirmative)
@@ -302,6 +305,8 @@ namespace Medior.ViewModels
                 _settings.Username = string.Empty;
                 _encryption.Reset();
 
+                _messenger.SendParameterlessMessage(ParameterlessMessageKind.PrivateKeyChanged);
+
                 _messenger.SendToast("Account deleted", ToastType.Success);
             }
             catch (Exception ex)
@@ -323,8 +328,7 @@ namespace Medior.ViewModels
                 var result = await _dialogs.ShowMessageAsync(
                     "Confirm Regenerate",
                     "Are you sure you want to regenerate your public and private keys?\n\n" +
-                        "You will need to pair with your contacts again, and encrypted files will " +
-                        "become inaccessible.",
+                        "You will need to pair with your contacts again.",
                     MessageDialogStyle.AffirmativeAndNegative);
 
                 if (result != MessageDialogResult.Affirmative)
@@ -371,12 +375,14 @@ namespace Medior.ViewModels
                     return;
                 }
 
-                HttpHelper.UpdateClientAuthorization(_accountApi.Client, account, _encryption);
+                _httpConfig.UpdateClientAuthorizations(account);
 
                 _settings.PublicKeyBytes = keys.PublicKey;
                 _settings.Username = account.Username;
                 _settings.PrivateKeyBytes = keys.PrivateKey;
                 _settings.EncryptedPrivateKeyBytes = keys.EncryptedPrivateKey;
+
+                _messenger.SendParameterlessMessage(ParameterlessMessageKind.PrivateKeyChanged);
 
                 _messenger.SendToast("Keys regenerated", ToastType.Success);
             }
@@ -393,7 +399,7 @@ namespace Medior.ViewModels
                     Username = _settings.Username
                 };
 
-                HttpHelper.UpdateClientAuthorization(_accountApi.Client, account, _encryption);
+                _httpConfig.UpdateClientAuthorizations(account);
 
                 _logger.LogError(ex, "Error while regenerating keys.");
                 await _dialogs.ShowError(ex);

@@ -2,6 +2,7 @@
 using Medior.Shared.Entities;
 using Medior.Shared.Extensions;
 using Medior.Shared.Interfaces;
+using Medior.Web.Server.Extensions;
 using Medior.Web.Server.Hubs;
 using Medior.Web.Server.Services;
 using Microsoft.AspNetCore.Http;
@@ -26,8 +27,16 @@ namespace Medior.Web.Server.Api
         [HttpPost]
         public async Task<ActionResult<ClipboardSaveDto>> Save(ClipboardContentDto content)
         {
-            var result = await _clipboardSync.SaveClip(content);
-            return new ClipboardSaveDto(result);
+            if (User.TryGetUserId(out var userId))
+            {
+                var result = await _clipboardSync.SaveClip(content, userId);
+                return new ClipboardSaveDto(result);
+            }
+            else
+            {
+                var result = await _clipboardSync.SaveClip(content);
+                return new ClipboardSaveDto(result);
+            }
         }
 
         [RequestSizeLimit(20_000_000)]

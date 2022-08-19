@@ -19,12 +19,6 @@
                 <c:IconLabel IconText="Upload" IconKind="RegularUpload" />
             </Button>
 
-            <CheckBox IsChecked="{Binding ShouldEncryptFiles, Mode=TwoWay}" 
-                      IsEnabled="{Binding IsAccountEnabled}"
-                      Content="Encrypt Files"
-                      Margin="10,0,0,0"
-                      ToolTip="Whether to encrypt files before uploading.  Requires an account." />
-
             <Separator Style="{StaticResource {x:Static ToolBar.SeparatorStyleKey}}" Margin="20,0" />
 
             <Button HorizontalAlignment="Left" Command="{Binding ClearCommand}">

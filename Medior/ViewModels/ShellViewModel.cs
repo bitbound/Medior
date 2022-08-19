@@ -137,6 +137,7 @@ namespace Medior.ViewModels
                 {
                     _settings.PrivateKeyBytes = result.Value!.PrivateKey;
                     _settings.PublicKeyBytes = result.Value!.PublicKey;
+                    _messenger.SendParameterlessMessage(ParameterlessMessageKind.PrivateKeyChanged);
                 }
 
                 if (!_settings.PrivateKeyBytes.Any())

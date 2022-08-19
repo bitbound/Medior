@@ -42,6 +42,7 @@ namespace Medior.Services
     {
         private readonly IEnvironmentHelper _environmentHelper;
         private readonly SemaphoreSlim _fileLock = new(1, 1);
+        private readonly SemaphoreSlim _saveLock = new(2, 2);
         private readonly string _filePath = AppConstants.SettingsFilePath;
         private readonly IFileSystem _fileSystem;
         private readonly IKeyboardHookManager _keyboardHookManager;
@@ -246,7 +247,7 @@ namespace Medior.Services
         }
         public async Task<Result> ChangeSettingsFilePath(string filePath, bool importExistingFile)
         {
-            var originalPath = filePath;
+            var originalPath = SettingsFilePath;
 
             try
             {
@@ -263,7 +264,7 @@ namespace Medior.Services
                 else
                 {
                     await Save();
-                    _fileSystem.DeleteFile(originalPath);
+                    //_fileSystem.DeleteFile(originalPath);
                 }
                 return Result.Ok();
             }
@@ -278,17 +279,18 @@ namespace Medior.Services
 
         public async Task Save()
         {
-            if (!await _fileLock.WaitAsync(0))
+            if (!await _saveLock.WaitAsync(0))
             {
                 return;
             }
 
             try
             {
+                await _fileLock.WaitAsync();
                 _fileSystem.CreateDirectory(Path.GetDirectoryName(SettingsFilePath)!);
                 var serializedModel = JsonSerializer.Serialize(_settings, _serializerOptions);
                 await _fileSystem.WriteAllTextAsync(SettingsFilePath, serializedModel);
-                _fileSystem.Encrypt(SettingsFilePath);
+                //_fileSystem.Encrypt(SettingsFilePath);
             }
             catch (Exception ex)
             {
@@ -296,6 +298,7 @@ namespace Medior.Services
             }
             finally
             {
+                _saveLock.Release();
                 _fileLock.Release();
             }
         }

@@ -22,7 +22,6 @@ namespace Medior.Shared.Dtos
             ContentType = clipboardSave.ContentType;
             CreatedAt = clipboardSave.CreatedAt;
             Id = clipboardSave.Id;
-            IsEncrypted = clipboardSave.IsEncrypted;
             LastAccessed = clipboardSave.LastAccessed;
             FriendlyName = clipboardSave.FriendlyName;
         }

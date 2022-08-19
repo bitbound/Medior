@@ -18,7 +18,7 @@ namespace Medior.Web.Server.Services
         Task Delete(Guid id);
         Task<Result<ClipboardSave>> GetSavedClip(Guid id);
         string RegisterReceiver(string connectionId);
-        Task<ClipboardSave> SaveClip(ClipboardContentDto content);
+        Task<ClipboardSave> SaveClip(ClipboardContentDto content, Guid? ownerId = null);
         Task<bool> SendToReceiver(ClipboardContentDto content, string receiptToken);
         Task<DbActionResult> UpdateClip(ClipboardSaveDto dto);
     }
@@ -77,15 +77,13 @@ namespace Medior.Web.Server.Services
             return accessKey;
         }
 
-        public async Task<ClipboardSave> SaveClip(ClipboardContentDto content)
+        public async Task<ClipboardSave> SaveClip(ClipboardContentDto content, Guid? ownerId = null)
         {
-            return await SaveClipImpl(content);
+            return await SaveClipImpl(content, ownerId);
         }
 
         public async Task<bool> SendToReceiver(ClipboardContentDto content, string receiptToken)
         {
-
-            var entity = await SaveClipImpl(content);
 
             if (string.IsNullOrWhiteSpace(receiptToken))
             {
@@ -97,6 +95,8 @@ namespace Medior.Web.Server.Services
 
                 return false;
             }
+
+            var entity = await SaveClipImpl(content);
 
             var dto = new ClipboardReadyDto(new ClipboardSaveDto(entity), receiptToken);
             foreach (var chunk in DtoChunker.ChunkDto(dto, DtoType.ClipboardReady))
@@ -128,7 +128,7 @@ namespace Medior.Web.Server.Services
             return DbActionResult.Success;
         }
 
-        private async Task<ClipboardSave> SaveClipImpl(ClipboardContentDto content)
+        private async Task<ClipboardSave> SaveClipImpl(ClipboardContentDto content, Guid? ownerId = null)
         {
             var binaryContent = Convert.FromBase64String(content.Base64Content);
             var clipEntity = new ClipboardSave()
@@ -139,7 +139,8 @@ namespace Medior.Web.Server.Services
                 ContentSize = binaryContent.Length,
                 ContentType = content.Type,
                 AccessTokenEdit = RandomGenerator.GenerateAccessKey(),
-                AccessTokenView = RandomGenerator.GenerateAccessKey()
+                AccessTokenView = RandomGenerator.GenerateAccessKey(),
+                UserAccountId = ownerId
             };
 
             _appDb.ClipboardSaves.Add(clipEntity);

@@ -1,4 +1,5 @@
 ﻿using Medior.Shared.Entities;
+using Medior.Web.Server.Extensions;
 using Medior.Web.Server.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -58,7 +59,14 @@ namespace Medior.Web.Server.Api
                 return BadRequest();
             }
 
-            return await _fileManager.Save(file);
+            if (User.TryGetUserId(out var userId))
+            {
+                return await _fileManager.Save(file, userId);
+            }
+            else
+            {
+                return await _fileManager.Save(file);
+            }
         }
 
         [HttpDelete("{id}")]

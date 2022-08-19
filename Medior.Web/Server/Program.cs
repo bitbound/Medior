@@ -5,6 +5,7 @@ using Medior.Web.Server.Data;
 using Medior.Web.Server.Hubs;
 using Medior.Web.Server.Services;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.EntityFrameworkCore;
@@ -56,7 +57,6 @@ builder.Services.AddScoped<IClipboardSyncService, ClipboardSyncService>();
 builder.Services.AddScoped<IUploadedFileManager, UploadedFileManager>();
 builder.Services.AddScoped<IEncryptionService, EncryptionService>();
 builder.Services.AddScoped<DigitalSignatureFilterAttribute>();
-builder.Services.AddHttpContextAccessor();
 builder.Host.UseSystemd();
 
 var app = builder.Build();
