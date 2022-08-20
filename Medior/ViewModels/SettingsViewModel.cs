@@ -95,6 +95,11 @@ namespace Medior.ViewModels
             }
         }
 
+        public string Username
+        {
+            get => _settings.Username;
+        }
+
         [RelayCommand]
         public async Task ShowAccountHelp()
         {
@@ -183,7 +188,7 @@ namespace Medior.ViewModels
 
             _messenger.SendToast("Settings path changed", ToastType.Success);
 
-            OnPropertyChanged(nameof(IsAccountEnabled));
+            OnAccountUpdated();
         }
 
         private async Task CheckServerConnection()
@@ -296,7 +301,7 @@ namespace Medior.ViewModels
             }
             finally
             {
-                OnPropertyChanged(nameof(IsAccountEnabled));
+                OnAccountUpdated();
             }
         }
 
@@ -346,8 +351,14 @@ namespace Medior.ViewModels
             }
             finally
             {
-                OnPropertyChanged(nameof(IsAccountEnabled));
+                OnAccountUpdated();
             }
+        }
+
+        private void OnAccountUpdated()
+        {
+            OnPropertyChanged(nameof(Username));
+            OnPropertyChanged(nameof(IsAccountEnabled));
         }
 
         [RelayCommand]
