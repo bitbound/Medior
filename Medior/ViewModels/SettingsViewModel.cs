@@ -31,7 +31,6 @@ namespace Medior.ViewModels
         private readonly IMessenger _messenger;
         private readonly ISettings _settings;
         private readonly IThemeSetter _themeSetter;
-        private readonly IWindowService _windowService;
 
         public SettingsViewModel(
             ISettings settings,
@@ -43,12 +42,10 @@ namespace Medior.ViewModels
             IFileSystem fileSystem,
             IAccountApi accountApi,
             IHttpConfigurer httpConfigurer,
-            IDesktopHubConnection hubConnection,
-            IWindowService windowService)
+            IDesktopHubConnection hubConnection)
         {
             _settings = settings;
             _themeSetter = themeSetter;
-            _windowService = windowService;
             _logger = logger;
             _messenger = messenger;
             _encryption = encryption;
