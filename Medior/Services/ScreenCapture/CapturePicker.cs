@@ -105,7 +105,7 @@ namespace Medior.Services.ScreenCapture
             var fileName = $"Medior_Recording_{_systemTime.Now:yyyy-MM-dd hh.mm.ss.fff}.mp4";
             var filePath = Path.Combine(AppConstants.RecordingsDirectory, fileName);
             using var fs = _fileSystem.CreateFileStream(filePath, FileMode.Create);
-            var result = await _screenRecorder.CaptureVideo(selectedArea, 10, fs, false, cancellationToken);
+            var result = await _screenRecorder.CaptureVideo(selectedArea, 10, fs, cancellationToken);
             if (!result.IsSuccess)
             {
                 return Result.Fail<Uri?>(result.Exception!);
@@ -125,7 +125,7 @@ namespace Medior.Services.ScreenCapture
 
             using var _2 = _windowService.ShowRecordingFrame(selectedArea);
 
-            return await _screenRecorder.CaptureVideo(selectedArea, 10, destinationStream, true, cancellationToken);
+            return await _screenRecorder.CaptureVideo(selectedArea, 10, destinationStream, cancellationToken);
         }
     }
 }

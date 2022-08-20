@@ -333,35 +333,6 @@ namespace Medior.ViewModels
 
                 _recordingCts = new CancellationTokenSource();
 
-                //using var client = new HttpClient();
-                //client.Timeout = Timeout.InfiniteTimeSpan;
-                //using var ms = new MemoryStream();
-
-                //var streamId = Guid.Parse("d38d4b24-f0b8-4955-a048-a9c173fbed8c");
-
-                //await _picker.StreamCaptureArea(ms, _recordingCts.Token);
-
-                //ms.Seek(0, SeekOrigin.Begin);
-                //using var content = new StreamContent(ms);
-                //var postTask = client.PostAsync($"https://localhost:7162/api/streaming/{streamId}", content);
-
-                //_windowService.ShowRemoteControlWindow(streamId);
-
-                //IAsyncEnumerable<byte[]> ToAsyncEnumerable()
-                //{
-                //    var buffer = new byte[32_000];
-                //    while (ms?.CanRead == true)
-                //    {
-
-                //    }
-                //}
-                //while (ms.CanRead)
-                //{
-                //    _desktopHub.SendStream()
-                //}
-
-                //await Task.WhenAll(postTask);
-
                 var result = await _picker.GetScreenRecording(_recordingCts.Token);
                 if (!result.IsSuccess)
                 {

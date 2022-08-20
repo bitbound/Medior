@@ -23,21 +23,19 @@ namespace Medior.Services.ScreenCapture
             DisplayInfo display,
             int frameRate,
             Stream destinationStream,
-            bool encodeFragmented,
             CancellationToken cancellationToken);
 
         Task<Result> CaptureVideo(
              Rectangle captureArea,
              int frameRate,
              Stream destinationStream,
-             bool encodeFragmented,
              CancellationToken cancellationToken);
     }
 
     public class ScreenRecorder : IScreenRecorder
     {
-        private static readonly Guid MFTranscodeContainerType_MPEG4 = new("DC6CD05D-B9D0-40ef-BD35-FA622C1AB28A");
-        private static readonly Guid MFTranscodeContainerType_FMPEG4 = new("9ba876f1-419f-4b77-a1e0-35959d9d4004");
+        //private static readonly Guid MFTranscodeContainerType_MPEG4 = new("DC6CD05D-B9D0-40ef-BD35-FA622C1AB28A");
+        //private static readonly Guid MFTranscodeContainerType_FMPEG4 = new("9ba876f1-419f-4b77-a1e0-35959d9d4004");
 
 
         private readonly IScreenGrabber _grabber;
@@ -55,29 +53,26 @@ namespace Medior.Services.ScreenCapture
             Rectangle captureArea, 
             int frameRate, 
             Stream destinationStream, 
-            bool encodeFragmented,
             CancellationToken cancellationToken)
         {
-            return await CaptureVideoImpl(captureArea, frameRate, destinationStream, encodeFragmented, cancellationToken);
+            return await CaptureVideoImpl(captureArea, frameRate, destinationStream, cancellationToken);
         }
 
         public async Task<Result> CaptureVideo(
             DisplayInfo display,
             int frameRate,
             Stream destinationStream,
-            bool encodeFragmented,
             CancellationToken cancellationToken)
         {
 
             var captureArea = new Rectangle(Point.Empty, display.MonitorArea.Size);
-            return await CaptureVideoImpl(captureArea, frameRate, destinationStream, encodeFragmented, cancellationToken);
+            return await CaptureVideoImpl(captureArea, frameRate, destinationStream, cancellationToken);
         }
 
         private async Task<Result> CaptureVideoImpl(
             Rectangle captureArea,
             int frameRate,
             Stream destinationStream,
-            bool encodeFragmented,
             CancellationToken cancellationToken)
         {
             try
@@ -146,11 +141,6 @@ namespace Medior.Services.ScreenCapture
                 // Default 15_000_000.
                 encodingProfile.Video.Bitrate = 2_000_000;
                 encodingProfile.Video.FrameRate.Numerator = (uint)frameRate;
-
-                if (encodeFragmented)
-                {
-                    encodingProfile.Container.Subtype = MFTranscodeContainerType_FMPEG4.ToString("D");
-                }
 
                 var transcoder = new MediaTranscoder
                 {
