@@ -185,6 +185,8 @@ namespace Medior.ViewModels
             }
 
             _messenger.SendToast("Settings path changed", ToastType.Success);
+
+            OnPropertyChanged(nameof(IsAccountEnabled));
         }
 
         private async Task CheckServerConnection()
