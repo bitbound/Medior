@@ -321,6 +321,7 @@ namespace Medior.ViewModels
                 .GetProcessesByName("ScreenSketch")
                 .Any();
         }
+
         [RelayCommand]
         private async Task Record()
         {

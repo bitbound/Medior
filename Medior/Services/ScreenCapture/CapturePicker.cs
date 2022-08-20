@@ -15,13 +15,14 @@ namespace Medior.Services.ScreenCapture
 
         Result<Bitmap?> GetScreenCapture(bool captureCursor);
         Task<Result<Uri?>> GetScreenRecording(CancellationToken cancellationToken);
+        Task<Result> StreamCaptureArea(Stream destinationStream, CancellationToken cancellationToken);
     }
 
     public class CapturePicker : ICapturePicker
     {
+        private readonly IFileSystem _fileSystem;
         private readonly IScreenGrabber _grabber;
         private readonly IScreenRecorder _screenRecorder;
-        private readonly IFileSystem _fileSystem;
         private readonly ISystemTime _systemTime;
         private readonly IWindowService _windowService;
         public CapturePicker(
@@ -104,12 +105,27 @@ namespace Medior.Services.ScreenCapture
             var fileName = $"Medior_Recording_{_systemTime.Now:yyyy-MM-dd hh.mm.ss.fff}.mp4";
             var filePath = Path.Combine(AppConstants.RecordingsDirectory, fileName);
             using var fs = _fileSystem.CreateFileStream(filePath, FileMode.Create);
-            var result = await _screenRecorder.CaptureVideo(selectedArea, 10, fs, cancellationToken);
+            var result = await _screenRecorder.CaptureVideo(selectedArea, 10, fs, false, cancellationToken);
             if (!result.IsSuccess)
             {
                 return Result.Fail<Uri?>(result.Exception!);
             }
             return Result.Ok<Uri?>(new Uri(filePath));
+        }
+
+        public async Task<Result> StreamCaptureArea(Stream destinationStream, CancellationToken cancellationToken)
+        {
+            using var _ = _windowService.HideMainWindow();
+            var selectedArea = _windowService.ShowCapturePicker();
+
+            if (selectedArea.IsEmpty)
+            {
+                return Result.Ok();
+            }
+
+            using var _2 = _windowService.ShowRecordingFrame(selectedArea);
+
+            return await _screenRecorder.CaptureVideo(selectedArea, 10, destinationStream, true, cancellationToken);
         }
     }
 }
