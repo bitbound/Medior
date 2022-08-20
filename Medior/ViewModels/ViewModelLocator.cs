@@ -11,6 +11,7 @@ namespace Medior.ViewModels
         public static KeepAwakeViewModel KeepAwakeViewModel => StaticServiceProvider.Instance.GetRequiredService<KeepAwakeViewModel>();
         public static PhotoSorterViewModel PhotoSorterViewModel => StaticServiceProvider.Instance.GetRequiredService<PhotoSorterViewModel>();
         public static QrCodeGeneratorViewModel QrCodeGeneratorViewModel => StaticServiceProvider.Instance.GetRequiredService<QrCodeGeneratorViewModel>();
+        public static RemoteControlViewModel RemoteControlViewModel => StaticServiceProvider.Instance.GetRequiredService<RemoteControlViewModel>();
         public static ScreenCaptureViewModel ScreenCaptureViewModel => StaticServiceProvider.Instance.GetRequiredService<ScreenCaptureViewModel>();
         public static SettingsViewModel SettingsViewModel => StaticServiceProvider.Instance.GetRequiredService<SettingsViewModel>();
         public static ShellViewModel ShellWindowViewModel => StaticServiceProvider.Instance.GetRequiredService<ShellViewModel>();

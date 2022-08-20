@@ -96,6 +96,7 @@ namespace Medior.Shared.SignalR
             var result = await WaitHelper.WaitForAsync(() => _connection?.State == HubConnectionState.Connected, TimeSpan.FromSeconds(3));
             if (!result)
             {
+                _baseLogger.LogError("Unable to establish a connection with the server.");
                 return Result.Fail<HubConnection>("Unable to establish a connection with the server.");
             }
             return Result.Ok(_connection!);

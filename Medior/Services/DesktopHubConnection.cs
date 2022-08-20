@@ -21,6 +21,7 @@ namespace Medior.Services
     {
         Task<Result<string>> GetClipboardReceiptToken();
         Task<Result> CheckConnection();
+        Task<Result> SendStream(Guid streamId, IAsyncEnumerable<byte[]> stream);
     }
 
     internal class DesktopHubConnection : HubConnectionBase, IDesktopHubClient, IDesktopHubConnection, IBackgroundService
@@ -66,6 +67,15 @@ namespace Medior.Services
             });
         }
 
+        public async Task<Result> SendStream(Guid streamId, IAsyncEnumerable<byte[]> stream)
+        {
+            return await TryInvoke(async (connection) =>
+            {
+                await connection.InvokeAsync("SendStream", streamId, stream);
+                return Result.Ok();
+            });
+        }
+
         public async Task Start(CancellationToken cancellationToken)
         {
             await Connect(
@@ -95,16 +105,41 @@ namespace Medior.Services
                     ConfigureHttpOptions);
             }
         }
+
         private async Task<Result<T>> TryInvoke<T>(Func<HubConnection, Task<Result<T>>> hubInvocation)
         {
             var getConnectionResult = await GetConnection();
             if (!getConnectionResult.IsSuccess)
             {
+                _logger.LogError(getConnectionResult.Exception!, "Failed to get connection.");
                 _messenger.SendToast(getConnectionResult.Error!, ToastType.Warning);
                 return Result.Fail<T>(getConnectionResult.Exception!);
             }
 
-            return await hubInvocation(getConnectionResult.Value!);
+            var invokeResult = await hubInvocation(getConnectionResult.Value!);
+            if (!invokeResult.IsSuccess)
+            {
+                _logger.LogError(invokeResult.Exception!, "Failed to invoke hub method.");
+            }
+            return invokeResult;
+        }
+
+        private async Task<Result> TryInvoke(Func<HubConnection, Task<Result>> hubInvocation)
+        {
+            var getConnectionResult = await GetConnection();
+            if (!getConnectionResult.IsSuccess)
+            {
+                _logger.LogError(getConnectionResult.Exception!, "Failed to get connection.");
+                _messenger.SendToast(getConnectionResult.Error!, ToastType.Warning);
+                return Result.Fail(getConnectionResult.Exception!);
+            }
+
+            var invokeResult = await hubInvocation(getConnectionResult.Value!);
+            if (!invokeResult.IsSuccess)
+            {
+                _logger.LogError(invokeResult.Exception!, "Failed to invoke hub method.");
+            }
+            return invokeResult;
         }
     }
 }

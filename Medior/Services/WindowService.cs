@@ -16,6 +16,7 @@ namespace Medior.Services
         void ShowQrCode(string url, string windowTitle);
 
         IDisposable ShowRecordingFrame(Rectangle selectedArea);
+        IDisposable ShowRemoteControlWindow(Guid streamId);
     }
 
     public class WindowService : IWindowService
@@ -112,6 +113,16 @@ namespace Medior.Services
             {
                 frame.Close();
                 stopButton.Close();
+            });
+        }
+
+        public IDisposable ShowRemoteControlWindow(Guid streamId)
+        {
+            var window = new RemoteControlWindow(streamId);
+            window.Show();
+            return new CallbackDisposable(() =>
+            {
+                window.Close();
             });
         }
     }

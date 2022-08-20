@@ -53,6 +53,8 @@ builder.Services.AddSignalR(options =>
 builder.Services.AddHostedService<DbCleanupService>();
 builder.Services.AddSingleton<IAppSettings, AppSettings>();
 builder.Services.AddSingleton<ISystemTime, SystemTime>();
+builder.Services.AddSingleton<IHubSessionCache, HubSessionCache>();
+builder.Services.AddSingleton<IDesktopStreamCache, DesktopStreamCache>();
 builder.Services.AddScoped<IClipboardSyncService, ClipboardSyncService>();
 builder.Services.AddScoped<IUploadedFileManager, UploadedFileManager>();
 builder.Services.AddScoped<IEncryptionService, EncryptionService>();

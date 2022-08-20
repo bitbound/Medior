@@ -58,6 +58,8 @@ namespace Medior
                 services.AddAppModule<FileSharingViewModel, FileSharingView>("File Sharing", PackIconBoxIconsKind.RegularShare);
                 services.AddAppModule<ClipboardSyncViewModel, ClipboardSyncView>("Clipboard Sync", PackIconBoxIconsKind.RegularSync);
 
+                services.AddTransient<RemoteControlViewModel>();
+
                 services.AddSingleton<IFileSystem, FileSystem>();
                 services.AddSingleton<IRegistryService, RegistryService>();
                 services.AddSingleton<IPowerControl, PowerControl>();
