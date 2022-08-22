@@ -109,6 +109,7 @@ namespace Medior.ViewModels
                     FileUploads.Add(file);
                 }
             }
+            OnPropertyChanged(nameof(FileUploads));
         }
 
         [RelayCommand]

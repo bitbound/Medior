@@ -1,3 +1,9 @@
+param (
+    [Parameter(Mandatory=$true)]
+    [string]
+    $ServerUrl
+)
+
 $ErrorActionPreference = "Stop"
 
 function Replace-LineInFile($FilePath, $MatchPattern, $ReplaceLineWith, $MaxCount = -1){
@@ -16,7 +22,7 @@ function Replace-LineInFile($FilePath, $MatchPattern, $ReplaceLineWith, $MaxCoun
     ($Content | Out-String).Trim() | Out-File -FilePath $FilePath -Force -Encoding utf8
 }
 
-
+$ServerUrl = $ServerUrl.TrimEnd("/")
 $InstallerDir = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer"
 $VsWhere = "$InstallerDir\vswhere.exe"
 $MSBuildPath = (&"$VsWhere" -latest -products * -find "\MSBuild\Current\Bin\MSBuild.exe").Trim()
@@ -39,6 +45,10 @@ $CurrentVersion = [Version]::Parse($VersionString)
 $NewVersion = [Version]::new($CurrentVersion.Major, $CurrentVersion.Minor, $CurrentVersion.Build + 1, 0)
 Replace-LineInFile -FilePath $PubxmlPath -MatchPattern "<ApplicationVersion>" -ReplaceLineWith "    <ApplicationVersion>$NewVersion</ApplicationVersion>"
 
+if ($ServerUrl -notlike "https://medior.app") {
+    Replace-LineInFile -FilePath $PubxmlPath -MatchPattern "<InstallUrl>" -ReplaceLineWith "      <InstallUrl>$ServerUrl/downloads/</InstallUrl>"
+    Replace-LineInFile -FilePath "$Root\Medior\Services\Settings.cs" -MatchPattern "private readonly string _defaultServerUrl" -ReplaceLineWith "private readonly string _defaultServerUrl = `"$ServerUrl`";" -MaxCount 1
+}
 
 &"$MSBuildPath" "$Root\Medior" -t:Restore -t:Publish -p:PublishProfile=Prod -p:ApplicationVersion=$NewVersion -p:Version=$NewVersion -p:FileVersion=$NewVersion -p:Configuration=Release -p:PublishDir="$DownloadsFolder"
 

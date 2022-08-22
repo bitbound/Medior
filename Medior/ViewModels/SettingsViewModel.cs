@@ -125,7 +125,8 @@ namespace Medior.ViewModels
             {
                 Filter = "JSON Files (*.json)|*.json",
                 AddExtension = true,
-                DefaultExt = ".json"
+                DefaultExt = ".json",
+                OverwritePrompt = false
             };
 
             var result = sfd.ShowDialog();

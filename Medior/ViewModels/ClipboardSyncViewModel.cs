@@ -102,6 +102,7 @@ namespace Medior.ViewModels
                     ClipboardSaves.Add(clip);
                 }
             }
+            OnPropertyChanged(nameof(ClipboardSaves));
         }
 
         public async Task UpdateClipboardSave(ClipboardSaveDto dto)

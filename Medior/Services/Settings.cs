@@ -40,6 +40,7 @@ namespace Medior.Services
     }
     public class Settings : ISettings
     {
+        private readonly string _defaultServerUrl = "https://medior.app";
         private readonly IEnvironmentHelper _environmentHelper;
         private readonly SemaphoreSlim _fileLock = new(1, 1);
         private readonly SemaphoreSlim _saveLock = new(2, 2);
@@ -196,7 +197,7 @@ namespace Medior.Services
                     return "https://localhost:7162";
                 }
 
-                return "https://medior.app";
+                return _defaultServerUrl;
             }
             set
             {
@@ -267,7 +268,6 @@ namespace Medior.Services
                 else
                 {
                     await Save();
-                    //_fileSystem.DeleteFile(originalPath);
                 }
                 return Result.Ok();
             }
@@ -293,7 +293,6 @@ namespace Medior.Services
                 _fileSystem.CreateDirectory(Path.GetDirectoryName(SettingsFilePath)!);
                 var serializedModel = JsonSerializer.Serialize(_settings, _serializerOptions);
                 await _fileSystem.WriteAllTextAsync(SettingsFilePath, serializedModel);
-                //_fileSystem.Encrypt(SettingsFilePath);
             }
             catch (Exception ex)
             {
