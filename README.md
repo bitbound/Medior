@@ -1,5 +1,5 @@
 # Medior
-A productivity and multimedia toolkit for Windows.
+A multimedia productivity toolkit for Windows.
 
 Website: https://medior.app
 
@@ -23,6 +23,8 @@ Current features include:
   - Generate QR codes for any URL
 - Clipboard Sync
   - Sync the contents of your clipboard to another device via a share URL
+
+The app includes public/private key generation that can be used for authentication and client-side encryption.  However, none of the current features are utilizing it.  More features may be added in the future that do.
 
 ## Building
 Requires VS2022 to build.  Run the `/.build/Build.ps1` script, passing in the parameter for the server URL.  This server URL is the public address where the server will be hosted (e.g. https://medior.app).  After completion, the output will be in `/Medior.Web/Server/bin/publish`.  This is everything that's needed to host the server, including the desktop app, which will have the server URL pre-configured.
