@@ -11,7 +11,7 @@ namespace Medior.Web.Server.Services
 
     public class HubSessionCache : IHubSessionCache
     {
-        private static ConcurrentDictionary<string, DesktopHubSession> _desktopSessions = new();
+        private static readonly ConcurrentDictionary<string, DesktopHubSession> _desktopSessions = new();
 
         public void AddDesktopSession(string connectionId, DesktopHubSession session)
         {

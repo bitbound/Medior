@@ -30,7 +30,6 @@ namespace Medior.ViewModels
         private readonly ILogger<ClipboardSyncViewModel> _logger;
         private readonly IMessenger _messenger;
         private readonly IProcessService _processes;
-        private readonly IQrCodeGenerator _qrCodeGenerator;
         private readonly IServerUriProvider _serverUri;
         private readonly ISettings _settings;
         private readonly ISystemTime _systemTime;
@@ -53,7 +52,6 @@ namespace Medior.ViewModels
         public ClipboardSyncViewModel(
             IMessenger messenger,
             IDesktopHubConnection hubConnection,
-            IQrCodeGenerator qrCodeGenerator,
             IClipboardApi clipApi,
             IServerUriProvider serverUri,
             ISystemTime systemTime,
@@ -65,7 +63,6 @@ namespace Medior.ViewModels
         {
             _messenger = messenger;
             _hubConnection = hubConnection;
-            _qrCodeGenerator = qrCodeGenerator;
             _clipboardApi = clipApi;
             _serverUri = serverUri;
             _systemTime = systemTime;
@@ -117,6 +114,32 @@ namespace Medior.ViewModels
             _messenger.SendToast("Clip updated", ToastType.Success);
         }
 
+        private static Result<ClipboardContentDto> GetClipboardContent()
+        {
+            if (Clipboard.ContainsText())
+            {
+                var text = Clipboard.GetText();
+                var content = new ClipboardContentDto(text);
+                return Result.Ok(content);
+
+            }
+            else if (Clipboard.ContainsImage())
+            {
+                var image = Clipboard.GetImage();
+                using var bitmap = image.ToBitmap();
+                using var ms = new MemoryStream();
+                bitmap.Save(ms, ImageFormat.Png);
+
+                var content = new ClipboardContentDto(ms.ToArray());
+
+                return Result.Ok(content);
+            }
+            else
+            {
+                return Result.Fail<ClipboardContentDto>("Only text and images are supported");
+            }
+        }
+
         [RelayCommand]
         private void CancelReceive()
         {
@@ -159,33 +182,6 @@ namespace Medior.ViewModels
                 _messenger.SendToast("File delete failed", ToastType.Error);
             }
         }
-
-        private Result<ClipboardContentDto> GetClipboardContent()
-        {
-            if (Clipboard.ContainsText())
-            {
-                var text = Clipboard.GetText();
-                var content = new ClipboardContentDto(text);
-                return Result.Ok(content);
-
-            }
-            else if (Clipboard.ContainsImage())
-            {
-                var image = Clipboard.GetImage();
-                using var bitmap = image.ToBitmap();
-                using var ms = new MemoryStream();
-                bitmap.Save(ms, ImageFormat.Png);
-
-                var content = new ClipboardContentDto(ms.ToArray());
-
-                return Result.Ok(content);
-            }
-            else
-            {
-                return Result.Fail<ClipboardContentDto>("Only text and images are supported");
-            }
-        }
-
         private void HandleClipboardReady(object recipient, ClipboardReadyDto message)
         {
             try
