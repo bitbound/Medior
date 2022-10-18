@@ -10,61 +10,52 @@ namespace Medior.Shared
     [DataContract]
     public class Result
     {
-        public static Result<T> Empty<T>()
-        {
-            return new Result<T>(true, default);
-        }
-
         public static Result Fail(string error)
         {
-            return new Result(false, error);
+            return new Result(error);
         }
         public static Result Fail(Exception ex)
         {
-            return new Result(false, null, ex);
+            return new Result(ex);
         }
 
-        public static Result<T> Fail<T>(string error)
+        public static Result<T> Fail<T>(string errorMessage)
         {
-            return new Result<T>(false, default, error);
+            return new Result<T>(errorMessage);
         }
 
         public static Result<T> Fail<T>(Exception ex)
         {
-            return new Result<T>(false, default, exception: ex);
+            return new Result<T>(ex);
         }
 
         public static Result Ok()
         {
-            return new Result(true);
+            return new Result();
         }
 
         public static Result<T> Ok<T>(T value)
         {
-            return new Result<T>(true, value, null);
+            return new Result<T>(value);
         }
 
-
-        public Result(bool isSuccess, string? error = null, Exception? exception = null)
+        private Result()
         {
-            IsSuccess = isSuccess;
-            Error = error;
+            IsSuccess = true;
+        }
+
+        private Result(string errorMessage)
+        {
+            IsSuccess = false;
+            Error = errorMessage;
+            Exception = new Exception(errorMessage);
+        }
+
+        private Result(Exception exception)
+        {
+            IsSuccess = false;
+            Error = exception.Message;
             Exception = exception;
-
-            if (!IsSuccess && string.IsNullOrWhiteSpace(Error) && Exception is null)
-            {
-                throw new ArgumentException("An error message or exception must be supplied for an unsuccessful result.");
-            }
-
-            if (string.IsNullOrWhiteSpace(Error) && Exception is not null)
-            {
-                Error = Exception.Message;
-            }
-
-            if (Exception is null && !string.IsNullOrWhiteSpace(Error))
-            {
-                Exception = new Exception(Error);
-            }
         }
 
         [DataMember]
@@ -82,27 +73,24 @@ namespace Medior.Shared
     [DataContract]
     public class Result<T>
     {
-        public Result(bool isSuccess, T? value, string? error = null, Exception? exception = null)
+        public Result(T value)
         {
-            IsSuccess = isSuccess;
-            Error = error;
             Value = value;
+            IsSuccess = true;
+        }
+
+        public Result(string errorMessage)
+        {
+            IsSuccess = false;
+            Error = errorMessage;
+            Exception = new Exception(errorMessage);
+        }
+
+        public Result(Exception exception)
+        {
+            IsSuccess = false;
+            Error = exception.Message;
             Exception = exception;
-
-            if (!IsSuccess && string.IsNullOrWhiteSpace(Error) && Exception is null)
-            {
-                throw new ArgumentException("An error message or exception must be supplied for an unsuccessful result.");
-            }
-
-            if (string.IsNullOrWhiteSpace(Error) && Exception is not null)
-            {
-                Error = Exception.Message;
-            }
-
-            if (Exception is null && !string.IsNullOrWhiteSpace(Error))
-            {
-                Exception = new Exception(Error);
-            }
         }
 
 
