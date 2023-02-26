@@ -97,6 +97,7 @@ namespace Medior
                 services.AddHttpClient<IAccountApi, AccountApi>(ConfigureHttpClient);
                 services.AddHttpClient<IFileApi, FileApi>(ConfigureHttpClient);
                 services.AddHttpClient<IClipboardApi, ClipboardApi>(ConfigureHttpClient);
+                services.AddHttpClient<IStreamingApi, StreamingApi>(ConfigureHttpClient);
 
 
                 services.AddLogging(builder => builder.AddProvider(new FileLoggerProvider()));

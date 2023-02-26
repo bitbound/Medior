@@ -13,7 +13,10 @@ namespace Medior.Web.Server.Api
 
         public VersionController(IWebHostEnvironment hostEnv)
         {
-            _downloadsDir = Directory.CreateDirectory(Path.Combine(hostEnv.WebRootPath, "downloads")).FullName;
+            var webRootPath = !string.IsNullOrWhiteSpace(hostEnv.WebRootPath) ?
+                hostEnv.WebRootPath :
+                Path.Combine(hostEnv.ContentRootPath, "wwwroot");
+            _downloadsDir = Directory.CreateDirectory(Path.Combine(webRootPath, "downloads")).FullName;
         }
 
         [HttpGet("desktop")]

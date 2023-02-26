@@ -3,6 +3,7 @@ using Medior.Shared;
 using Medior.Shared.Auth;
 using Medior.Shared.Dtos;
 using Medior.Shared.Interfaces;
+using Medior.Shared.Models;
 using Medior.Shared.SignalR;
 using Microsoft.AspNetCore.Http.Connections.Client;
 using Microsoft.AspNetCore.SignalR.Client;
@@ -21,7 +22,7 @@ namespace Medior.Services
     {
         Task<Result<string>> GetClipboardReceiptToken();
         Task<Result> CheckConnection();
-        Task<Result> SendStream(Guid streamId, IAsyncEnumerable<byte[]> stream);
+        Task<Result> SendStream(Guid streamId, IAsyncEnumerable<VideoChunk> stream, CancellationToken cancellationToken);
     }
 
     internal class DesktopHubConnection : HubConnectionBase, IDesktopHubClient, IDesktopHubConnection, IBackgroundService
@@ -67,11 +68,22 @@ namespace Medior.Services
             });
         }
 
-        public async Task<Result> SendStream(Guid streamId, IAsyncEnumerable<byte[]> stream)
+        public async Task<Result> SendStream(Guid streamId, IAsyncEnumerable<VideoChunk> stream, CancellationToken cancellationToken)
         {
             return await TryInvoke(async (connection) =>
             {
-                await connection.InvokeAsync("SendStream", streamId, stream);
+                try
+                {
+                    await connection.InvokeAsync("SendStream", streamId, stream, cancellationToken);
+                }
+                catch (TaskCanceledException) 
+                {
+                    _logger.LogInformation("Send stream cancelled.");
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error while sending stream.");
+                }
                 return Result.Ok();
             });
         }
@@ -112,7 +124,7 @@ namespace Medior.Services
             if (!getConnectionResult.IsSuccess)
             {
                 _logger.LogError(getConnectionResult.Exception!, "Failed to get connection.");
-                _messenger.SendToast(getConnectionResult.Error!, ToastType.Warning);
+                _messenger.SendToast(getConnectionResult.Reason!, ToastType.Warning);
                 return Result.Fail<T>(getConnectionResult.Exception!);
             }
 
@@ -126,15 +138,19 @@ namespace Medior.Services
 
         private async Task<Result> TryInvoke(Func<HubConnection, Task<Result>> hubInvocation)
         {
-            var getConnectionResult = await GetConnection();
-            if (!getConnectionResult.IsSuccess)
+            var result = await GetConnection();
+            if (!result.IsSuccess)
             {
-                _logger.LogError(getConnectionResult.Exception!, "Failed to get connection.");
-                _messenger.SendToast(getConnectionResult.Error!, ToastType.Warning);
-                return Result.Fail(getConnectionResult.Exception!);
+                _logger.LogError(result.Exception!, "Failed to get connection.");
+                _messenger.SendToast(result.Reason!, ToastType.Warning);
+                if (result.HadException)
+                {
+                    return Result.Fail(result.Exception);
+                }
+                return Result.Fail(result.Reason);
             }
 
-            var invokeResult = await hubInvocation(getConnectionResult.Value!);
+            var invokeResult = await hubInvocation(result.Value!);
             if (!invokeResult.IsSuccess)
             {
                 _logger.LogError(invokeResult.Exception!, "Failed to invoke hub method.");

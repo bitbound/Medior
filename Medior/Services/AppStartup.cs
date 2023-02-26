@@ -22,6 +22,8 @@ namespace Medior.Services
         private readonly IProcessService _processService;
         private readonly IKeyboardHookManager _keyboardHookManager;
         private readonly IEnvironmentHelper _environment;
+        private readonly IUiDispatcher _uiDispatcher;
+        private readonly IPowerControl _powerControl;
         private readonly ILogger<AppStartup> _logger;
         private readonly IEnumerable<IBackgroundService> _backgroundServices;
         private readonly List<Task> _backgroundTasks = new();
@@ -33,6 +35,8 @@ namespace Medior.Services
             IRegistryService registry,
             IProcessService processService,
             IEnvironmentHelper environment,
+            IUiDispatcher uiDispatcher,
+            IPowerControl powerControl,
             ILogger<AppStartup> logger,
             IEnumerable<IBackgroundService> backgroundServices)
         {
@@ -43,6 +47,8 @@ namespace Medior.Services
             _processService = processService;
             _keyboardHookManager = keyboardHookManager;
             _environment = environment;
+            _uiDispatcher = uiDispatcher;
+            _powerControl = powerControl;
             _logger = logger;
             _backgroundServices = backgroundServices;
         }
@@ -64,6 +70,11 @@ namespace Medior.Services
             }
 
             _registry.SetStartAtLogon(_settings.StartAtLogon);
+
+            _uiDispatcher.OnShutdown(ev =>
+            {
+                _powerControl.DisableKeepAwake();
+            });
 
             return Task.CompletedTask;
         }

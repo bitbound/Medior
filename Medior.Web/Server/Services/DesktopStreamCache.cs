@@ -2,6 +2,7 @@
 using Medior.Shared.Models;
 using Medior.Web.Server.Models;
 using System.Collections.Concurrent;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Medior.Web.Server.Services
 {
@@ -11,8 +12,8 @@ namespace Medior.Web.Server.Services
 
         StreamSignaler GetOrAdd(Guid streamId, Func<Guid, StreamSignaler> createFactory);
 
-        bool TryGet(Guid streamId, out StreamSignaler signaler);
-        void TryRemove(Guid streamId, out StreamSignaler signaler);
+        bool TryGet(Guid streamId, [NotNullWhen(true)] out StreamSignaler? signaler);
+        bool TryRemove(Guid streamId, [NotNullWhen(true)] out StreamSignaler? signaler);
         Task<Result<StreamSignaler>> WaitForStreamSession(Guid streamId, TimeSpan timeout);
     }
 
@@ -36,20 +37,14 @@ namespace Medior.Web.Server.Services
             return _streamingSessions.GetOrAdd(streamId, createFactory);
         }
 
-        public bool TryGet(Guid streamId, out StreamSignaler signaler)
+        public bool TryGet(Guid streamId, [NotNullWhen(true)] out StreamSignaler? signaler)
         {
-            if (_streamingSessions.TryGetValue(streamId, out var result))
-            {
-                signaler = result;
-                return true;
-            }
-            signaler = StreamSignaler.Empty;
-            return false;
+            return _streamingSessions.TryGetValue(streamId, out signaler);
         }
-        public void TryRemove(Guid streamId, out StreamSignaler signaler)
+
+        public bool TryRemove(Guid streamId, [NotNullWhen(true)] out StreamSignaler? signaler)
         {
-            _streamingSessions.TryRemove(streamId, out var result);
-            signaler = result ?? StreamSignaler.Empty;
+            return _streamingSessions.TryRemove(streamId, out signaler);
         }
 
         public async Task<Result<StreamSignaler>> WaitForStreamSession(Guid streamId, TimeSpan timeout)

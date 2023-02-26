@@ -20,9 +20,12 @@
                         <c:IconLabel IconKind="SolidCamera" IconText="Capture" />
                     </Button>
 
-                    <Button FontSize="14" Command="{Binding RecordCommand}">
+                    <Button FontSize="14" Command="{Binding RecordCommand}" Margin="0,0,10,0">
                         <c:IconLabel IconKind="SolidVideo" IconText="Record" />
                     </Button>
+                    <!--<Button FontSize="14" Command="{Binding BroadcastScreenCommand}">
+                        <c:IconLabel IconKind="RegularBroadcast" IconText="Broadcast" />
+                    </Button>-->
                     <StackPanel Orientation="Horizontal">
                         <StackPanel.Visibility>
                             <MultiBinding Converter="{StaticResource MultiBoolAnyToVisibilityConverter}">

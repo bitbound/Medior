@@ -4,10 +4,12 @@ using Medior.Shared.Services.Http;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Specialized;
+using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -28,6 +30,7 @@ namespace Medior.ViewModels
         private readonly IProcessService _processService;
         private readonly ISettings _settings;
         private readonly ISystemTime _systemTime;
+        private readonly IDesktopHubConnection _desktopHub;
         private readonly IWindowService _windowService;
 
         [ObservableProperty]
@@ -41,6 +44,10 @@ namespace Medior.ViewModels
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(IsHintTextVisible))]
         private Uri? _currentRecording;
+
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(IsHintTextVisible))]
+        private Uri? _currentBroadcastUri;
 
         [ObservableProperty]
         private bool _isRecordingInProgress;
@@ -57,6 +64,7 @@ namespace Medior.ViewModels
             ISystemTime systemTime,
             IProcessService processService,
             IFileSystem fileSystem,
+            IDesktopHubConnection desktopHub,
             ILogger<ScreenCaptureViewModel> logger)
         {
             _picker = picker;
@@ -69,6 +77,7 @@ namespace Medior.ViewModels
             _processService = processService;
             _fileSystem = fileSystem;
             _systemTime = systemTime;
+            _desktopHub = desktopHub;
 
             _messenger.Register<GenericMessage<ScreenCaptureRequestKind>>(this, HandleScreenCaptureRequest);
             _messenger.Register<GenericMessage<ParameterlessMessageKind>>(this, HandleStopRecordingRequested);
@@ -76,6 +85,7 @@ namespace Medior.ViewModels
         public bool IsHintTextVisible =>
             CurrentImage is null &&
             CurrentRecording is null &&
+            CurrentBroadcastUri is null &&
             !IsRecordingInProgress;
 
 
@@ -349,6 +359,34 @@ namespace Medior.ViewModels
             }
         }
 
+        [RelayCommand]
+        private async Task BroadcastScreen()
+        {
+            try
+            {
+                ResetCaptureState();
+
+                _recordingCts = new CancellationTokenSource();
+
+                var streamId = Guid.NewGuid();
+
+                var streamTask =  _desktopHub.SendStream(streamId, _picker.StreamScreen(_recordingCts.Token), _recordingCts.Token);
+
+                // TODO: Bind read-only input with copy button to this.
+                //CurrentBroadcastUri = new Uri($"{_settings.ServerUri}/api/streaming/{streamId}");
+                //Clipboard.SetText($"{_settings.ServerUri}/api/streaming/{streamId}");
+
+                await streamTask.ConfigureAwait(false);
+
+                _windowService.ShowMainWindow();
+            }
+            finally
+            {
+                CurrentBroadcastUri = null;
+                IsRecordingInProgress = false;
+            }
+        }
+
         private void ResetCaptureState()
         {
             CaptureViewUrl = null;
@@ -471,7 +509,7 @@ namespace Medior.ViewModels
 
                 if (!result.IsSuccess)
                 {
-                    await _dialogService.ShowError(result.Error!);
+                    await _dialogService.ShowError(result.Reason!);
                     return;
                 }
 
@@ -531,7 +569,7 @@ namespace Medior.ViewModels
 
                 if (!result.IsSuccess)
                 {
-                    await _dialogService.ShowError(result.Error!);
+                    await _dialogService.ShowError(result.Reason!);
                     return;
                 }
 

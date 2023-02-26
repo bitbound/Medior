@@ -1,5 +1,6 @@
 ﻿using Medior.Shared.Dtos;
 using Medior.Shared.Interfaces;
+using Medior.Shared.Models;
 using Medior.Web.Server.Data;
 using Medior.Web.Server.Extensions;
 using Medior.Web.Server.Models;
@@ -56,7 +57,7 @@ namespace Medior.Web.Server.Hubs
             return _clipboardSync.RegisterReceiver(Context.ConnectionId);
         }
 
-        public async Task SendStream(Guid streamId, IAsyncEnumerable<byte[]> stream)
+        public async Task SendStream(Guid streamId, IAsyncEnumerable<VideoChunk> stream)
         {
             var session = _streamCache.GetOrAdd(streamId, key => new StreamSignaler(streamId));
 

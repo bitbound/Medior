@@ -86,7 +86,7 @@ namespace Medior.Services.ScreenCapture
                     }
                     else
                     {
-                        var err = result.Error ?? "Null frame returned.";
+                        var err = result.Reason ?? "Null frame returned.";
                         _logger.LogError("Screen grab failed.  Error: {msg}", err);
                     }
 
@@ -94,7 +94,7 @@ namespace Medior.Services.ScreenCapture
 
                     if (!diffResult.IsSuccess)
                     {
-                        _logger.LogError("Get image diff failed.  Error: {msg}", diffResult.Error);
+                        _logger.LogError("Get image diff failed.  Error: {msg}", diffResult.Reason);
                         continue;
                     }
 

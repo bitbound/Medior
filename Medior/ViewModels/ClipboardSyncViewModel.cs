@@ -274,7 +274,7 @@ namespace Medior.ViewModels
                 var result = GetClipboardContent();
                 if (!result.IsSuccess)
                 {
-                    _messenger.SendToast(result.Error!, ToastType.Warning);
+                    _messenger.SendToast(result.Reason!, ToastType.Warning);
                     return;
                 }
 

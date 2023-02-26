@@ -1,16 +1,22 @@
 ﻿using Medior.Models;
 using Medior.Shared;
+using Medior.Shared.IO;
+using Medior.Shared.Models;
+using Medior.Shared.Services;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading;
 using System.Threading.Tasks;
+using Windows.Media.Capture;
 using Windows.Media.Core;
 using Windows.Media.MediaProperties;
 using Windows.Media.Transcoding;
@@ -30,22 +36,26 @@ namespace Medior.Services.ScreenCapture
              int frameRate,
              Stream destinationStream,
              CancellationToken cancellationToken);
+        IAsyncEnumerable<VideoChunk> StreamVideo(Rectangle selectedArea, int frameRate, CancellationToken cancellationToken);
     }
 
     public class ScreenRecorder : IScreenRecorder
     {
         //private static readonly Guid MFTranscodeContainerType_MPEG4 = new("DC6CD05D-B9D0-40ef-BD35-FA622C1AB28A");
-        //private static readonly Guid MFTranscodeContainerType_FMPEG4 = new("9ba876f1-419f-4b77-a1e0-35959d9d4004");
+        private static readonly Guid MFTranscodeContainerType_FMPEG4 = new("9ba876f1-419f-4b77-a1e0-35959d9d4004");
 
 
         private readonly IScreenGrabber _grabber;
+        private readonly ISystemTime _systemTime;
         private readonly ILogger<ScreenRecorder> _logger;
 
         public ScreenRecorder(
-            IScreenGrabber screenGrabber, 
+            IScreenGrabber screenGrabber,
+            ISystemTime systemTime,
             ILogger<ScreenRecorder> logger)
         {
             _grabber = screenGrabber;
+            _systemTime = systemTime;
             _logger = logger;
         }
 
@@ -55,7 +65,7 @@ namespace Medior.Services.ScreenCapture
             Stream destinationStream, 
             CancellationToken cancellationToken)
         {
-            return await CaptureVideoImpl(captureArea, frameRate, destinationStream, cancellationToken);
+            return await CaptureVideoImpl(captureArea, frameRate, destinationStream, false, cancellationToken);
         }
 
         public async Task<Result> CaptureVideo(
@@ -66,13 +76,29 @@ namespace Medior.Services.ScreenCapture
         {
 
             var captureArea = new Rectangle(Point.Empty, display.MonitorArea.Size);
-            return await CaptureVideoImpl(captureArea, frameRate, destinationStream, cancellationToken);
+            return await CaptureVideoImpl(captureArea, frameRate, destinationStream, false, cancellationToken);
+        }
+
+        public async IAsyncEnumerable<VideoChunk> StreamVideo(
+            Rectangle captureArea, 
+            int frameRate,
+            [EnumeratorCancellation] CancellationToken cancellationToken)
+        {
+            var emitStream = new EmittableVideoStream();
+
+            _ = Task.Run(() => CaptureVideoImpl(captureArea, frameRate, emitStream, true, cancellationToken), cancellationToken);
+
+            await foreach (var chunk in emitStream.GetRedirectedStream(cancellationToken))
+            {
+                yield return chunk;
+            }
         }
 
         private async Task<Result> CaptureVideoImpl(
             Rectangle captureArea,
             int frameRate,
             Stream destinationStream,
+            bool makeStreamable,
             CancellationToken cancellationToken)
         {
             try
@@ -136,6 +162,10 @@ namespace Medior.Services.ScreenCapture
                 };
 
                 var encodingProfile = MediaEncodingProfile.CreateMp4(VideoEncodingQuality.HD1080p);
+                if (makeStreamable)
+                {
+                    encodingProfile.Container.Subtype = MFTranscodeContainerType_FMPEG4.ToString("D");
+                }
                 encodingProfile.Video.Width = (uint)captureArea.Width;
                 encodingProfile.Video.Height = (uint)captureArea.Height;
                 // Default 15_000_000.

@@ -141,6 +141,11 @@ namespace Medior.Web.Server.Auth
                 publicKey = existingUser.PublicKey;
             }
 
+            if (string.IsNullOrWhiteSpace(publicKey))
+            {
+                return AuthenticateResult.Fail("No public key found in the payload.");
+            }
+
             var publicBytes = Convert.FromBase64String(publicKey);
             encryption.ImportPublicKey(publicBytes);
             var result = encryption.Verify(signedDto.Payload, signedDto.Signature);

@@ -13,7 +13,7 @@ namespace Medior.Web.Server.Models
 
         public SemaphoreSlim EndSignal { get; } = new(0, 1);
         public SemaphoreSlim ReadySignal { get; } = new(0, 1);
-        public IAsyncEnumerable<byte[]>? Stream { get; set; }
+        public IAsyncEnumerable<VideoChunk>? Stream { get; set; }
         public Guid StreamId { get; init; }
     }
 }

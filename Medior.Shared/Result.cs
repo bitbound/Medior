@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
@@ -10,23 +11,23 @@ namespace Medior.Shared
     [DataContract]
     public class Result
     {
-        public static Result Fail(string error)
+        public static Result Fail(string reason)
         {
-            return new Result(error);
+            return new Result(reason);
         }
         public static Result Fail(Exception ex)
         {
             return new Result(ex);
         }
 
-        public static Result<T> Fail<T>(string errorMessage)
+        public static Result<T> Fail<T>(string reason)
         {
-            return new Result<T>(errorMessage);
+            return new Result<T>(reason);
         }
 
-        public static Result<T> Fail<T>(Exception ex)
+        public static Result<T> Fail<T>(Exception exception)
         {
-            return new Result<T>(ex);
+            return new Result<T>(exception);
         }
 
         public static Result Ok()
@@ -44,30 +45,32 @@ namespace Medior.Shared
             IsSuccess = true;
         }
 
-        private Result(string errorMessage)
+        private Result(string reason)
         {
             IsSuccess = false;
-            Error = errorMessage;
-            Exception = new Exception(errorMessage);
+            Reason = reason;
         }
 
         private Result(Exception exception)
         {
             IsSuccess = false;
-            Error = exception.Message;
+            Reason = exception.Message;
             Exception = exception;
         }
 
         [DataMember]
+        [MemberNotNullWhen(false, nameof(Reason))]
         public bool IsSuccess { get; init; }
 
         [DataMember]
-        public string? Error { get; init; }
+        public string? Reason { get; init; }
 
         [DataMember]
         public Exception? Exception { get; init; }
 
-
+        [IgnoreDataMember]
+        [MemberNotNullWhen(true, nameof(Exception))]
+        public bool HadException => Exception is not null;
     }
 
     [DataContract]
@@ -79,31 +82,36 @@ namespace Medior.Shared
             IsSuccess = true;
         }
 
-        public Result(string errorMessage)
+        public Result(string reason)
         {
             IsSuccess = false;
-            Error = errorMessage;
-            Exception = new Exception(errorMessage);
+            Reason = reason;
         }
 
         public Result(Exception exception)
         {
             IsSuccess = false;
-            Error = exception.Message;
+            Reason = exception.Message;
             Exception = exception;
         }
 
 
         [DataMember]
+        [MemberNotNullWhen(false, nameof(Reason))]
+        [MemberNotNullWhen(true, nameof(Value))]
         public bool IsSuccess { get; init; }
 
         [DataMember]
-        public string? Error { get; init; }
+        public string? Reason { get; init; }
 
         [DataMember]
         public Exception? Exception { get; init; }
 
         [DataMember]
         public T? Value { get; init; }
+
+        [IgnoreDataMember]
+        [MemberNotNullWhen(true, nameof(Exception))]
+        public bool HadException => Exception is not null;
     }
 }

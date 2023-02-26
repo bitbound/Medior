@@ -22,11 +22,16 @@ namespace Medior.Services
     public class WindowService : IWindowService
     {
         private readonly IMessenger _messenger;
+        private readonly IEnvironmentHelper _envHelper;
         private readonly IQrCodeGenerator _qrCodeGenerator;
-        public WindowService(IQrCodeGenerator qrCodeGenerator, IMessenger messenger)
+        public WindowService(
+            IQrCodeGenerator qrCodeGenerator, 
+            IMessenger messenger,
+            IEnvironmentHelper envHelper)
         {
             _qrCodeGenerator = qrCodeGenerator;
             _messenger = messenger;
+            _envHelper = envHelper;
         }
 
         public IDisposable HideMainWindow()
@@ -62,12 +67,20 @@ namespace Medior.Services
         public Rectangle ShowCapturePicker(Bitmap backgroundImage)
         {
             var window = new CapturePickerWindow(backgroundImage);
+            if (_envHelper.IsDebug)
+            {
+                window.Topmost = false;
+            }
             window.ShowDialog();
             return window.SelectedArea;
         }
         public Rectangle ShowCapturePicker()
         {
             var window = new CapturePickerWindow();
+            if (_envHelper.IsDebug)
+            {
+                window.Topmost = false;
+            }
             window.ShowDialog();
             return window.SelectedArea;
         }
