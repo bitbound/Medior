@@ -45,7 +45,7 @@ $CurrentVersion = [Version]::Parse($VersionString)
 $NewVersion = [Version]::new($CurrentVersion.Major, $CurrentVersion.Minor, $CurrentVersion.Build + 1, 0)
 Replace-LineInFile -FilePath $PubxmlPath -MatchPattern "<ApplicationVersion>" -ReplaceLineWith "    <ApplicationVersion>$NewVersion</ApplicationVersion>"
 
-if ($ServerUrl -notlike "https://medior.app") {
+if ($ServerUrl -notlike "https://medior.jaredg.dev") {
     Replace-LineInFile -FilePath $PubxmlPath -MatchPattern "<InstallUrl>" -ReplaceLineWith "      <InstallUrl>$ServerUrl/downloads/</InstallUrl>"
     Replace-LineInFile -FilePath "$Root\Medior\Services\Settings.cs" -MatchPattern "private readonly string _defaultServerUrl" -ReplaceLineWith "private readonly string _defaultServerUrl = `"$ServerUrl`";" -MaxCount 1
 }

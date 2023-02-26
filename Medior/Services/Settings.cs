@@ -1,4 +1,4 @@
-﻿using CommunityToolkit.Diagnostics;
+using CommunityToolkit.Diagnostics;
 using Medior.Models;
 using Medior.Models.PhotoSorter;
 using Medior.Shared;
@@ -40,7 +40,7 @@ namespace Medior.Services
     }
     public class Settings : ISettings
     {
-        private readonly string _defaultServerUrl = "https://medior.app";
+        private readonly string _defaultServerUrl = "https://medior.jaredg.dev";
         private readonly IEnvironmentHelper _environmentHelper;
         private readonly SemaphoreSlim _fileLock = new(1, 1);
         private readonly SemaphoreSlim _saveLock = new(2, 2);
