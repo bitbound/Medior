@@ -31,6 +31,7 @@ namespace Medior.ViewModels
         private readonly ISettings _settings;
         private readonly ISystemTime _systemTime;
         private readonly IDesktopHubConnection _desktopHub;
+        private readonly IScreenRecorder _screenRecorder;
         private readonly IWindowService _windowService;
 
         [ObservableProperty]
@@ -65,6 +66,7 @@ namespace Medior.ViewModels
             IProcessService processService,
             IFileSystem fileSystem,
             IDesktopHubConnection desktopHub,
+            IScreenRecorder screenRecorder,
             ILogger<ScreenCaptureViewModel> logger)
         {
             _picker = picker;
@@ -78,6 +80,7 @@ namespace Medior.ViewModels
             _fileSystem = fileSystem;
             _systemTime = systemTime;
             _desktopHub = desktopHub;
+            _screenRecorder = screenRecorder;
 
             _messenger.Register<GenericMessage<ScreenCaptureRequestKind>>(this, HandleScreenCaptureRequest);
             _messenger.Register<GenericMessage<ParameterlessMessageKind>>(this, HandleStopRecordingRequested);
@@ -366,18 +369,30 @@ namespace Medior.ViewModels
             {
                 ResetCaptureState();
 
+                var selectedArea = _windowService.ShowCapturePicker();
+
+                if (selectedArea.IsEmpty)
+                {
+                    return;
+                }
+
+
+                using var _ = _windowService.ShowRecordingFrame(selectedArea);
+
                 _recordingCts = new CancellationTokenSource();
+
+                var videoStream = _screenRecorder.StreamVideo(selectedArea, 10, _recordingCts.Token);
 
                 var streamId = Guid.NewGuid();
 
-                var streamTask =  _desktopHub.SendStream(streamId, _picker.StreamScreen(_recordingCts.Token), _recordingCts.Token);
+                var streamTask =  _desktopHub.SendStream(streamId, videoStream, _recordingCts.Token);
 
                 // TODO: Bind read-only input with copy button to this.
                 //CurrentBroadcastUri = new Uri($"{_settings.ServerUri}/api/streaming/{streamId}");
-                //Clipboard.SetText($"{_settings.ServerUri}/api/streaming/{streamId}");
+                Clipboard.SetText($"{_settings.ServerUri}/api/streaming/{streamId}");
 
-                await streamTask.ConfigureAwait(false);
-
+                await Task.WhenAny(streamTask, Task.Delay(Timeout.Infinite, _recordingCts.Token)).ConfigureAwait(false);
+ 
                 _windowService.ShowMainWindow();
             }
             finally

@@ -22,15 +22,18 @@ namespace Medior.Services
     public class WindowService : IWindowService
     {
         private readonly IMessenger _messenger;
+        private readonly IUiDispatcher _uiDispatcher;
         private readonly IEnvironmentHelper _envHelper;
         private readonly IQrCodeGenerator _qrCodeGenerator;
         public WindowService(
             IQrCodeGenerator qrCodeGenerator, 
             IMessenger messenger,
+            IUiDispatcher uiDispatcher,
             IEnvironmentHelper envHelper)
         {
             _qrCodeGenerator = qrCodeGenerator;
             _messenger = messenger;
+            _uiDispatcher = uiDispatcher;
             _envHelper = envHelper;
         }
 
@@ -124,8 +127,11 @@ namespace Medior.Services
             stopButton.Show();
             return new CallbackDisposable(() =>
             {
-                frame.Close();
-                stopButton.Close();
+                _uiDispatcher.Invoke(() =>
+                {
+                    frame.Close();
+                    stopButton.Close();
+                });
             });
         }
 

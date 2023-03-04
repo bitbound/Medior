@@ -79,19 +79,16 @@ namespace Medior.Services.ScreenCapture
             return await CaptureVideoImpl(captureArea, frameRate, destinationStream, false, cancellationToken);
         }
 
-        public async IAsyncEnumerable<VideoChunk> StreamVideo(
+        public IAsyncEnumerable<VideoChunk> StreamVideo(
             Rectangle captureArea, 
             int frameRate,
-            [EnumeratorCancellation] CancellationToken cancellationToken)
+            CancellationToken cancellationToken)
         {
             var emitStream = new EmittableVideoStream();
 
             _ = Task.Run(() => CaptureVideoImpl(captureArea, frameRate, emitStream, true, cancellationToken), cancellationToken);
 
-            await foreach (var chunk in emitStream.GetRedirectedStream(cancellationToken))
-            {
-                yield return chunk;
-            }
+            return emitStream.GetRedirectedStream(cancellationToken);
         }
 
         private async Task<Result> CaptureVideoImpl(
@@ -171,7 +168,7 @@ namespace Medior.Services.ScreenCapture
                 // Default 15_000_000.
                 encodingProfile.Video.Bitrate = 2_000_000;
                 encodingProfile.Video.FrameRate.Numerator = (uint)frameRate;
-
+               
                 var transcoder = new MediaTranscoder
                 {
                     HardwareAccelerationEnabled = true,

@@ -1,4 +1,5 @@
 ﻿using Medior.Shared;
+using Medior.Shared.Extensions;
 using Medior.Shared.Models;
 using Medior.Shared.Services;
 using System;
@@ -18,8 +19,6 @@ namespace Medior.Services.ScreenCapture
 
         Result<Bitmap?> GetScreenCapture(bool captureCursor);
         Task<Result<Uri?>> GetScreenRecording(CancellationToken cancellationToken);
-        IAsyncEnumerable<VideoChunk> StreamScreen(CancellationToken cancellationToken);
-
         Task<Result> StreamCaptureArea(Stream destinationStream, CancellationToken cancellationToken);
     }
 
@@ -116,23 +115,6 @@ namespace Medior.Services.ScreenCapture
                 return Result.Fail<Uri?>(result.Exception!);
             }
             return Result.Ok<Uri?>(new Uri(filePath));
-        }
-
-        public async IAsyncEnumerable<VideoChunk> StreamScreen([EnumeratorCancellation] CancellationToken cancellationToken)
-        {
-            var selectedArea = _windowService.ShowCapturePicker();
-
-            if (selectedArea.IsEmpty)
-            {
-                yield break;
-            }
-
-            using var _ = _windowService.ShowRecordingFrame(selectedArea);
-
-            await foreach (var chunk in _screenRecorder.StreamVideo(selectedArea, 10, cancellationToken))
-            {
-                yield return chunk;
-            }
         }
 
         public async Task<Result> StreamCaptureArea(Stream destinationStream, CancellationToken cancellationToken)

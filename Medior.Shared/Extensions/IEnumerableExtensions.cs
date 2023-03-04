@@ -12,5 +12,14 @@ namespace Medior.Shared.Extensions
         {
             return string.Join(separator, strings);
         }
+
+        public static async IAsyncEnumerable<T> ToAsyncEnumerable<T>(this IEnumerable<T> enumerable)
+        {
+            foreach (var item in enumerable)
+            {
+                yield return item;
+            }
+            await Task.CompletedTask;
+        }
     }
 }
