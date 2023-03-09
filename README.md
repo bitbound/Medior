@@ -1,7 +1,7 @@
 # Medior
 A multimedia productivity toolkit for Windows.
 
-Website: https://medior.app
+Website: https://medior.jaredg.dev
 
 ## Description
 Medior is a compilation of multimedia-related tools, compromised of a WPF desktop app and ASP.NET Core Blazor web app.
