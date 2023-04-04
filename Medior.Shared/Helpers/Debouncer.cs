@@ -29,7 +29,7 @@ namespace Medior.Shared.Helpers
                 }
                 finally
                 {
-                    if (_timers.TryGetValue(key, out var result))
+                    if (_timers.TryRemove(key, out var result))
                     {
                         result?.Dispose();
                     }
