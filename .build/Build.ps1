@@ -60,8 +60,11 @@ if (Test-Path -Path "$DownloadsFolder\setup.exe") {
     Rename-Item -Path "$DownloadsFolder\setup.exe" -NewName "MediorSetup.exe"
 }
 
-Get-ChildItem -Path "$Root\Medior.Web\Server\bin\publish" | ForEach-Object {
-    Remove-Item -Path $_.FullName -Recurse -Force
+
+if (Test-Path -Path "$Root\Medior.Web\Server\bin\publish") {
+    Get-ChildItem -Path "$Root\Medior.Web\Server\bin\publish" | ForEach-Object {
+        Remove-Item -Path $_.FullName -Recurse -Force
+    }
 }
 
 dotnet publish -p:ExcludeApp_Data=true --runtime linux-x64 --configuration Release --output "$Root\Medior.Web\Server\bin\publish" --self-contained true "$Root\Medior.Web\Server\"

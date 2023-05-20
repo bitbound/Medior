@@ -1,6 +1,7 @@
 ﻿using Medior.Shared.Extensions;
 using Medior.Shared.Models;
 using Microsoft.Extensions.Logging;
+using Nihs.ConcurrentList;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;

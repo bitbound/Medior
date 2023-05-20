@@ -21,7 +21,7 @@
                       SourceUpdated="MediaViewer_SourceUpdated"
                       Margin="0,0,0,10" 
                       SnapsToDevicePixels="True"
-                      Stretch="UniformToFill"
+                   
                       MediaOpened="MediaViewer_MediaOpened"
                       MediaFailed="MediaViewer_MediaFailed"
                       MediaEnded="MediaViewer_MediaEnded"/>
