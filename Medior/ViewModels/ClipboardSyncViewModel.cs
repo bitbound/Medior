@@ -22,8 +22,7 @@ using System.Windows.Media.Imaging;
 
 namespace Medior.ViewModels
 {
-    [ObservableObject]
-    public partial class ClipboardSyncViewModel
+    public partial class ClipboardSyncViewModel : ObservableObject
     {
         private readonly IClipboardApi _clipboardApi;
         private readonly IDesktopHubConnection _hubConnection;
@@ -163,7 +162,7 @@ namespace Medior.ViewModels
         [RelayCommand(CanExecute = nameof(IsCopyEnabled))]
         private void CopySyncUrl()
         {
-            Clipboard.SetText(_syncUrl);
+            Clipboard.SetText(SyncUrl);
             _messenger.SendToast("Copied to clipboard", ToastType.Success);
         }
 
@@ -195,7 +194,10 @@ namespace Medior.ViewModels
                 ReceiptExpirationTimer?.Dispose();
                 ReceiptExpirationTimer = null;
 
-                ClipboardSaves.Add(message.ClipboardSave);
+                _uiDispatcher.Invoke(() =>
+                {
+                    ClipboardSaves.Add(message.ClipboardSave);
+                });
 
                 _messenger.SendToast("Clipboard content received", ToastType.Success);
             }
