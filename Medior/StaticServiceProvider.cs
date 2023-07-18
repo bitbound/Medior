@@ -64,7 +64,7 @@ namespace Medior
                 services.AddSingleton<IRegistryService, RegistryService>();
                 services.AddSingleton<IPowerControl, PowerControl>();
                 services.AddSingleton<ISystemTime, SystemTime>();
-                services.AddSingleton<IProcessService, ProcessService>();
+                services.AddSingleton<IProcessService, ProcessManager>();
                 services.AddSingleton<IDialogService, DialogService>();
                 services.AddSingleton<IKeyboardHookManager, KeyboardHookManager>();
                 services.AddSingleton<ITrayService, TrayService>();
@@ -78,6 +78,7 @@ namespace Medior
                 services.AddSingleton<IThemeSetter, ThemeSetter>();
                 services.AddSingleton<IWindowService, WindowService>();
                 services.AddSingleton<IHttpConfigurer, HttpConfigurer>();
+                services.AddSingleton<IFileLockSearcher, FileLockSearcher>();
                 services.AddScoped<ICapturePicker, CapturePicker>();
                 services.AddScoped<IScreenGrabber, ScreenGrabber>();
                 services.AddScoped<IScreenRecorder, ScreenRecorder>();

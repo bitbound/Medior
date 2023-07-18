@@ -27,7 +27,7 @@ namespace Medior.Services
         Process? Start(ProcessStartInfo startInfo);
     }
 
-    public class ProcessService : IProcessService
+    public class ProcessManager : IProcessService
     {
         public Process GetCurrentProcess()
         {
