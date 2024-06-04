@@ -1,9 +1,8 @@
-﻿namespace Medior.Models.Messages
+﻿namespace Medior.Models.Messages;
+
+internal enum ParameterlessMessageKind
 {
-    internal enum ParameterlessMessageKind
-    {
-        StopRecordingRequested,
-        PrivateKeyChanged,
-        ServerUriChanged
-    }
+    StopRecordingRequested,
+    PrivateKeyChanged,
+    ServerUriChanged
 }

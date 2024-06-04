@@ -2,33 +2,32 @@
 using System.Linq;
 using System.Collections.Generic;
 
-namespace Medior.Extensions
+namespace Medior.Extensions;
+
+public static class ListExtensions
 {
-    public static class ListExtensions
+    public static bool TryReplace<T>(this IList<T> self, T newItem, Predicate<T> predicate)
     {
-        public static bool TryReplace<T>(this IList<T> self, T newItem, Predicate<T> predicate)
+        if (newItem is null)
         {
-            if (newItem is null)
-            {
-                return false;
-            }
-
-            var foundItem = self.FirstOrDefault(x => predicate(x));
-
-            if (foundItem is null)
-            {
-                return false;
-            }
-
-            var index = self.IndexOf(foundItem);
-
-            if (index == -1)
-            {
-                return false;
-            }
-
-            self[index] = newItem;
-            return true;
+            return false;
         }
+
+        var foundItem = self.FirstOrDefault(x => predicate(x));
+
+        if (foundItem is null)
+        {
+            return false;
+        }
+
+        var index = self.IndexOf(foundItem);
+
+        if (index == -1)
+        {
+            return false;
+        }
+
+        self[index] = newItem;
+        return true;
     }
 }

@@ -1,31 +1,30 @@
 ﻿using Medior.Web.Server.Models;
 using System.Collections.Concurrent;
 
-namespace Medior.Web.Server.Services
+namespace Medior.Web.Server.Services;
+
+public interface IHubSessionCache
 {
-    public interface IHubSessionCache
+    void AddDesktopSession(string connectionId, DesktopHubSession session);
+    bool RemoveDesktopSession(string connectionId, out DesktopHubSession session);
+}
+
+public class HubSessionCache : IHubSessionCache
+{
+    private static readonly ConcurrentDictionary<string, DesktopHubSession> _desktopSessions = new();
+
+    public void AddDesktopSession(string connectionId, DesktopHubSession session)
     {
-        void AddDesktopSession(string connectionId, DesktopHubSession session);
-        bool RemoveDesktopSession(string connectionId, out DesktopHubSession session);
+        _desktopSessions.AddOrUpdate(connectionId, session, (k, v) => session);
     }
 
-    public class HubSessionCache : IHubSessionCache
+    public bool RemoveDesktopSession(string connectionId, out DesktopHubSession session)
     {
-        private static readonly ConcurrentDictionary<string, DesktopHubSession> _desktopSessions = new();
-
-        public void AddDesktopSession(string connectionId, DesktopHubSession session)
+        if (_desktopSessions.TryRemove(connectionId, out session!))
         {
-            _desktopSessions.AddOrUpdate(connectionId, session, (k, v) => session);
+            return true;
         }
-
-        public bool RemoveDesktopSession(string connectionId, out DesktopHubSession session)
-        {
-            if (_desktopSessions.TryRemove(connectionId, out session!))
-            {
-                return true;
-            }
-            session = DesktopHubSession.Empty;
-            return false;
-        }
+        session = DesktopHubSession.Empty;
+        return false;
     }
 }

@@ -1,127 +1,119 @@
 ﻿using Medior.Shared.Dtos;
-using Medior.Shared.Entities;
 using Medior.Shared.Interfaces;
-using MessagePack;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http.Json;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace Medior.Shared.Services.Http
+namespace Medior.Shared.Services.Http;
+
+public interface IClipboardApi
 {
-    public interface IClipboardApi
+    Task<Result> DeleteClip(ClipboardSaveDto clip);
+
+    Task<Result<ClipboardContentDto>> GetClipboardContent(string clipId, string accessToken);
+
+    Task<Result<ClipboardSaveDto>> SaveClipboardContent(ClipboardContentDto content);
+    Task<Result> SendToReceiver(string receiptToken, ClipboardContentDto content);
+    Task<Result> UpdateClip(ClipboardSaveDto dto);
+}
+public class ClipboardApi : IClipboardApi
+{
+    private readonly HttpClient _client;
+    private readonly ILogger<ClipboardApi> _logger;
+    private readonly IServerUriProvider _uri;
+    public ClipboardApi(
+        HttpClient client,
+        IServerUriProvider serverUri,
+        ILogger<ClipboardApi> logger)
     {
-        Task<Result> DeleteClip(ClipboardSaveDto clip);
-
-        Task<Result<ClipboardContentDto>> GetClipboardContent(string clipId, string accessToken);
-
-        Task<Result<ClipboardSaveDto>> SaveClipboardContent(ClipboardContentDto content);
-        Task<Result> SendToReceiver(string receiptToken, ClipboardContentDto content);
-        Task<Result> UpdateClip(ClipboardSaveDto dto);
+        _client = client;
+        _uri = serverUri;
+        _logger = logger;
     }
-    public class ClipboardApi : IClipboardApi
+
+    public async Task<Result> DeleteClip(ClipboardSaveDto clip)
     {
-        private readonly HttpClient _client;
-        private readonly ILogger<ClipboardApi> _logger;
-        private readonly IServerUriProvider _uri;
-        public ClipboardApi(
-            HttpClient client,
-            IServerUriProvider serverUri,
-            ILogger<ClipboardApi> logger)
+        try
         {
-            _client = client;
-            _uri = serverUri;
-            _logger = logger;
+            var response = await _client.DeleteAsync($"{_uri.ServerUri}/api/clipboard/{clip.Id}?accessToken={clip.AccessTokenEdit}");
+            response.EnsureSuccessStatusCode();
+            return Result.Ok();
         }
+        catch (HttpRequestException exception) when (exception.StatusCode == System.Net.HttpStatusCode.NotFound)
+        {
+            return Result.Ok();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error while deleting clip.");
+            return Result.Fail(ex);
+        }
+    }
 
-        public async Task<Result> DeleteClip(ClipboardSaveDto clip)
+    public async Task<Result<ClipboardContentDto>> GetClipboardContent(string clipId, string accessToken)
+    {
+        try
         {
-            try
+            var dto = await _client.GetFromJsonAsync<ClipboardContentDto>($"{_uri.ServerUri}/api/clipboard/{clipId}/{accessToken}");
+            if (dto is null)
             {
-                var response = await _client.DeleteAsync($"{_uri.ServerUri}/api/clipboard/{clip.Id}?accessToken={clip.AccessTokenEdit}");
-                response.EnsureSuccessStatusCode();
-                return Result.Ok();
+                return Result.Fail<ClipboardContentDto>("Response was empty.");
             }
-            catch (HttpRequestException exception) when (exception.StatusCode == System.Net.HttpStatusCode.NotFound)
-            {
-                return Result.Ok();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error while deleting clip.");
-                return Result.Fail(ex);
-            }
+            return Result.Ok(dto);
         }
-
-        public async Task<Result<ClipboardContentDto>> GetClipboardContent(string clipId, string accessToken)
+        catch (Exception ex)
         {
-            try
-            {
-                var dto = await _client.GetFromJsonAsync<ClipboardContentDto>($"{_uri.ServerUri}/api/clipboard/{clipId}/{accessToken}");
-                if (dto is null)
-                {
-                    return Result.Fail<ClipboardContentDto>("Response was empty.");
-                }
-                return Result.Ok(dto);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error while getting clipboard content.");
-                return Result.Fail<ClipboardContentDto>(ex);
-            }
+            _logger.LogError(ex, "Error while getting clipboard content.");
+            return Result.Fail<ClipboardContentDto>(ex);
         }
+    }
 
 
-        public async Task<Result<ClipboardSaveDto>> SaveClipboardContent(ClipboardContentDto content)
+    public async Task<Result<ClipboardSaveDto>> SaveClipboardContent(ClipboardContentDto content)
+    {
+        try
         {
-            try
+            var response = await _client.PostAsJsonAsync($"{_uri.ServerUri}/api/clipboard", content);
+            response.EnsureSuccessStatusCode();
+            var clipSave = await response.Content.ReadFromJsonAsync<ClipboardSaveDto>();
+            if (clipSave is null)
             {
-                var response = await _client.PostAsJsonAsync($"{_uri.ServerUri}/api/clipboard", content);
-                response.EnsureSuccessStatusCode();
-                var clipSave = await response.Content.ReadFromJsonAsync<ClipboardSaveDto>();
-                if (clipSave is null)
-                {
-                    return Result.Fail<ClipboardSaveDto>("Response was empty.");
-                }
-                return Result.Ok(clipSave);
+                return Result.Fail<ClipboardSaveDto>("Response was empty.");
             }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error while posting clipboard content.");
-                return Result.Fail<ClipboardSaveDto>(ex);
-            }
+            return Result.Ok(clipSave);
         }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error while posting clipboard content.");
+            return Result.Fail<ClipboardSaveDto>(ex);
+        }
+    }
 
-        public async Task<Result> SendToReceiver(string receiptToken, ClipboardContentDto content)
+    public async Task<Result> SendToReceiver(string receiptToken, ClipboardContentDto content)
+    {
+        try
         {
-            try
-            {
-                var response = await _client.PostAsJsonAsync($"{_uri.ServerUri}/api/clipboard/{receiptToken}", content);
-                response.EnsureSuccessStatusCode();
-                return Result.Ok();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error while sending clipboard content.");
-                return Result.Fail(ex);
-            }
+            var response = await _client.PostAsJsonAsync($"{_uri.ServerUri}/api/clipboard/{receiptToken}", content);
+            response.EnsureSuccessStatusCode();
+            return Result.Ok();
         }
-        public async Task<Result> UpdateClip(ClipboardSaveDto dto)
+        catch (Exception ex)
         {
-            try
-            {
-                var response = await _client.PutAsJsonAsync($"{_uri.ServerUri}/api/clipboard", dto);
-                response.EnsureSuccessStatusCode();
-                return Result.Ok();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error while updating clipboard content.");
-                return Result.Fail(ex);
-            }
+            _logger.LogError(ex, "Error while sending clipboard content.");
+            return Result.Fail(ex);
+        }
+    }
+    public async Task<Result> UpdateClip(ClipboardSaveDto dto)
+    {
+        try
+        {
+            var response = await _client.PutAsJsonAsync($"{_uri.ServerUri}/api/clipboard", dto);
+            response.EnsureSuccessStatusCode();
+            return Result.Ok();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error while updating clipboard content.");
+            return Result.Fail(ex);
         }
     }
 }

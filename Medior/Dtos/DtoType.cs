@@ -1,12 +1,11 @@
 ﻿using System.Runtime.Serialization;
 
-namespace Medior.Dtos
+namespace Medior.Dtos;
+
+[DataContract]
+public enum DtoType
 {
-    [DataContract]
-    public enum DtoType
-    {
-        Unknown,
-        DesktopFrameChunk,
-        DisplayList
-    }
+    Unknown,
+    DesktopFrameChunk,
+    DisplayList
 }

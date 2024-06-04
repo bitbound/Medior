@@ -1,38 +1,37 @@
 ﻿using System.Threading.Tasks;
 
-namespace Medior.ViewModels
+namespace Medior.ViewModels;
+
+internal class ToastsViewModel
 {
-    internal class ToastsViewModel
+    private readonly IMessenger _messenger;
+    private readonly IUiDispatcher _uiDispatcher;
+
+    public ToastsViewModel(IMessenger messenger, IUiDispatcher uiDispatcher)
     {
-        private readonly IMessenger _messenger;
-        private readonly IUiDispatcher _uiDispatcher;
+        _messenger = messenger;
+        _uiDispatcher = uiDispatcher;
+        _messenger.Register<ToastMessage>(this, HandleToastMessage);
+    }
 
-        public ToastsViewModel(IMessenger messenger, IUiDispatcher uiDispatcher)
+    public ObservableCollectionEx<ToastMessage> Toasts { get; } = new();
+
+    private void HandleToastMessage(object recipient, ToastMessage message)
+    {
+        _uiDispatcher.Invoke(() =>
         {
-            _messenger = messenger;
-            _uiDispatcher = uiDispatcher;
-            _messenger.Register<ToastMessage>(this, HandleToastMessage);
-        }
+            Toasts.Add(message);
 
-        public ObservableCollectionEx<ToastMessage> Toasts { get; } = new();
+        });
 
-        private void HandleToastMessage(object recipient, ToastMessage message)
+        _ = Task.Run(async () =>
         {
+            await Task.Delay(4_000);
             _uiDispatcher.Invoke(() =>
             {
-                Toasts.Add(message);
-
+                Toasts.Remove(message);
             });
-
-            _ = Task.Run(async () =>
-            {
-                await Task.Delay(4_000);
-                _uiDispatcher.Invoke(() =>
-                {
-                    Toasts.Remove(message);
-                });
-            });
-            
-        }
+        });
+        
     }
 }

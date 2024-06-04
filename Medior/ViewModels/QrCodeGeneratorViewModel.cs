@@ -6,105 +6,103 @@ using System.IO;
 using System.Windows.Forms;
 using System.Windows.Media;
 
-namespace Medior.ViewModels
+namespace Medior.ViewModels;
+
+public partial class QrCodeGeneratorViewModel : ObservableObject
 {
-    [ObservableObject]
-    public partial class QrCodeGeneratorViewModel
+    private readonly IQrCodeGenerator _qrCodeGenerator;
+    private readonly IDialogService _dialogs;
+    private readonly IMessenger _messenger;
+    private readonly ILogger<QrCodeGeneratorViewModel> _logger;
+
+
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(GenerateCodeCommand))]
+    private string _inputText = string.Empty;
+
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(SaveQrCodeImageCommand))]
+    private ImageSource? _qrCodeImage;
+
+
+
+    public QrCodeGeneratorViewModel(
+        IQrCodeGenerator qrCodeGenerator, 
+        IDialogService dialogService,
+        IMessenger messenger,
+        ILogger<QrCodeGeneratorViewModel> logger)
     {
-        private readonly IQrCodeGenerator _qrCodeGenerator;
-        private readonly IDialogService _dialogs;
-        private readonly IMessenger _messenger;
-        private readonly ILogger<QrCodeGeneratorViewModel> _logger;
-
-
-        [ObservableProperty]
-        [NotifyCanExecuteChangedFor(nameof(GenerateCodeCommand))]
-        private string _inputText = string.Empty;
-
-        [ObservableProperty]
-        [NotifyCanExecuteChangedFor(nameof(SaveQrCodeImageCommand))]
-        private ImageSource? _qrCodeImage;
+        _qrCodeGenerator = qrCodeGenerator;
+        _dialogs = dialogService;
+        _messenger = messenger;
+        _logger = logger;
+    }
 
 
 
-        public QrCodeGeneratorViewModel(
-            IQrCodeGenerator qrCodeGenerator, 
-            IDialogService dialogService,
-            IMessenger messenger,
-            ILogger<QrCodeGeneratorViewModel> logger)
+    private bool IsGenerateEnabled => !string.IsNullOrWhiteSpace(InputText);
+
+    private bool IsSaveEnabled => QrCodeImage is not null;
+
+    private Bitmap? _currentBitmap;
+
+    [RelayCommand]
+    private void Clear()
+    {
+        _currentBitmap?.Dispose();
+        _currentBitmap = null;
+        QrCodeImage = null;
+        InputText = string.Empty;
+    }
+
+    [RelayCommand(CanExecute = nameof(IsGenerateEnabled))]
+    private void GenerateCode()
+    {
+        var result = _qrCodeGenerator.GenerateCode(InputText);
+        if (!result.IsSuccess)
         {
-            _qrCodeGenerator = qrCodeGenerator;
-            _dialogs = dialogService;
-            _messenger = messenger;
-            _logger = logger;
+            _messenger.Send(new ToastMessage("QR code generation failed", ToastType.Warning));
+            return;
         }
 
+        _currentBitmap?.Dispose();
+        _currentBitmap = result.Value;
+        QrCodeImage = result.Value?.ToBitmapImage(ImageFormat.Png);
+    }
 
-
-        private bool IsGenerateEnabled => !string.IsNullOrWhiteSpace(_inputText);
-
-        private bool IsSaveEnabled => _qrCodeImage is not null;
-
-        private Bitmap? _currentBitmap;
-
-        [RelayCommand]
-        private void Clear()
+    [RelayCommand(CanExecute = nameof(IsSaveEnabled))]
+    private void SaveQrCodeImage()
+    {
+        try
         {
-            _currentBitmap?.Dispose();
-            _currentBitmap = null;
-            QrCodeImage = null;
-            InputText = string.Empty;
-        }
-
-        [RelayCommand(CanExecute = nameof(IsGenerateEnabled))]
-        private void GenerateCode()
-        {
-            var result = _qrCodeGenerator.GenerateCode(_inputText);
-            if (!result.IsSuccess)
+            if (_currentBitmap is null)
             {
-                _messenger.Send(new ToastMessage("QR code generation failed", ToastType.Warning));
+                _messenger.Send(new ToastMessage("Bitmap unexpectedly null", ToastType.Warning));
                 return;
             }
 
-            _currentBitmap?.Dispose();
-            _currentBitmap = result.Value;
-            QrCodeImage = result.Value?.ToBitmapImage(ImageFormat.Png);
+            var sfd = new SaveFileDialog()
+            {
+                Filter = "Image Files (*.jpg)|*.jpg",
+                AddExtension = true,
+                DefaultExt = ".jpg",
+                InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyPictures)
+            };
+
+            _ = sfd.ShowDialog();
+            if (string.IsNullOrWhiteSpace(sfd.FileName))
+            {
+                return;
+            }
+
+            using var fs = new FileStream(sfd.FileName, FileMode.Create);
+            _currentBitmap.Save(fs, ImageFormat.Jpeg);
+            _messenger.Send(new ToastMessage("Image saved", ToastType.Success));
         }
-
-        [RelayCommand(CanExecute = nameof(IsSaveEnabled))]
-        private void SaveQrCodeImage()
+      catch (Exception ex)
         {
-            try
-            {
-                if (_currentBitmap is null)
-                {
-                    _messenger.Send(new ToastMessage("Bitmap unexpectedly null", ToastType.Warning));
-                    return;
-                }
-
-                var sfd = new SaveFileDialog()
-                {
-                    Filter = "Image Files (*.jpg)|*.jpg",
-                    AddExtension = true,
-                    DefaultExt = ".jpg",
-                    InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyPictures)
-                };
-
-                _ = sfd.ShowDialog();
-                if (string.IsNullOrWhiteSpace(sfd.FileName))
-                {
-                    return;
-                }
-
-                using var fs = new FileStream(sfd.FileName, FileMode.Create);
-                _currentBitmap.Save(fs, ImageFormat.Jpeg);
-                _messenger.Send(new ToastMessage("Image saved", ToastType.Success));
-            }
-          catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error while saving QR code.");
-                _dialogs.ShowError(ex);
-            }
+            _logger.LogError(ex, "Error while saving QR code.");
+            _dialogs.ShowError(ex);
         }
     }
 }

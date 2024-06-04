@@ -7,24 +7,24 @@
 </button>
 
 @code {
-    private readonly string _hiddenInputId = $"input-{Guid.NewGuid()}";
+private readonly string _hiddenInputId = $"input-{Guid.NewGuid()}";
 
 
-    [Parameter]
-    public string ClassNames { get; set; } = string.Empty;
+[Parameter]
+public string ClassNames { get; set; } = string.Empty;
 
-    [Parameter]
-    public RenderFragment? ChildContent { get; set; }
+[Parameter]
+public RenderFragment? ChildContent { get; set; }
 
-    [Parameter]
-    public EventCallback<InputFileChangeEventArgs> OnFilesChanged { get; set; }
+[Parameter]
+public EventCallback<InputFileChangeEventArgs> OnFilesChanged { get; set; }
 
-    [Parameter]
-    public bool Multiple { get; set; }
+[Parameter]
+public bool Multiple { get; set; }
 
 
-    private void OpenFilePicker()
-    {
-        JsInterop.InvokeClick(_hiddenInputId);
-    }
+private void OpenFilePicker()
+{
+    JsInterop.InvokeClick(_hiddenInputId);
+}
 }

@@ -1,22 +1,21 @@
-﻿namespace Medior.Services
-{
-    public interface IEnvironmentHelper
-    {
-        bool IsDebug { get; }
-    }
+﻿namespace Medior.Services;
 
-    public class EnvironmentHelper : IEnvironmentHelper
+public interface IEnvironmentHelper
+{
+    bool IsDebug { get; }
+}
+
+public class EnvironmentHelper : IEnvironmentHelper
+{
+    public bool IsDebug
     {
-        public bool IsDebug
+        get
         {
-            get
-            {
 #if DEBUG
-                return true;
+            return true;
 #else
-                return false;
+            return false;
 #endif
-            }
         }
     }
 }

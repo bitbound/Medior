@@ -1,29 +1,22 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿namespace Medior.Shared.Helpers;
 
-namespace Medior.Shared.Helpers
+public class CallbackDisposable : IDisposable
 {
-    public class CallbackDisposable : IDisposable
+    public static CallbackDisposable Empty { get; } = new(() => { });
+
+    private readonly Action _disposeCallback;
+
+    public CallbackDisposable(Action disposeCallback)
     {
-        public static CallbackDisposable Empty { get; } = new(() => { });
-
-        private readonly Action _disposeCallback;
-
-        public CallbackDisposable(Action disposeCallback)
+        _disposeCallback = disposeCallback;
+    }
+    public void Dispose()
+    {
+        GC.SuppressFinalize(this);
+        try
         {
-            _disposeCallback = disposeCallback;
+            _disposeCallback.Invoke();
         }
-        public void Dispose()
-        {
-            GC.SuppressFinalize(this);
-            try
-            {
-                _disposeCallback.Invoke();
-            }
-            catch { }
-        }
+        catch { }
     }
 }

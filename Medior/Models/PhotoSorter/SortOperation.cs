@@ -1,8 +1,7 @@
-﻿namespace Medior.Models.PhotoSorter
+﻿namespace Medior.Models.PhotoSorter;
+
+public enum SortOperation
 {
-    public enum SortOperation
-    {
-        Move,
-        Copy
-    }
+    Move,
+    Copy
 }

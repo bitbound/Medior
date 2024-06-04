@@ -4,36 +4,35 @@ using QRCoder;
 using System;
 using System.Drawing;
 
-namespace Medior.Services
+namespace Medior.Services;
+
+public interface IQrCodeGenerator
 {
-    public interface IQrCodeGenerator
+    Result<Bitmap> GenerateCode(string url);
+}
+
+public class QrCodeGenerator : IQrCodeGenerator
+{
+    private readonly ILogger<QrCodeGenerator> _logger;
+
+    public QrCodeGenerator(ILogger<QrCodeGenerator> logger)
     {
-        Result<Bitmap> GenerateCode(string url);
+        _logger = logger;
     }
 
-    public class QrCodeGenerator : IQrCodeGenerator
+    public Result<Bitmap> GenerateCode(string url)
     {
-        private readonly ILogger<QrCodeGenerator> _logger;
-
-        public QrCodeGenerator(ILogger<QrCodeGenerator> logger)
+        try
         {
-            _logger = logger;
+            using var qrGenerator = new QRCodeGenerator();
+            using var qrCodeData = qrGenerator.CreateQrCode(url, QRCodeGenerator.ECCLevel.Q);
+            using var qrCode = new QRCode(qrCodeData);
+            return Result.Ok(qrCode.GetGraphic(20));
         }
-
-        public Result<Bitmap> GenerateCode(string url)
+        catch (Exception ex)
         {
-            try
-            {
-                using var qrGenerator = new QRCodeGenerator();
-                using var qrCodeData = qrGenerator.CreateQrCode(url, QRCodeGenerator.ECCLevel.Q);
-                using var qrCode = new QRCode(qrCodeData);
-                return Result.Ok(qrCode.GetGraphic(20));
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error while generating QR code.");
-                return Result.Fail<Bitmap>(ex);
-            }
+            _logger.LogError(ex, "Error while generating QR code.");
+            return Result.Fail<Bitmap>(ex);
         }
     }
 }

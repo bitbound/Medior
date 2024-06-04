@@ -1,7 +1,6 @@
-﻿namespace Medior.Models.Messages
+﻿namespace Medior.Models.Messages;
+
+internal enum HotKeyHookKind
 {
-    internal enum HotKeyHookKind
-    {
-        PrintScreen
-    }
+    PrintScreen
 }

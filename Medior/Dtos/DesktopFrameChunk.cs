@@ -1,25 +1,23 @@
-﻿using System;
-using System.Drawing;
+﻿using System.Drawing;
 using System.Runtime.Serialization;
 
-namespace Medior.Dtos
+namespace Medior.Dtos;
+
+[DataContract]
+public class DesktopFrameChunk : DtoWrapper
 {
-    [DataContract]
-    public class DesktopFrameChunk : DtoWrapper
+    public DesktopFrameChunk()
     {
-        public DesktopFrameChunk()
-        {
-            DtoType = DtoType.DesktopFrameChunk;
-        }
-
-        [DataMember]
-        public Rectangle Area { get; init; }
-
-        [DataMember]
-        public bool EndOfFrame { get; init; }
-
-        [DataMember]
-        public byte[] ImageBytes { get; init; } = Array.Empty<byte>();
-
+        DtoType = DtoType.DesktopFrameChunk;
     }
+
+    [DataMember]
+    public Rectangle Area { get; init; }
+
+    [DataMember]
+    public bool EndOfFrame { get; init; }
+
+    [DataMember]
+    public byte[] ImageBytes { get; init; } = [];
+
 }

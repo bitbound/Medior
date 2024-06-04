@@ -1,15 +1,14 @@
 ﻿using System.Windows.Controls;
 
-namespace Medior.Views
+namespace Medior.Views;
+
+/// <summary>
+/// Interaction logic for QrCodeGeneratorView.xaml
+/// </summary>
+public partial class QrCodeGeneratorView : UserControl
 {
-    /// <summary>
-    /// Interaction logic for QrCodeGeneratorView.xaml
-    /// </summary>
-    public partial class QrCodeGeneratorView : UserControl
+    public QrCodeGeneratorView()
     {
-        public QrCodeGeneratorView()
-        {
-            InitializeComponent();
-        }
+        InitializeComponent();
     }
 }

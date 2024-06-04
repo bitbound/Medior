@@ -1,20 +1,19 @@
-﻿namespace Medior.Web.Server.Services
+﻿namespace Medior.Web.Server.Services;
+
+public interface IAppSettings
 {
-    public interface IAppSettings
+    int FileRetentionDays { get; }
+}
+
+public class AppSettings : IAppSettings
+{
+    private readonly IConfiguration _configuration;
+
+    public AppSettings(IConfiguration configuration)
     {
-        int FileRetentionDays { get; }
+        _configuration = configuration;
     }
 
-    public class AppSettings : IAppSettings
-    {
-        private readonly IConfiguration _configuration;
-
-        public AppSettings(IConfiguration configuration)
-        {
-            _configuration = configuration;
-        }
-
-        public int FileRetentionDays => _configuration.GetValue<int>(nameof(FileRetentionDays));
-        public int ClipboardRetentionDays => _configuration.GetValue<int>(nameof(ClipboardRetentionDays));
-    }
+    public int FileRetentionDays => _configuration.GetValue<int>(nameof(FileRetentionDays));
+    public int ClipboardRetentionDays => _configuration.GetValue<int>(nameof(ClipboardRetentionDays));
 }

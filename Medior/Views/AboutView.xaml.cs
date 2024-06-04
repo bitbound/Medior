@@ -3,31 +3,30 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
 
-namespace Medior.Views
+namespace Medior.Views;
+
+/// <summary>
+/// Interaction logic for AboutView.xaml
+/// </summary>
+public partial class AboutView : UserControl
 {
-    /// <summary>
-    /// Interaction logic for AboutView.xaml
-    /// </summary>
-    public partial class AboutView : UserControl
+    public AboutView()
     {
-        public AboutView()
-        {
-            InitializeComponent();
-        }
+        InitializeComponent();
+    }
 
-        public AboutViewModel? ViewModel => DataContext as AboutViewModel;
+    public AboutViewModel? ViewModel => DataContext as AboutViewModel;
 
-        private void Hyperlink_Click(object sender, RoutedEventArgs e)
+    private void Hyperlink_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is Hyperlink hyperlink)
         {
-            if (sender is Hyperlink hyperlink)
-            {
-                hyperlink.LaunchUrl();
-            }
+            hyperlink.LaunchUrl();
         }
+    }
 
-        private void UserControl_Loaded(object sender, RoutedEventArgs e)
-        {
-            ViewModel?.RefreshUpdateStatus();
-        }
+    private void UserControl_Loaded(object sender, RoutedEventArgs e)
+    {
+        ViewModel?.RefreshUpdateStatus();
     }
 }

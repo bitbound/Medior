@@ -1,10 +1,9 @@
 ﻿using System;
 
-namespace Medior.Models.PhotoSorter
+namespace Medior.Models.PhotoSorter;
+
+public class ExifData
 {
-    public class ExifData
-    {
-        public DateTime DateTaken { get; set; }
-        public string? CameraModel { get; set; }
-    }
+    public DateTime DateTaken { get; set; }
+    public string? CameraModel { get; set; }
 }

@@ -4,43 +4,42 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Linq;
 
-namespace Medior.Reactive
+namespace Medior.Reactive;
+
+public class ObservableCollectionEx<T> : ObservableCollection<T>
 {
-    public class ObservableCollectionEx<T> : ObservableCollection<T>
+    public void AddRange(IEnumerable<T> items)
     {
-        public void AddRange(IEnumerable<T> items)
+        if (items?.Any() != true)
         {
-            if (items?.Any() != true)
-            {
-                return;
-            }
-
-            foreach (var item in items)
-            {
-                Items.Add(item);
-            }
-
-            OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
+            return;
         }
 
-        public void NotifyCollectionChanged()
+        foreach (var item in items)
         {
-            OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
+            Items.Add(item);
         }
 
-        public void RemoveAll(Predicate<T> predicate)
-        {
-            var copy = Items.ToArray();
+        OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
+    }
 
-            foreach (var item in copy)
+    public void NotifyCollectionChanged()
+    {
+        OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
+    }
+
+    public void RemoveAll(Predicate<T> predicate)
+    {
+        var copy = Items.ToArray();
+
+        foreach (var item in copy)
+        {
+            if (predicate(item))
             {
-                if (predicate(item))
-                {
-                    Items.Remove(item);
-                }
+                Items.Remove(item);
             }
-
-            OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
         }
+
+        OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
     }
 }

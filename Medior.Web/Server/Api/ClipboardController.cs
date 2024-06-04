@@ -1,108 +1,91 @@
 ﻿using Medior.Shared.Dtos;
-using Medior.Shared.Entities;
-using Medior.Shared.Extensions;
-using Medior.Shared.Interfaces;
-using Medior.Web.Server.Extensions;
-using Medior.Web.Server.Hubs;
 using Medior.Web.Server.Services;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.SignalR;
-using System.Diagnostics;
 
-namespace Medior.Web.Server.Api
+namespace Medior.Web.Server.Api;
+
+[Route("api/[controller]")]
+[ApiController]
+public class ClipboardController : ControllerBase
 {
-    [Route("api/[controller]")]
-    [ApiController]
-    public class ClipboardController : ControllerBase
+    private readonly IClipboardSyncService _clipboardSync;
+
+    public ClipboardController(IClipboardSyncService clipboardSync)
     {
-        private readonly IClipboardSyncService _clipboardSync;
+        _clipboardSync = clipboardSync;
+    }
 
-        public ClipboardController(IClipboardSyncService clipboardSync)
+    [RequestSizeLimit(20_000_000)]
+    [HttpPost]
+    public async Task<ActionResult<ClipboardSaveDto>> Save(ClipboardContentDto content)
+    {
+        var result = await _clipboardSync.SaveClip(content);
+        return new ClipboardSaveDto(result);
+    }
+
+    [RequestSizeLimit(20_000_000)]
+    [HttpPost("{receiptToken}")]
+    public async Task<IActionResult> SendToReceiver([FromBody]ClipboardContentDto content, [FromRoute]string receiptToken)
+    {
+        var result = await _clipboardSync.SendToReceiver(content, receiptToken);
+        if (!result)
         {
-            _clipboardSync = clipboardSync;
+            return NotFound();
+        }
+        return Ok();
+    }
+
+    [HttpGet("{clipId}/{accessToken}")]
+    public async Task<ActionResult<ClipboardContentDto>> GetContent(Guid clipId, string accessToken)
+    {
+        var result = await _clipboardSync.GetSavedClip(clipId);
+
+        if (!result.IsSuccess)
+        {
+            return NotFound();
         }
 
-        [RequestSizeLimit(20_000_000)]
-        [HttpPost]
-        public async Task<ActionResult<ClipboardSaveDto>> Save(ClipboardContentDto content)
+        if (accessToken != result.Value!.AccessTokenView &&
+            accessToken != result.Value!.AccessTokenEdit)
         {
-            if (User.TryGetUserId(out var userId))
-            {
-                var result = await _clipboardSync.SaveClip(content, userId);
-                return new ClipboardSaveDto(result);
-            }
-            else
-            {
-                var result = await _clipboardSync.SaveClip(content);
-                return new ClipboardSaveDto(result);
-            }
+            return Unauthorized();
         }
 
-        [RequestSizeLimit(20_000_000)]
-        [HttpPost("{receiptToken}")]
-        public async Task<IActionResult> SendToReceiver([FromBody]ClipboardContentDto content, [FromRoute]string receiptToken)
+        var dto = new ClipboardContentDto(result.Value.Content, result.Value.ContentType);
+        return Ok(dto);
+    }
+
+
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> Delete(Guid id, [FromQuery] string accessToken)
+    {
+        var result = await _clipboardSync.GetSavedClip(id);
+
+        if (!result.IsSuccess)
         {
-            var result = await _clipboardSync.SendToReceiver(content, receiptToken);
-            if (!result)
-            {
-                return NotFound();
-            }
-            return Ok();
+            return NotFound();
         }
 
-        [HttpGet("{clipId}/{accessToken}")]
-        public async Task<ActionResult<ClipboardContentDto>> GetContent(Guid clipId, string accessToken)
+        if (result.Value!.AccessTokenEdit != accessToken)
         {
-            var result = await _clipboardSync.GetSavedClip(clipId);
-
-            if (!result.IsSuccess)
-            {
-                return NotFound();
-            }
-
-            if (accessToken != result.Value!.AccessTokenView &&
-                accessToken != result.Value!.AccessTokenEdit)
-            {
-                return Unauthorized();
-            }
-
-            var dto = new ClipboardContentDto(result.Value.Content, result.Value.ContentType);
-            return Ok(dto);
+            return Unauthorized();
         }
 
+        await _clipboardSync.Delete(id);
+        return NoContent();
+    }
 
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete(Guid id, [FromQuery] string accessToken)
+    [HttpPut]
+    public async Task<IActionResult> Update(ClipboardSaveDto dto)
+    {
+        var result = await _clipboardSync.UpdateClip(dto);
+
+        return result switch
         {
-            var result = await _clipboardSync.GetSavedClip(id);
-
-            if (!result.IsSuccess)
-            {
-                return NotFound();
-            }
-
-            if (result.Value!.AccessTokenEdit != accessToken)
-            {
-                return Unauthorized();
-            }
-
-            await _clipboardSync.Delete(id);
-            return NoContent();
-        }
-
-        [HttpPut]
-        public async Task<IActionResult> Update(ClipboardSaveDto dto)
-        {
-            var result = await _clipboardSync.UpdateClip(dto);
-
-            return result switch
-            {
-                Data.DbActionResult.Success => NoContent(),
-                Data.DbActionResult.NotFound => NotFound(),
-                Data.DbActionResult.Unauthorized => Unauthorized(),
-                _ => BadRequest(),
-            };
-        }
+            Data.DbActionResult.Success => NoContent(),
+            Data.DbActionResult.NotFound => NotFound(),
+            Data.DbActionResult.Unauthorized => Unauthorized(),
+            _ => BadRequest(),
+        };
     }
 }

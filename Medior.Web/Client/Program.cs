@@ -1,5 +1,4 @@
 using Medior.Shared.Interfaces;
-using Medior.Shared.Services;
 using Medior.Shared.Services.Http;
 using Medior.Web.Client;
 using Medior.Web.Client.Services;

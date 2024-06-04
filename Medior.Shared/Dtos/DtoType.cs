@@ -1,17 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.Serialization;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Runtime.Serialization;
 
-namespace Medior.Shared.Dtos
+namespace Medior.Shared.Dtos;
+
+[DataContract]
+public enum DtoType
 {
-    [DataContract]
-    public enum DtoType
-    {
-        Unknown,
-        ClipboardReady,
-        UserAccount,
-    }
+    Unknown,
+    ClipboardReady,
+    UserAccount,
 }

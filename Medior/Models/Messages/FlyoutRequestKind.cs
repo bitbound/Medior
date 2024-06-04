@@ -1,7 +1,6 @@
-﻿namespace Medior.Models.Messages
+﻿namespace Medior.Models.Messages;
+
+internal enum FlyoutRequestKind
 {
-    internal enum FlyoutRequestKind
-    {
-        PhotoSorterDestinationVariables
-    }
+    PhotoSorterDestinationVariables
 }

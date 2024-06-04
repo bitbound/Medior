@@ -1,8 +1,7 @@
-﻿namespace Medior.Models.Messages
+﻿namespace Medior.Models.Messages;
+
+public enum ScreenCaptureRequestKind
 {
-    public enum ScreenCaptureRequestKind
-    {
-        Snip,
-        Record
-    }
+    Snip,
+    Record
 }

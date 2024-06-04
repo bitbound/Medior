@@ -3,104 +3,102 @@ using System;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
-using Windows.Foundation;
 using Windows.System;
 
-namespace Medior.Services
+namespace Medior.Services;
+
+public interface IProcessService
 {
-    public interface IProcessService
+    Process GetCurrentProcess();
+
+    Process[] GetProcesses();
+
+    Process[] GetProcessesByName(string processName);
+
+    Task<Result<string>> GetProcessOutput(string command, string arguments, int timeoutMs = 10_000);
+
+    Task<bool> LaunchUri(Uri uri);
+
+    Task<LaunchQuerySupportStatus> QueryUriSupportAsync(Uri uri, LaunchQuerySupportType supportType);
+
+    Process Start(string fileName);
+    Process Start(string fileName, string arguments);
+    Process? Start(ProcessStartInfo startInfo);
+}
+
+public class ProcessManager : IProcessService
+{
+    public Process GetCurrentProcess()
     {
-        Process GetCurrentProcess();
-
-        Process[] GetProcesses();
-
-        Process[] GetProcessesByName(string processName);
-
-        Task<Result<string>> GetProcessOutput(string command, string arguments, int timeoutMs = 10_000);
-
-        Task<bool> LaunchUri(Uri uri);
-
-        Task<LaunchQuerySupportStatus> QueryUriSupportAsync(Uri uri, LaunchQuerySupportType supportType);
-
-        Process Start(string fileName);
-        Process Start(string fileName, string arguments);
-        Process? Start(ProcessStartInfo startInfo);
+        return Process.GetCurrentProcess();
     }
 
-    public class ProcessManager : IProcessService
+    public Process[] GetProcesses()
     {
-        public Process GetCurrentProcess()
-        {
-            return Process.GetCurrentProcess();
-        }
+        return Process.GetProcesses();
+    }
 
-        public Process[] GetProcesses()
-        {
-            return Process.GetProcesses();
-        }
+    public Process[] GetProcessesByName(string processName)
+    {
+        return Process.GetProcessesByName(processName);
+    }
 
-        public Process[] GetProcessesByName(string processName)
+    public async Task<Result<string>> GetProcessOutput(string command, string arguments, int timeoutMs = 10_000)
+    {
+        try
         {
-            return Process.GetProcessesByName(processName);
-        }
-
-        public async Task<Result<string>> GetProcessOutput(string command, string arguments, int timeoutMs = 10_000)
-        {
-            try
+            var psi = new ProcessStartInfo(command, arguments)
             {
-                var psi = new ProcessStartInfo(command, arguments)
-                {
-                    WindowStyle = ProcessWindowStyle.Hidden,
-                    UseShellExecute = false,
-                    RedirectStandardOutput = true
-                };
+                WindowStyle = ProcessWindowStyle.Hidden,
+                UseShellExecute = false,
+                RedirectStandardOutput = true
+            };
 
-                var proc = Process.Start(psi);
+            var proc = Process.Start(psi);
 
-                using var cts = new CancellationTokenSource(timeoutMs);
-                await proc!.WaitForExitAsync(cts.Token);
+            using var cts = new CancellationTokenSource(timeoutMs);
+            await proc!.WaitForExitAsync(cts.Token);
 
-                var output = await proc.StandardOutput.ReadToEndAsync();
-                return Result.Ok(output);
-            }
-            catch (OperationCanceledException)
-            {
-                return Result.Fail<string>($"Timed out while waiting for command to finish.  " +
-                    $"Command: {command}.  Arguments: {arguments}");
-            }
-            catch (Exception ex)
-            {
-                return Result.Fail<string>(ex);
-            }
+            var output = await proc.StandardOutput.ReadToEndAsync();
+            return Result.Ok(output);
         }
-
-        public async Task<bool> LaunchUri(Uri uri)
+        catch (OperationCanceledException)
         {
-            return await Windows.System.Launcher.LaunchUriAsync(uri);
+            return Result.Fail<string>($"Timed out while waiting for command to finish.  " +
+                $"Command: {command}.  Arguments: {arguments}");
         }
-
-        public async Task<LaunchQuerySupportStatus> QueryUriSupportAsync(Uri uri, LaunchQuerySupportType supportType)
+        catch (Exception ex)
         {
-            return await Launcher.QueryUriSupportAsync(uri, supportType);
+            return Result.Fail<string>(ex);
         }
+    }
 
-        public Process Start(string fileName)
-        {
-            return Process.Start(fileName);
-        }
+    public async Task<bool> LaunchUri(Uri uri)
+    {
+        return await Windows.System.Launcher.LaunchUriAsync(uri);
+    }
 
-        public Process Start(string fileName, string arguments)
-        {
-            return Process.Start(fileName, arguments);
-        }
+    public async Task<LaunchQuerySupportStatus> QueryUriSupportAsync(Uri uri, LaunchQuerySupportType supportType)
+    {
+        return await Launcher.QueryUriSupportAsync(uri, supportType);
+    }
 
-        public Process? Start(ProcessStartInfo startInfo)
+    public Process Start(string fileName)
+    {
+        return Process.Start(fileName);
+    }
+
+    public Process Start(string fileName, string arguments)
+    {
+        return Process.Start(fileName, arguments);
+    }
+
+    public Process? Start(ProcessStartInfo startInfo)
+    {
+        if (startInfo is null)
         {
-            if (startInfo is null)
-            {
-                throw new ArgumentNullException(nameof(startInfo));
-            }
-            return Process.Start(startInfo);
+            throw new ArgumentNullException(nameof(startInfo));
         }
+        return Process.Start(startInfo);
     }
 }

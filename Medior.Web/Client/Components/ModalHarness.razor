@@ -12,28 +12,28 @@
             </div>
             <div class="modal-body" >
                 @if (ModalService?.RenderBody is not null)
+            {
+                @ModalService.RenderBody
+            }
+            else
+            {
+                @foreach (var line in ModalService?.Body ?? Array.Empty<string>())
                 {
-                    @ModalService.RenderBody
-                }
-                else
-                {
-                    @foreach (var line in ModalService?.Body ?? Array.Empty<string>())
-                    {
-                        <p>
+                    <p>
                             @line
                         </p>
-                    }
                 }
+            }
 
             </div>
             <div class="modal-footer">
                 @if (ModalService?.Buttons is not null)
+            {
+                foreach (var button in ModalService.Buttons)
                 {
-                    foreach (var button in ModalService.Buttons)
-                    {
-                        <button @key="button" type="button" class="@("btn " + button.Class)" @onclick="() => ExecuteButtonAction(button.OnClick)">@button.Text</button>
-                    }   
-                }
+                    <button @key="button" type="button" class="@("btn " + button.Class)" @onclick="() => ExecuteButtonAction(button.OnClick)">@button.Text</button>
+                }   
+            }
                 <button type="button" class="btn btn-secondary" data-dismiss="modal" @onclick="CloseModal">Close</button>
             </div>
         </div>
@@ -41,44 +41,44 @@
 </div>
 
 @code {
-    private string _showClass = "";
-    private string _displayStyle = "";
+private string _showClass = "";
+private string _displayStyle = "";
 
-    protected override Task OnAfterRenderAsync(bool firstRender)
+protected override Task OnAfterRenderAsync(bool firstRender)
+{
+    if (firstRender)
     {
-        if (firstRender)
+        ModalService.ModalShown += async (sender, args) =>
         {
-            ModalService.ModalShown += async (sender, args) =>
-            {
-                _displayStyle = "block";
-                await InvokeAsync(StateHasChanged);
-            // The fade animation won't work without a delay here.
-            await Task.Delay(100);
-                _showClass = "show";
-                await InvokeAsync(StateHasChanged);
-            };
-
-            ModalService.ModalClosed += async (sender, args) =>
-            {
-                await CloseModal();
-            };
-        }
-        return base.OnAfterRenderAsync(firstRender);
-    }
-
-
-    private async Task CloseModal()
-    {
-        _showClass = "";
-        await InvokeAsync(StateHasChanged);
+            _displayStyle = "block";
+            await InvokeAsync(StateHasChanged);
+        // The fade animation won't work without a delay here.
         await Task.Delay(100);
-        _displayStyle = "";
-        await InvokeAsync(StateHasChanged);
-    }
+            _showClass = "show";
+            await InvokeAsync(StateHasChanged);
+        };
 
-    private async Task ExecuteButtonAction(Action onclick)
-    {
-        onclick.Invoke();
-        await CloseModal();
+        ModalService.ModalClosed += async (sender, args) =>
+        {
+            await CloseModal();
+        };
     }
+    return base.OnAfterRenderAsync(firstRender);
+}
+
+
+private async Task CloseModal()
+{
+    _showClass = "";
+    await InvokeAsync(StateHasChanged);
+    await Task.Delay(100);
+    _displayStyle = "";
+    await InvokeAsync(StateHasChanged);
+}
+
+private async Task ExecuteButtonAction(Action onclick)
+{
+    onclick.Invoke();
+    await CloseModal();
+}
 }

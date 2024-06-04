@@ -1,10 +1,9 @@
-﻿namespace Medior.Web.Client.Models
+﻿namespace Medior.Web.Client.Models;
+
+public enum ToastType
 {
-    public enum ToastType
-    {
-        Info,
-        Success,
-        Warning,
-        Error
-    }
+    Info,
+    Success,
+    Warning,
+    Error
 }

@@ -1,45 +1,44 @@
 ﻿using System;
 using System.IO;
 
-namespace Medior
+namespace Medior;
+
+internal static class AppConstants
 {
-    internal static class AppConstants
+    public static string LogsFolderPath
     {
-        public static string LogsFolderPath
+        get
         {
-            get
-            {
-                var tempDir = Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), "Medior")).FullName;
+            var tempDir = Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), "Medior")).FullName;
 #if DEBUG
-                return Path.Combine(tempDir, "Logs_Debug");
+            return Path.Combine(tempDir, "Logs_Debug");
 #else
-                return Path.Combine(tempDir, "Logs");
+            return Path.Combine(tempDir, "Logs");
 #endif
-            }
         }
+    }
 
-        public static string PhotoSorterReportsDir
+    public static string PhotoSorterReportsDir
+    {
+        get
         {
-            get
-            {
-                return Directory.CreateDirectory(Path.Combine(LogsFolderPath, "PhotoSorter")).FullName;
-            }
+            return Directory.CreateDirectory(Path.Combine(LogsFolderPath, "PhotoSorter")).FullName;
         }
+    }
 
-        public static string ImagesDirectory => Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), "Medior", "Images")).FullName;
-        public static string RecordingsDirectory => Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), "Medior", "Recordings")).FullName;
-        public static string SettingsFilePath
+    public static string ImagesDirectory => Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), "Medior", "Images")).FullName;
+    public static string RecordingsDirectory => Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), "Medior", "Recordings")).FullName;
+    public static string SettingsFilePath
+    {
+        get
         {
-            get
-            {
-                var appDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Medior");
-                Directory.CreateDirectory(appDir);
+            var appDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Medior");
+            Directory.CreateDirectory(appDir);
 #if DEBUG
-                return Path.Combine(appDir, "settings_debug.json");
+            return Path.Combine(appDir, "settings_debug.json");
 #else
-                return Path.Combine(appDir, "settings.json");
+            return Path.Combine(appDir, "settings.json");
 #endif
-            }
         }
     }
 }

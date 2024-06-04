@@ -7,44 +7,43 @@ using System.Linq;
 using System.Threading;
 using System.Windows;
 
-namespace Medior
+namespace Medior;
+
+/// <summary>
+/// Interaction logic for App.xaml
+/// </summary>
+public partial class App : Application
 {
-    /// <summary>
-    /// Interaction logic for App.xaml
-    /// </summary>
-    public partial class App : Application
+    private readonly CancellationTokenSource _cts = new();
+    private readonly DialogCoordinator _dialogCoordinator = new();
+
+    private void Application_Startup(object sender, StartupEventArgs e)
     {
-        private readonly CancellationTokenSource _cts = new();
-        private readonly DialogCoordinator _dialogCoordinator = new();
+        var appStartup = StaticServiceProvider.Instance.GetRequiredService<IAppStartup>();
+        appStartup.Initialize(_cts.Token);
 
-        private void Application_Startup(object sender, StartupEventArgs e)
+        if (!Environment.GetCommandLineArgs().Any(x => x.Equals("--hidden", StringComparison.OrdinalIgnoreCase)))
         {
-            var appStartup = StaticServiceProvider.Instance.GetRequiredService<IAppStartup>();
-            appStartup.Initialize(_cts.Token);
-
-            if (!Environment.GetCommandLineArgs().Any(x => x.Equals("--hidden", StringComparison.OrdinalIgnoreCase)))
-            {
-                Current.MainWindow = new ShellWindow();
-                Current.MainWindow.Show();
-            }
+            Current.MainWindow = new ShellWindow();
+            Current.MainWindow.Show();
         }
+    }
 
-        private void Application_Exit(object sender, ExitEventArgs e)
-        {
-            _cts.Cancel();
-        }
+    private void Application_Exit(object sender, ExitEventArgs e)
+    {
+        _cts.Cancel();
+    }
 
-        private async void Application_DispatcherUnhandledException(object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e)
-        {
-            e.Handled = true;
-            var logger = StaticServiceProvider.Instance.GetRequiredService<ILogger<App>>();
-            logger.LogError(e.Exception, "Unhandled exceptions.");
+    private async void Application_DispatcherUnhandledException(object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e)
+    {
+        e.Handled = true;
+        var logger = StaticServiceProvider.Instance.GetRequiredService<ILogger<App>>();
+        logger.LogError(e.Exception, "Unhandled exceptions.");
 
-            await _dialogCoordinator.ShowMessageAsync(ViewModelLocator.ShellWindowViewModel,
-              "Oh darn.  An error.",
-              $"Here's what it said:\n\n{e.Exception.Message}",
-              MessageDialogStyle.Affirmative);
+        await _dialogCoordinator.ShowMessageAsync(ViewModelLocator.ShellWindowViewModel,
+          "Oh darn.  An error.",
+          $"Here's what it said:\n\n{e.Exception.Message}",
+          MessageDialogStyle.Affirmative);
 
-        }
     }
 }

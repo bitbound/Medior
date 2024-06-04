@@ -3,25 +3,24 @@ using System.Globalization;
 using System.Windows;
 using System.Windows.Data;
 
-namespace Medior.Converters
-{
-    internal class MultiBoolAnyToVisibilityConverter : IMultiValueConverter
-    {
-        public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
-        {
-            foreach (var value in values)
-            {
-                if (value is bool boolValue && boolValue)
-                {
-                    return Visibility.Visible;
-                }
-            }
-            return Visibility.Collapsed;
-        }
+namespace Medior.Converters;
 
-        public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
+internal class MultiBoolAnyToVisibilityConverter : IMultiValueConverter
+{
+    public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
+    {
+        foreach (var value in values)
         {
-            throw new NotImplementedException();
+            if (value is bool boolValue && boolValue)
+            {
+                return Visibility.Visible;
+            }
         }
+        return Visibility.Collapsed;
+    }
+
+    public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
+    {
+        throw new NotImplementedException();
     }
 }

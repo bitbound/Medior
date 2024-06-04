@@ -8,36 +8,36 @@
 
 
 @code {
-    [Parameter]
-    public string Message { get; set; } = "";
+[Parameter]
+public string Message { get; set; } = "";
 
-    [Parameter]
-    public string StatusClass { get; set; } = "";
+[Parameter]
+public string StatusClass { get; set; } = "";
 
-    [Parameter]
-    public EventCallback OnClose { get; set; }
+[Parameter]
+public EventCallback OnClose { get; set; }
 
 
-    public async Task Close(MouseEventArgs ev)
+public async Task Close(MouseEventArgs ev)
+{
+    Message = "";
+    await OnClose.InvokeAsync();
+}
+
+private string GetStatusClass()
+{
+    if (Message?.StartsWith("Error") == true)
     {
-        Message = "";
-        await OnClose.InvokeAsync();
+        return "danger";
     }
-
-    private string GetStatusClass()
+    else if (!string.IsNullOrWhiteSpace(StatusClass))
     {
-        if (Message?.StartsWith("Error") == true)
-        {
-            return "danger";
-        }
-        else if (!string.IsNullOrWhiteSpace(StatusClass))
-        {
-            return StatusClass;
-        }
-        else
-        {
-            return "success";
-        }
+        return StatusClass;
     }
+    else
+    {
+        return "success";
+    }
+}
 
 }

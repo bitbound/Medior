@@ -1,13 +1,12 @@
-﻿namespace Medior.Models.Messages
-{
-    internal class GenericMessage<T>
-        where T : notnull
-    {
-        public GenericMessage(T value)
-        {
-            Value = value;
-        }
+﻿namespace Medior.Models.Messages;
 
-        public T Value { get; }
+internal class GenericMessage<T>
+    where T : notnull
+{
+    public GenericMessage(T value)
+    {
+        Value = value;
     }
+
+    public T Value { get; }
 }

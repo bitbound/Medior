@@ -1,50 +1,42 @@
-﻿using Medior.Shared.Entities;
-using Medior.Shared.Interfaces;
+﻿using Medior.Shared.Interfaces;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Http.Json;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace Medior.Shared.Services.Http
+namespace Medior.Shared.Services.Http;
+
+public interface IStreamingApi
 {
-    public interface IStreamingApi
+    Task<Result> GetStream(Guid streamId, Stream inputStream, CancellationToken cancellationToken);
+}
+
+public class StreamingApi : IStreamingApi
+{
+    private readonly HttpClient _client;
+    private readonly ILogger<StreamingApi> _logger;
+    private readonly IServerUriProvider _uri;
+
+    public StreamingApi(
+        HttpClient client,
+        IServerUriProvider uriProvider,
+        ILogger<StreamingApi> logger)
     {
-        Task<Result> GetStream(Guid streamId, Stream inputStream, CancellationToken cancellationToken);
+        _client = client;
+        _uri = uriProvider;
+        _logger = logger;
     }
 
-    public class StreamingApi : IStreamingApi
+    public async Task<Result> GetStream(Guid streamId, Stream inputStream, CancellationToken cancellationToken)
     {
-        private readonly HttpClient _client;
-        private readonly ILogger<StreamingApi> _logger;
-        private readonly IServerUriProvider _uri;
-
-        public StreamingApi(
-            HttpClient client,
-            IServerUriProvider uriProvider,
-            ILogger<StreamingApi> logger)
+        try
         {
-            _client = client;
-            _uri = uriProvider;
-            _logger = logger;
+            var response = await _client.GetAsync($"{_uri.ServerUri}/api/streaming/{streamId}", cancellationToken);
+            response.EnsureSuccessStatusCode();
+            await response.Content.CopyToAsync(inputStream);
+            return Result.Ok();
         }
-
-        public async Task<Result> GetStream(Guid streamId, Stream inputStream, CancellationToken cancellationToken)
+        catch (Exception ex)
         {
-            try
-            {
-                var response = await _client.GetAsync($"{_uri.ServerUri}/api/streaming/{streamId}", cancellationToken);
-                response.EnsureSuccessStatusCode();
-                await response.Content.CopyToAsync(inputStream);
-                return Result.Ok();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error while sending stream.");
-                return Result.Fail(ex);
-            }
+            _logger.LogError(ex, "Error while sending stream.");
+            return Result.Fail(ex);
         }
     }
 }

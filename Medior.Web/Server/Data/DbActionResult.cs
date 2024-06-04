@@ -1,9 +1,8 @@
-﻿namespace Medior.Web.Server.Data
+﻿namespace Medior.Web.Server.Data;
+
+public enum DbActionResult
 {
-    public enum DbActionResult
-    {
-        Success,
-        NotFound,
-        Unauthorized
-    }
+    Success,
+    NotFound,
+    Unauthorized
 }

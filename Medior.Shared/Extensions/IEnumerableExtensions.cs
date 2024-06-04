@@ -1,25 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿namespace Medior.Shared.Extensions;
 
-namespace Medior.Shared.Extensions
+public static class IEnumerableExtensions
 {
-    public static class IEnumerableExtensions
+    public static string StringJoin(this IEnumerable<object> strings, string separator = "")
     {
-        public static string StringJoin(this IEnumerable<object> strings, string separator = "")
-        {
-            return string.Join(separator, strings);
-        }
+        return string.Join(separator, strings);
+    }
 
-        public static async IAsyncEnumerable<T> ToAsyncEnumerable<T>(this IEnumerable<T> enumerable)
+    public static async IAsyncEnumerable<T> ToAsyncEnumerable<T>(this IEnumerable<T> enumerable)
+    {
+        foreach (var item in enumerable)
         {
-            foreach (var item in enumerable)
-            {
-                yield return item;
-            }
-            await Task.CompletedTask;
+            yield return item;
         }
+        await Task.CompletedTask;
     }
 }

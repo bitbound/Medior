@@ -3,11 +3,11 @@
 
 <div class="page">
     @if (!_hideSidebar)
-    {
-        <div class="sidebar">
+{
+    <div class="sidebar">
             <NavMenu />
         </div>
-    }
+}
 
     <main>
         <article class="content px-4">
@@ -21,19 +21,19 @@
 </div>
 
 @code {
-    private bool _hideSidebar;
+private bool _hideSidebar;
 
-    protected override void OnInitialized()
+protected override void OnInitialized()
+{
+    if (Uri.TryCreate(NavManager.Uri, UriKind.Absolute, out var uri))
     {
-        if (Uri.TryCreate(NavManager.Uri, UriKind.Absolute, out var uri))
-        {
-            var queries = System.Web.HttpUtility.ParseQueryString(uri.Query);
-            if (queries.AllKeys.Contains("embedded"))
+        var queries = System.Web.HttpUtility.ParseQueryString(uri.Query);
+        if (queries.AllKeys.Contains("embedded"))
 
-            {
-                bool.TryParse(queries["embedded"], out _hideSidebar);
-            }
+        {
+            bool.TryParse(queries["embedded"], out _hideSidebar);
         }
-        base.OnInitialized();
     }
+    base.OnInitialized();
+}
 }
