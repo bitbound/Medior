@@ -14,7 +14,7 @@
 
 <h3>File Sharing</h3>
 
- <div class="row">
+<div class="row">
     <div class="col-12">
         <div class="lead text-muted">
             Download the desktop app to access all features.
@@ -34,20 +34,20 @@
 }
 else if (string.IsNullOrWhiteSpace(AccessToken))
 {
-   <h5 class="mt-5">Access token required.</h5>
+    <h5 class="mt-5">Access token required.</h5>
 }
-else 
+else
 {
     <div class="row mt-5">
         <div class="col-12">
             @if (_viewType == ViewType.NotFound)
-        {
-            <h5>File not found.</h5>
-        }
-        else
-        {
-            <div class="mb-3">
-                    <button type="button" 
+            {
+                <h5>File not found.</h5>
+            }
+            else
+            {
+                <div class="mb-3">
+                    <button type="button"
                             class="btn btn-primary"
                             target="_blank"
                             @onclick="DownloadFile">
@@ -62,151 +62,151 @@ else
                         <strong>Sharing URL:</strong>
                     </label>
                 </div>
-                  <div class="mb-4 input-group">
+                <div class="mb-4 input-group">
                     <input type="text" class="form-control" readonly value="@(NavManager.Uri)" />
                     <div class="input-group-append">
                         <button class="btn btn-primary" @onclick="CopyUrl">Copy</button>
                     </div>
                 </div>
-            <div>
+                <div>
                     <label class="form-label">
                         <strong>File Name:</strong>
                         <br />
                         @_downloadFileName
                     </label>
                 </div>
-        }
+            }
 
             @if (_viewType == ViewType.PreviewUnsupported)
-        {
-            <h4>
+            {
+                <h4>
                     Preview unavailable for this file type.
                 </h4>
-        }
-        else if (_viewType == ViewType.Image)
-        {
-            <img class="img-fluid border border-light border-2" src="/api/file/@(FileId)?accessToken=@(AccessToken)" />
-        }
-        else if (_viewType == ViewType.Video)
-        {
-            <video class="img-fluid border border-light border-2" src="/api/file/@(FileId)?accessToken=@(AccessToken)" controls autoplay />
-        }
+            }
+            else if (_viewType == ViewType.Image)
+            {
+                <img class="img-fluid border border-light border-2 mh-100vh" src="/api/file/@(FileId)?accessToken=@(AccessToken)" />
+            }
+            else if (_viewType == ViewType.Video)
+            {
+                <video class="img-fluid border border-light border-2 mh-100vh" src="/api/file/@(FileId)?accessToken=@(AccessToken)" controls autoplay />
+            }
         </div>
     </div>
 }
 
 @code {
-private string? _downloadFileName;
-private ViewType _viewType;
+    private string? _downloadFileName;
+    private ViewType _viewType;
 
-[Parameter]
-public string? FileId { get; set; }
+    [Parameter]
+    public string? FileId { get; set; }
 
-[Parameter]
-[SupplyParameterFromQuery]
-public string? AccessToken { get; set; }
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public string? AccessToken { get; set; }
 
-protected override async Task OnInitializedAsync()
-{
-    await TryLoadFile();
-
-    await base.OnInitializedAsync();
-}
-
-private async Task CopyUrl()
-{
-    await JsInterop.SetClipboard(NavManager.Uri);
-    ToastService.Show("Copied to clipboard", ToastType.Success);
-}
-
-private async Task DownloadFile()
-{
-    await JsInterop.DownloadFile($"/api/file/{FileId}?accessToken={AccessToken}", _downloadFileName ?? string.Empty);
-}
-
-private async Task HandleFilesChanged(InputFileChangeEventArgs args)
-{
-    try
+    protected override async Task OnInitializedAsync()
     {
-        using var _ = LoaderService.Show("Uploading file");
-
-        using var stream = args.File.OpenReadStream(100_000_000);
-        var result = await FileApi.UploadFile(stream, args.File.Name);
-        if (!result.IsSuccess)
-        {
-            ToastService.Show("Upload failed", ToastType.Error);
-            return;
-        }
-
-        FileId = $"{result.Value?.Id}";
-        AccessToken = $"{result.Value?.AccessTokenView}";
-
-        ToastService.Show("Upload succeeded", ToastType.Success);
-        NavigateToFileId($"{result.Value?.Id}", $"{result.Value?.AccessTokenView}");
         await TryLoadFile();
+
+        await base.OnInitializedAsync();
     }
-    catch (Exception ex)
+
+    private async Task CopyUrl()
     {
-        Logger.LogError(ex, "Error while retrieving file details.");
+        await JsInterop.SetClipboard(NavManager.Uri);
+        ToastService.Show("Copied to clipboard", ToastType.Success);
     }
-}
 
-private void NavigateToFileId(string fileId, string accessToken)
-{
-    NavManager.NavigateTo($"/file-sharing/{fileId}?accessToken={accessToken}");
-}
-
-private async Task TryLoadFile()
-{
-    try
+    private async Task DownloadFile()
     {
-        if (string.IsNullOrWhiteSpace(FileId) ||
-            string.IsNullOrWhiteSpace(AccessToken))
-        {
-            return;
-        }
-
-        using var response = await FileApi.GetFileHeaders(FileId, AccessToken);
-
-        if (!response.IsSuccessStatusCode)
-        {
-            Logger.LogWarning("Received status code {code}.", response.StatusCode);
-            _viewType = ViewType.NotFound;
-            return;
-        }
-
-        _downloadFileName = response.Content.Headers.ContentDisposition?.FileName?.Trim('"') ?? string.Empty;
-        var contentType = response.Content.Headers.ContentType?.MediaType ?? string.Empty;
-
-        Logger.LogInformation("Found content type {type}.", contentType);
-
-        if (contentType.StartsWith("image", StringComparison.OrdinalIgnoreCase))
-        {
-            _viewType = ViewType.Image;
-            return;
-        }
-
-        if (contentType.StartsWith("video", StringComparison.OrdinalIgnoreCase))
-        {
-            _viewType = ViewType.Video;
-            return;
-        }
-
-        _viewType = ViewType.PreviewUnsupported;
+        await JsInterop.DownloadFile($"/api/file/{FileId}?accessToken={AccessToken}", _downloadFileName ?? string.Empty);
     }
-    catch (Exception ex)
+
+    private async Task HandleFilesChanged(InputFileChangeEventArgs args)
     {
-        ToastService.Show("An error occurred", ToastType.Error);
-        Logger.LogError(ex, "Error while retrieving file details.");
-    }
-}
+        try
+        {
+            using var _ = LoaderService.Show("Uploading file");
 
-private enum ViewType
-{
-    Unknown,
-    NotFound,
-    PreviewUnsupported,
-    Image,
-    Video
-}
+            using var stream = args.File.OpenReadStream(100_000_000);
+            var result = await FileApi.UploadFile(stream, args.File.Name);
+            if (!result.IsSuccess)
+            {
+                ToastService.Show("Upload failed", ToastType.Error);
+                return;
+            }
+
+            FileId = $"{result.Value?.Id}";
+            AccessToken = $"{result.Value?.AccessTokenView}";
+
+            ToastService.Show("Upload succeeded", ToastType.Success);
+            NavigateToFileId($"{result.Value?.Id}", $"{result.Value?.AccessTokenView}");
+            await TryLoadFile();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error while retrieving file details.");
+        }
+    }
+
+    private void NavigateToFileId(string fileId, string accessToken)
+    {
+        NavManager.NavigateTo($"/file-sharing/{fileId}?accessToken={accessToken}");
+    }
+
+    private async Task TryLoadFile()
+    {
+        try
+        {
+            if (string.IsNullOrWhiteSpace(FileId) ||
+                string.IsNullOrWhiteSpace(AccessToken))
+            {
+                return;
+            }
+
+            using var response = await FileApi.GetFileHeaders(FileId, AccessToken);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                Logger.LogWarning("Received status code {code}.", response.StatusCode);
+                _viewType = ViewType.NotFound;
+                return;
+            }
+
+            _downloadFileName = response.Content.Headers.ContentDisposition?.FileName?.Trim('"') ?? string.Empty;
+            var contentType = response.Content.Headers.ContentType?.MediaType ?? string.Empty;
+
+            Logger.LogInformation("Found content type {type}.", contentType);
+
+            if (contentType.StartsWith("image", StringComparison.OrdinalIgnoreCase))
+            {
+                _viewType = ViewType.Image;
+                return;
+            }
+
+            if (contentType.StartsWith("video", StringComparison.OrdinalIgnoreCase))
+            {
+                _viewType = ViewType.Video;
+                return;
+            }
+
+            _viewType = ViewType.PreviewUnsupported;
+        }
+        catch (Exception ex)
+        {
+            ToastService.Show("An error occurred", ToastType.Error);
+            Logger.LogError(ex, "Error while retrieving file details.");
+        }
+    }
+
+    private enum ViewType
+    {
+        Unknown,
+        NotFound,
+        PreviewUnsupported,
+        Image,
+        Video
+    }
 }
